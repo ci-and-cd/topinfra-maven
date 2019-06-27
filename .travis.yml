@@ -1,0 +1,75 @@
+
+addons:
+  apt:
+    packages:
+      - aria2
+      #- gnupg
+      - gnupg2
+      - graphviz
+      - openssl
+      - whois
+before_install:
+  - set -ex;
+  - whois $(curl ipinfo.io/ip);
+  # More options -> Settings -> Environment variables -> Add
+  # CI_OPT_GPG_KEYNAME
+  # CI_OPT_GPG_PASSPHRASE
+  # CI_OPT_OSSRH_NEXUS2_PASS
+  # CI_OPT_OSSRH_NEXUS2_USER
+  # on gpg-2.1.11 'pinentry-mode loopback' is invalid option
+  #- printf '%s\n' "pinentry-mode loopback" | tee -a ~/.gnupg/gpg.conf;
+  - export GPG_TTY=$(tty || echo "");
+    gpg2 --use-agent --batch=true --version;
+    mkdir -p ~/.gnupg && chmod 700 ~/.gnupg;
+    printf '%s\n' "use-agent" | tee ~/.gnupg/gpg.conf;
+    printf '%s\n' "allow-loopback-pinentry" | tee ~/.gnupg/gpg-agent.conf;
+    echo RELOADAGENT | gpg-connect-agent;
+    openssl aes-256-cbc -k ${CI_OPT_GPG_PASSPHRASE} -in codesigning.asc.enc -out codesigning.asc -d -md md5;
+    ls -ahl;
+    if [[ -f codesigning.pub ]]; then
+      gpg2 --use-agent --batch=true --yes --import codesigning.pub;
+      gpg2 --use-agent --batch=true --list-keys;
+    fi;
+    if [[ -f codesigning.pub ]]; then
+      gpg2 --use-agent --batch=true --yes --import codesigning.asc;
+    elif [[ -z "$(gpg2 --use-agent --list-secret-keys | { grep ${CI_OPT_GPG_KEYNAME} || true; })" ]]; then
+      gpg2 --use-agent --batch=true --yes --fast-import codesigning.asc;
+    fi;
+    gpg2 --use-agent --batch=true --list-secret-keys;
+    gpg2 --use-agent --batch=true --list-keys;
+    printf 'trust\n5\ny\n' | gpg2 --use-agent --batch=true --command-fd 0 --edit-key ${CI_OPT_GPG_KEYNAME};
+  - if [[ -z "${MAVEN_OPTS}" ]]; then export MAVEN_OPTS="-XX:TieredStopAtLevel=1 -XX:+UseParallelGC -Dprofile=title -DprofileFormat=JSON,HTML"; fi;
+branches:
+  only:
+    #- master # do nothing on master branch
+    - develop # snapshots on develop branch
+    - /^feature\/.*$/ # build and test on feature branches
+    - /^hotfix\/.*$/ # release on hotfix branches
+    - /^release\/.*$/ # release on release branches
+    - /^support\/.*$/ # release on support branches
+    #- /^v\d+\.\d+(\.\d+)?(-\S*)?/ # build and publish a github release (can skip tests here) or do nothing on version tags
+cache:
+  bundler: true
+  directories:
+    - "$HOME/.cache"
+    - "$HOME/.gradle"
+    - "$HOME/.m2/repository"
+    - "$HOME/.m2/wrapper"
+    - "$HOME/.sonar/cache"
+dist: xenial
+env:
+  global:
+    - MAVEN_SKIP_RC=true
+group: edge
+install: true
+jdk:
+  - openjdk8
+language: java
+script:
+  # When prefixed with `travis_wait 30`, no log output until it is done.
+  # see: https://github.com/travis-ci/travis-ci/issues/4190 or https://github.com/HaxeFoundation/hxcpp/issues/709
+  - while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
+  - time CI_OPT_SONAR="true" CI_OPT_SONAR_ORGANIZATION="home1-oss-github" ./mvnw -Dgpg.executable=gpg2 -Dgpg.loopback=true -s settings.xml clean deploy;
+    find .mvn/profilerReport -name "*.json" | xargs cat | jq -r '.projects[]|"module:", .project, "plugins", (.mojos[]|[.mojo,.time]|@tsv)' | column -t;
+  - kill %1
+sudo: false
