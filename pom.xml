@@ -1,0 +1,304 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>top.infra</groupId>
+    <artifactId>maven-core-extensions</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <build>
+        <!-- @formatter:off -->
+        <plugins>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution><id>attach-sources</id><goals><goal>jar-no-fork</goal></goals><phase>prepare-package</phase></execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution><id>attach-javadocs</id><goals><goal>jar</goal></goals><phase>prepare-package</phase></execution>
+                    <execution><id>attach-test-javadocs</id><goals><goal>test-jar</goal></goals><phase>prepare-package</phase></execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                    <detectBuildFailures>true</detectBuildFailures>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <serverId>ossrh-staging</serverId>
+                    <!--<sslAllowAll>true</sslAllowAll>-->
+                    <stagingProgressPauseDurationSeconds>30</stagingProgressPauseDurationSeconds>
+                    <stagingProgressTimeoutMinutes>60</stagingProgressTimeoutMinutes>
+                </configuration>
+            </plugin>
+        </plugins>
+        <!-- @formatter:on -->
+
+        <pluginManagement>
+            <!-- @formatter:off -->
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-component-metadata</artifactId>
+                    <version>2.0.0</version>
+                    <dependencies>
+                        <!-- Java 11 support. -->
+                        <dependency>
+                            <groupId>org.ow2.asm</groupId>
+                            <artifactId>asm</artifactId>
+                            <version>7.1</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-invoker-plugin</artifactId>
+                    <version>3.2.0</version>
+                    <configuration>
+                        <cloneProjectsTo>${project.basedir}/target/it</cloneProjectsTo>
+                        <debug>false</debug>
+                        <goals>
+                            <!-- Goals for child maven. -->
+                            <goal>clean</goal>
+                            <goal>dependency:resolve</goal>
+                            <goal>install</goal>
+                        </goals>
+                        <ignoreFailures>false</ignoreFailures>
+                        <invokerPropertiesFile>invoker.properties</invokerPropertiesFile>
+                        <postBuildHookScript>verify</postBuildHookScript>
+                        <preBuildHookScript>setup</preBuildHookScript>
+                        <properties>
+                            <infrastructure>opensource</infrastructure>
+                            <private.sonar.host.url>http://my-sonarqube:9000</private.sonar.host.url>
+                            <site>true</site>
+                        </properties>
+                        <projectsDirectory>${project.basedir}/src/it</projectsDirectory>
+                        <!--<settingsFile>src/it/settings.xml</settingsFile>-->
+                        <showErrors>false</showErrors>
+                        <streamLogs>false</streamLogs>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>integration-test</id>
+                            <goals>
+                                <!-- Goals for parent maven. -->
+                                <goal>install</goal>
+                                <goal>run</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin><artifactId>maven-gpg-plugin</artifactId><version>${version.maven-gpg-plugin}</version></plugin>
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId><version>${version.maven-javadoc-plugin}</version>
+                    <configuration>
+                        <additionalJOption>-J-Duser.language=en</additionalJOption>
+                        <!--<additionalOptions>-views -all</additionalOptions>-->
+                        <charset>${project.build.sourceEncoding}</charset>
+                        <!--<doclet>org.umlgraph.doclet.UmlGraphDoc</doclet>-->
+                        <!-- UML Graph needs to match HTML tag to insert images into javadoc -->
+                        <!--<docletArtifact><groupId>org.umlgraph</groupId><artifactId>umlgraph</artifactId><version>${umlgraph.version}</version></docletArtifact>-->
+                        <doclint>none</doclint>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                        <failOnError>${maven.javadoc.failsOnError}</failOnError>
+                        <notimestamp>true</notimestamp>
+                        <useStandardDocletOptions>true</useStandardDocletOptions>
+                    </configuration>
+                </plugin>
+                <plugin><artifactId>maven-source-plugin</artifactId><version>${version.maven-source-plugin}</version></plugin>
+                <plugin><artifactId>nexus-staging-maven-plugin</artifactId><groupId>org.sonatype.plugins</groupId><version>${version.nexus-staging-maven-plugin}</version></plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${version.maven.testing}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.junit.jupiter</groupId>
+                            <artifactId>junit-jupiter-engine</artifactId>
+                            <version>${version.junit.jupiter}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.junit.vintage</groupId>
+                            <artifactId>junit-vintage-engine</artifactId>
+                            <version>${version.junit.vintage}</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <runOrder>alphabetical</runOrder>
+                        <includes>
+                            <include>**/*Test.class</include>
+                            <include>**/*Suite.class</include>
+                        </includes>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${version.maven.testing}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.junit.jupiter</groupId>
+                            <artifactId>junit-jupiter-engine</artifactId>
+                            <version>${version.junit.jupiter}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.junit.vintage</groupId>
+                            <artifactId>junit-vintage-engine</artifactId>
+                            <version>${version.junit.vintage}</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <includes>
+                            <include>**/*IT.java</include>
+                            <include>**/*Verify.java</include>
+                        </includes>
+                    </configuration>
+                </plugin>
+            </plugins>
+            <!-- @formatter:on -->
+        </pluginManagement>
+    </build>
+
+    <!-- @formatter:off -->
+    <dependencies>
+        <dependency><groupId>com.google.code.findbugs</groupId><artifactId>annotations</artifactId></dependency>
+        <dependency><groupId>org.jetbrains</groupId><artifactId>annotations</artifactId></dependency>
+
+        <dependency><groupId>org.apache.maven</groupId><artifactId>maven-core</artifactId><scope>provided</scope></dependency>
+
+        <dependency><groupId>ch.qos.logback</groupId><artifactId>logback-classic</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>junit</groupId><artifactId>junit</artifactId><scope>test</scope></dependency>
+    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency><groupId>com.google.code.findbugs</groupId><artifactId>annotations</artifactId><version>3.0.1u2</version></dependency>
+            <dependency><groupId>org.jetbrains</groupId><artifactId>annotations</artifactId><version>16.0.3</version></dependency>
+
+            <dependency><groupId>org.apache.maven</groupId><artifactId>maven-artifact</artifactId><version>${version.maven}</version></dependency>
+            <dependency><groupId>org.apache.maven</groupId><artifactId>maven-core</artifactId><version>${version.maven}</version></dependency>
+            <dependency><groupId>org.apache.maven</groupId><artifactId>maven-embedder</artifactId><version>${version.maven}</version></dependency>
+            <dependency><groupId>org.apache.maven</groupId><artifactId>maven-model</artifactId><version>${version.maven}</version></dependency>
+            <dependency><groupId>org.codehaus.plexus</groupId><artifactId>plexus-component-annotations</artifactId><version>1.7.1</version></dependency>
+
+            <dependency><groupId>cn.home1.tools</groupId><artifactId>maven-settings-decoder-core</artifactId><version>1.1.0-SNAPSHOT</version></dependency>
+            <dependency><groupId>org.apache.maven</groupId><artifactId>maven-settings</artifactId><version>${version.maven}</version></dependency>
+            <dependency><groupId>org.sonatype.plexus</groupId><artifactId>plexus-cipher</artifactId><version>${version.plexus-cipher}</version></dependency>
+
+            <!--<dependency><groupId>com.squareup.okhttp3</groupId><artifactId>okhttp</artifactId><version>3.14.2</version></dependency>-->
+            <dependency><groupId>org.eclipse.jgit</groupId><artifactId>org.eclipse.jgit</artifactId><version>5.1.3.201810200350-r</version></dependency>
+            <dependency><groupId>org.json</groupId><artifactId>json</artifactId><version>20180813</version></dependency>
+            <dependency><groupId>org.unix4j</groupId><artifactId>unix4j-command</artifactId><version>0.5</version></dependency>
+
+            <dependency><groupId>ch.qos.logback</groupId><artifactId>logback-classic</artifactId><version>${version.logback}</version></dependency>
+            <dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>${version.junit.legacy}</version></dependency>
+        </dependencies>
+    </dependencyManagement>
+    <!-- @formatter:on -->
+
+    <!-- @formatter:off -->
+    <distributionManagement>
+        <repository><id>ossrh-staging</id><url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url></repository>
+        <snapshotRepository><id>ossrh-snapshots</id><url>https://oss.sonatype.org/content/repositories/snapshots</url></snapshotRepository>
+    </distributionManagement>
+    <!-- @formatter:on -->
+
+    <modules>
+        <module>extension-core</module>
+        <module>gpg-helper-extension</module>
+        <module>settings-helper-extension</module>
+    </modules>
+
+    <profiles>
+        <profile>
+            <id>gpg2-arguments</id>
+            <activation><property><name>gpg.loopback</name><value>true</value></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <configuration>
+                            <gpgArguments>
+                                <gpgArgument>--use-agent</gpgArgument>
+                                <gpgArgument>--pinentry-mode</gpgArgument>
+                                <gpgArgument>loopback</gpgArgument>
+                            </gpgArguments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>gpg-for-travis-and-maven-central</id>
+            <activation><file><exists>${maven.multiModuleProjectDirectory}/codesigning.asc</exists></file><activeByDefault>false</activeByDefault></activation>
+            <properties>
+                <!-- Do not set gpg.executable here -->
+                <!--<gpg.executable>gpg</gpg.executable>-->
+                <gpg.keyname>${env.CI_OPT_GPG_KEYNAME}</gpg.keyname>
+                <gpg.passphrase>${env.CI_OPT_GPG_PASSPHRASE}</gpg.passphrase>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution><id>sign-artifacts</id><phase>verify</phase><goals><goal>sign</goal></goals></execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <properties>
+        <java.version>8</java.version>
+
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+
+        <version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
+        <version.maven-javadoc-plugin>3.1.0</version.maven-javadoc-plugin>
+        <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
+
+        <maven.javadoc.failsOnError>false</maven.javadoc.failsOnError>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- mvn install -Dprofile="profile name" -DprofileFormat=JSON,HTML -->
+        <maven-profiler-report-directory>${project.basedir}/.mvn/profilerReport</maven-profiler-report-directory>
+
+        <version.junit.jupiter>5.4.2</version.junit.jupiter>
+        <version.junit.legacy>4.12</version.junit.legacy>
+        <version.junit.vintage>5.4.2</version.junit.vintage>
+        <version.logback>1.2.3</version.logback>
+        <version.maven>3.6.1</version.maven>
+        <version.maven.testing>2.22.2</version.maven.testing>
+        <version.nexus-staging-maven-plugin>1.6.8</version.nexus-staging-maven-plugin>
+        <version.plexus-cipher>1.7</version.plexus-cipher>
+    </properties>
+
+    <!-- @formatter:off -->
+    <repositories>
+        <repository>
+            <id>ossrh-releases</id><name>central releases</name><url>https://oss.sonatype.org/content/repositories/releases/</url>
+            <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases><snapshots><enabled>false</enabled></snapshots>
+        </repository>
+        <repository>
+            <id>ossrh-snapshots</id><name>central snapshots</name><url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <releases><enabled>false</enabled></releases><snapshots><enabled>true</enabled><updatePolicy>daily</updatePolicy></snapshots>
+        </repository>
+    </repositories>
+    <!-- @formatter:on -->
+</project>
