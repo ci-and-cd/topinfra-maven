@@ -3,10 +3,6 @@ package top.infra.maven.core;
 import java.util.Optional;
 import java.util.Properties;
 
-import top.infra.maven.core.CiOption;
-import top.infra.maven.core.CiOptionNames;
-import top.infra.maven.core.GitProperties;
-
 public class CiOptions {
 
     private final GitProperties gitProperties;
@@ -42,11 +38,13 @@ public class CiOptions {
     }
 
     public void updateSystemProperties(final Properties properties) {
-        for (final String name : properties.stringPropertyNames()) {
-            final String key = CiOptionNames.systemPropertyName(name);
-            final String value = properties.getProperty(name);
-            if (value != null && !this.systemProperties.containsKey(key)) {
-                this.systemProperties.setProperty(key, value);
+        if (properties != null) {
+            for (final String name : properties.stringPropertyNames()) {
+                final String key = CiOptionNames.systemPropertyName(name);
+                final String value = properties.getProperty(name);
+                if (value != null && !this.systemProperties.containsKey(key)) {
+                    this.systemProperties.setProperty(key, value);
+                }
             }
         }
     }

@@ -1,9 +1,12 @@
 package top.infra.maven.utils;
 
+import static top.infra.maven.utils.SystemUtils.systemUserDir;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
@@ -139,6 +142,23 @@ public abstract class MavenUtils {
      */
     private static String propertyValue(final Profile profile) {
         return profile.getActivation().getProperty().getValue();
+    }
+
+    public static final String PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY = "maven.multiModuleProjectDirectory";
+
+    public static Path rootProjectPath(final Properties systemProperties) {
+        return mavenMultiModuleProjectDirectory(systemProperties).orElseGet(() -> Paths.get(systemUserDir()));
+    }
+
+    private static Optional<Path> mavenMultiModuleProjectDirectory(final Properties systemProperties) {
+        final Optional<Path> result;
+        if (systemProperties != null) {
+            final String value = systemProperties.getProperty(PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY);
+            result = Optional.ofNullable(value != null ? Paths.get(value) : null);
+        } else {
+            result = Optional.empty();
+        }
+        return result;
     }
 
     private static final String ENV_MAVEN_CMD_LINE_ARGS = "env.MAVEN_CMD_LINE_ARGS";
