@@ -1,0 +1,71 @@
+package top.infra.maven.extension;
+
+import static java.util.stream.Collectors.toList;
+
+import java.util.List;
+import java.util.stream.IntStream;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
+import org.apache.maven.cli.CliRequest;
+import org.apache.maven.cli.configuration.ConfigurationProcessor;
+import org.apache.maven.cli.configuration.SettingsXmlConfigurationProcessor;
+
+import top.infra.maven.logging.Logger;
+import top.infra.maven.logging.LoggerPlexusImpl;
+
+/**
+ * See {@link org.apache.maven.cli.MavenCli}.
+ */
+// @Component(role = ConfigurationProcessor.class, hint = "settings-security")
+@Named
+@Singleton
+public class MavenBuildConfigurationProcessor implements ConfigurationProcessor {
+
+    private Logger logger;
+
+    private List<OrderedConfigurationProcessor> processors;
+
+    // @Requirement(role = ConfigurationProcessor.class, hint = SettingsXmlConfigurationProcessor.HINT)
+    private ConfigurationProcessor settingsXmlConfigurationProcessor;
+
+    @Inject
+    public MavenBuildConfigurationProcessor(
+        final org.codehaus.plexus.logging.Logger logger,
+        final List<OrderedConfigurationProcessor> processors,
+        final SettingsXmlConfigurationProcessor settingsXmlConfigurationProcessor
+    ) {
+        this.logger = new LoggerPlexusImpl(logger);
+        this.processors = processors.stream().sorted().collect(toList());
+        this.settingsXmlConfigurationProcessor = settingsXmlConfigurationProcessor;
+    }
+
+    @Override
+    public void process(final CliRequest cliRequest) throws Exception {
+        IntStream
+            .range(0, this.processors.size())
+            .forEach(idx -> {
+                final OrderedConfigurationProcessor it = this.processors.get(idx);
+                logger.info(String.format(
+                    "processor index: [%s], order: [%s], name: [%s]",
+                    String.format("%02d ", idx),
+                    String.format("%011d ", it.getOrder()),
+                    it.getClass().getSimpleName()
+                ));
+            });
+
+        // print info
+        assert Orders.CONFIGURATION_PROCESSOR_ORDER_PRINT_INFO < Orders.CONFIGURATION_PROCESSOR_ORDER_SYSTEM_TO_USER_PROPERTIES;
+        // move -Dproperty=value in MAVEN_OPTS from systemProperties into userProperties (maven does not do this automatically)
+        assert Orders.CONFIGURATION_PROCESSOR_ORDER_SYSTEM_TO_USER_PROPERTIES < Orders.EVENT_AWARE_ORDER_CI_OPTION;
+        // init ci options
+
+        for (final OrderedConfigurationProcessor processor : this.processors) {
+            processor.process(cliRequest);
+        }
+
+        this.settingsXmlConfigurationProcessor.process(cliRequest);
+    }
+}

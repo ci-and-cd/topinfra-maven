@@ -183,7 +183,11 @@
     </dependencies>
     <dependencyManagement>
         <dependencies>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>extension-core</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>extension-test</artifactId><version>${project.version}</version></dependency>
+
             <dependency><groupId>com.google.code.findbugs</groupId><artifactId>annotations</artifactId><version>3.0.1u2</version></dependency>
+            <dependency><groupId>com.google.guava</groupId><artifactId>guava</artifactId><version>${version.guava}</version></dependency>
             <dependency><groupId>org.jetbrains</groupId><artifactId>annotations</artifactId><version>16.0.3</version></dependency>
 
             <dependency><groupId>org.apache.maven</groupId><artifactId>maven-artifact</artifactId><version>${version.maven}</version></dependency>
@@ -202,6 +206,9 @@
             <dependency><groupId>org.unix4j</groupId><artifactId>unix4j-command</artifactId><version>0.5</version></dependency>
 
             <dependency><groupId>ch.qos.logback</groupId><artifactId>logback-classic</artifactId><version>${version.logback}</version></dependency>
+            <dependency><groupId>org.apache.commons</groupId><artifactId>commons-lang3</artifactId><version>${version.commons-lang3}</version></dependency>
+            <dependency><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><version>${version.lombok}</version></dependency>
+            <dependency><groupId>org.springframework</groupId><artifactId>spring-context</artifactId><version>${version.spring-context}</version></dependency>
             <dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>${version.junit.legacy}</version></dependency>
         </dependencies>
     </dependencyManagement>
@@ -215,9 +222,14 @@
     <!-- @formatter:on -->
 
     <modules>
+        <module>docker-login-extension</module>
         <module>extension-core</module>
+        <module>extension-test</module>
+        <module>gitflow-semantic-versioning-extension</module>
         <module>gpg-helper-extension</module>
-        <module>settings-helper-extension</module>
+        <module>infrastructure-extension</module>
+        <module>maven-build-pom-extension</module>
+        <module>settings-security-extension</module>
     </modules>
 
     <profiles>
@@ -279,14 +291,18 @@
         <!-- mvn install -Dprofile="profile name" -DprofileFormat=JSON,HTML -->
         <maven-profiler-report-directory>${project.basedir}/.mvn/profilerReport</maven-profiler-report-directory>
 
+        <version.commons-lang3>3.8.1</version.commons-lang3>
+        <version.guava>27.1-jre</version.guava>
         <version.junit.jupiter>5.4.2</version.junit.jupiter>
         <version.junit.legacy>4.12</version.junit.legacy>
         <version.junit.vintage>5.4.2</version.junit.vintage>
         <version.logback>1.2.3</version.logback>
+        <version.lombok>1.16.14</version.lombok>
         <version.maven>3.6.1</version.maven>
         <version.maven.testing>2.22.2</version.maven.testing>
         <version.nexus-staging-maven-plugin>1.6.8</version.nexus-staging-maven-plugin>
         <version.plexus-cipher>1.7</version.plexus-cipher>
+        <version.spring-context>5.1.6.RELEASE</version.spring-context>
     </properties>
 
     <!-- @formatter:off -->

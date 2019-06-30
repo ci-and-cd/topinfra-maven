@@ -8,7 +8,7 @@
         <artifactId>maven-core-extensions</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>gpg-helper-extension</artifactId>
+    <artifactId>maven-build-extension</artifactId>
     <packaging>jar</packaging>
 
     <build>
@@ -44,9 +44,6 @@
 
     <!-- @formatter:off -->
     <dependencies>
-        <dependency><groupId>top.infra</groupId><artifactId>extension-core</artifactId></dependency>
-
-        <dependency><groupId>top.infra</groupId><artifactId>extension-test</artifactId><scope>test</scope></dependency>
     </dependencies>
     <!-- @formatter:on -->
 

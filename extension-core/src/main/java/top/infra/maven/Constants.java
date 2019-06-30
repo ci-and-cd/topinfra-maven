@@ -13,6 +13,11 @@ public final class Constants {
     public static final String GIT_REF_NAME_DEVELOP = "develop";
     public static final String GIT_REF_NAME_MASTER = "master";
 
+    public static final String PHASE_DEPLOY = "deploy";
+    public static final String PHASE_INSTALL = "install";
+    public static final String PHASE_PACKAGE = "package";
+    public static final String PHASE_SITE = "site";
+
     public static final String SRC_CI_OPTS_PROPERTIES = "src/main/ci-script/ci_opts.properties";
     public static final String SRC_MAVEN_SETTINGS_XML = "src/main/maven/settings.xml";
     public static final String SRC_MAVEN_SETTINGS_SECURITY_XML = "src/main/maven/settings-security.xml";
