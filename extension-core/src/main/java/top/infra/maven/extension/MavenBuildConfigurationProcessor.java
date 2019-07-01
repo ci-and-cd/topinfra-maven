@@ -40,10 +40,8 @@ public class MavenBuildConfigurationProcessor implements ConfigurationProcessor 
         this.logger = new LoggerPlexusImpl(logger);
         this.processors = processors.stream().sorted().collect(toList());
         this.settingsXmlConfigurationProcessor = settingsXmlConfigurationProcessor;
-    }
 
-    @Override
-    public void process(final CliRequest cliRequest) throws Exception {
+        logger.info(String.format("MavenBuildConfigurationProcessor [%s]", this));
         IntStream
             .range(0, this.processors.size())
             .forEach(idx -> {
@@ -55,13 +53,10 @@ public class MavenBuildConfigurationProcessor implements ConfigurationProcessor 
                     it.getClass().getSimpleName()
                 ));
             });
+    }
 
-        // print info
-        assert Orders.CONFIGURATION_PROCESSOR_ORDER_PRINT_INFO < Orders.CONFIGURATION_PROCESSOR_ORDER_SYSTEM_TO_USER_PROPERTIES;
-        // move -Dproperty=value in MAVEN_OPTS from systemProperties into userProperties (maven does not do this automatically)
-        assert Orders.CONFIGURATION_PROCESSOR_ORDER_SYSTEM_TO_USER_PROPERTIES < Orders.EVENT_AWARE_ORDER_CI_OPTION;
-        // init ci options
-
+    @Override
+    public void process(final CliRequest cliRequest) throws Exception {
         for (final OrderedConfigurationProcessor processor : this.processors) {
             processor.process(cliRequest);
         }

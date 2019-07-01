@@ -43,6 +43,11 @@ public class SettingsSecurityConfigurationProcessor implements OrderedConfigurat
     }
 
     @Override
+    public int getOrder() {
+        return Orders.ORDER_SETTINGS_SECURITY;
+    }
+
+    @Override
     public void process(final CliRequest cliRequest) throws Exception {
         final Optional<Path> settingsSecurity = this.findSettingsSecurity(cliRequest);
 

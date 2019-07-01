@@ -33,9 +33,10 @@
                     <!-- <debug>true</debug> -->
                     <showErrors>true</showErrors>
                     <streamLogs>true</streamLogs>
-                    <localRepositoryPath>${project.basedir}/test-repo</localRepositoryPath>
+                    <localRepositoryPath>${project.basedir}/../test-repo</localRepositoryPath>
+                    <mavenHome>${project.basedir}/../extension-core/target/apache-maven-3.6.1/apache-maven-3.6.1</mavenHome>
                     <pomIncludes>
-                        <include>test-extension</include>
+                        <include>test-maven-build-extension</include>
                     </pomIncludes>
                 </configuration>
             </plugin>
@@ -44,6 +45,16 @@
 
     <!-- @formatter:off -->
     <dependencies>
+        <dependency><groupId>top.infra</groupId><artifactId>extension-core</artifactId><scope>provided</scope></dependency>
+
+        <dependency><groupId>top.infra</groupId><artifactId>extension-test</artifactId><scope>test</scope></dependency>
+
+        <dependency><groupId>top.infra</groupId><artifactId>docker-login-extension</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>top.infra</groupId><artifactId>gitflow-semantic-versioning-extension</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>top.infra</groupId><artifactId>gpg-helper-extension</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>top.infra</groupId><artifactId>infrastructure-extension</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>top.infra</groupId><artifactId>maven-build-pom-extension</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>top.infra</groupId><artifactId>settings-security-extension</artifactId><scope>test</scope></dependency>
     </dependencies>
     <!-- @formatter:on -->
 

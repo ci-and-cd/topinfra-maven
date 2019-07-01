@@ -9,11 +9,10 @@ import static top.infra.maven.extension.FastOption.FAST;
 import static top.infra.maven.utils.SystemUtils.systemJavaVersion;
 
 import java.util.Optional;
-import java.util.Properties;
 
 import top.infra.maven.core.CiOption;
+import top.infra.maven.core.CiOptionContext;
 import top.infra.maven.core.CiOptionNames;
-import top.infra.maven.core.GitProperties;
 
 /**
  * Maven official (include official plugin) options.
@@ -23,12 +22,7 @@ public enum MavenOption implements CiOption {
      * maven-failsafe-plugin and maven-surefire-plugin's configuration argLine.
      */
     ARGLINE("argLine", "") {
-        private Optional<String> addtionalArgs(
-            final String argLine,
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
+        private Optional<String> addtionalArgs(final String argLine, final CiOptionContext context) {
             final Optional<String> result;
 
             final Optional<Integer> javaVersion = systemJavaVersion();
@@ -38,7 +32,7 @@ public enum MavenOption implements CiOption {
                     + " --add-opens java.base/jdk.internal.loader=ALL-UNNAMED"
                     + " --add-opens java.base/sun.security.ssl=ALL-UNNAMED";
 
-                final Optional<String> addModules = JAVA_ADDMODULES.getValue(gitProperties, systemProperties, userProperties);
+                final Optional<String> addModules = JAVA_ADDMODULES.getValue(context);
                 final Optional<String> argLineWithModules;
                 if (addModules.isPresent() && (argLine == null || !argLine.contains("--add-modules"))) {
                     argLineWithModules = Optional.of(String.format("--add-modules %s", addModules.get()));
@@ -59,32 +53,21 @@ public enum MavenOption implements CiOption {
         }
 
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return this.addtionalArgs(null, gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return this.addtionalArgs(null, context);
         }
 
         @Override
-        public Optional<String> getValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            final String argLine = this.findInProperties(systemProperties, userProperties).orElse(null);
-            return this.addtionalArgs(argLine, gitProperties, systemProperties, userProperties);
+        public Optional<String> getValue(final CiOptionContext context) {
+            final String argLine = this.findInProperties(context.getSystemProperties(), context.getUserProperties())
+                .orElse(null);
+            return this.addtionalArgs(argLine, context);
         }
     },
     ENFORCER_SKIP("enforcer.skip") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return FAST.getValue(gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return FAST.getValue(context);
         }
     },
     // /**
@@ -95,11 +78,7 @@ public enum MavenOption implements CiOption {
     // FILE_ENCODING("file.encoding", UTF_8.name()),
     JAVA_ADDMODULES("java.addModules") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
+        public Optional<String> calculateValue(final CiOptionContext context) {
             final Optional<Integer> javaVersion = systemJavaVersion();
             return javaVersion
                 .map(version -> {
@@ -118,12 +97,8 @@ public enum MavenOption implements CiOption {
     MAVEN_INSTALL_SKIP("maven.install.skip"),
     MAVEN_JAVADOC_SKIP("maven.javadoc.skip") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return Optional.of(FAST.getValue(gitProperties, systemProperties, userProperties)
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return Optional.of(FAST.getValue(context)
                 .map(Boolean::parseBoolean)
                 .filter(fast -> fast)
                 .map(fast -> BOOL_STRING_TRUE)
@@ -137,12 +112,8 @@ public enum MavenOption implements CiOption {
      */
     GENERATEREPORTS("generateReports") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return FAST.getValue(gitProperties, systemProperties, userProperties)
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return FAST.getValue(context)
                 .map(Boolean::parseBoolean)
                 .filter(fast -> fast)
                 .map(fast -> BOOL_STRING_FALSE);
@@ -151,38 +122,26 @@ public enum MavenOption implements CiOption {
     JIRA_PROJECTKEY("jira.projectKey"),
     JIRA_USER("jira.user") {
         @Override
-        public Optional<String> getValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            final Optional<String> jiraProjectKey = JIRA_PROJECTKEY.getValue(gitProperties, systemProperties, userProperties);
+        public Optional<String> getValue(final CiOptionContext context) {
+            final Optional<String> jiraProjectKey = JIRA_PROJECTKEY.getValue(context);
             return jiraProjectKey.isPresent()
-                ? super.getValue(gitProperties, systemProperties, userProperties)
+                ? super.getValue(context)
                 : Optional.empty();
         }
     },
     JIRA_PASSWORD("jira.password") {
         @Override
-        public Optional<String> getValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            final Optional<String> jiraProjectKey = JIRA_PROJECTKEY.getValue(gitProperties, systemProperties, userProperties);
+        public Optional<String> getValue(final CiOptionContext context) {
+            final Optional<String> jiraProjectKey = JIRA_PROJECTKEY.getValue(context);
             return jiraProjectKey.isPresent()
-                ? super.getValue(gitProperties, systemProperties, userProperties)
+                ? super.getValue(context)
                 : Optional.empty();
         }
     },
     LINKXREF("linkXRef", BOOL_STRING_TRUE) {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return Optional.ofNullable(FAST.getValue(gitProperties, systemProperties, userProperties)
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return Optional.ofNullable(FAST.getValue(context)
                 .map(Boolean::parseBoolean).orElse(FALSE) ? BOOL_STRING_FALSE : null);
         }
     },
@@ -193,43 +152,27 @@ public enum MavenOption implements CiOption {
      */
     MAVEN_SITE_SKIP("maven.site.skip") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return Optional.ofNullable(GENERATEREPORTS.getValue(gitProperties, systemProperties, userProperties)
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return Optional.ofNullable(GENERATEREPORTS.getValue(context)
                 .map(Boolean::parseBoolean).orElse(TRUE) ? null : BOOL_STRING_TRUE);
         }
     },
     MAVEN_SITE_DEPLOY_SKIP("maven.site.deploy.skip") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return MAVEN_SITE_SKIP.calculateValue(gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return MAVEN_SITE_SKIP.calculateValue(context);
         }
     },
     MAVEN_SOURCE_SKIP("maven.source.skip") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return MAVEN_JAVADOC_SKIP.calculateValue(gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return MAVEN_JAVADOC_SKIP.calculateValue(context);
         }
     },
     MAVEN_TEST_FAILURE_IGNORE("maven.test.failure.ignore", BOOL_STRING_FALSE) {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return FAST.getValue(gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return FAST.getValue(context);
         }
     },
     /**
@@ -240,12 +183,8 @@ public enum MavenOption implements CiOption {
     MAVEN_TEST_SKIP("maven.test.skip", BOOL_STRING_FALSE),
     PMD_SKIP("pmd.skip") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return Optional.ofNullable(GENERATEREPORTS.calculateValue(gitProperties, systemProperties, userProperties)
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return Optional.ofNullable(GENERATEREPORTS.calculateValue(context)
                 .map(Boolean::parseBoolean).orElse(TRUE) ? null : BOOL_STRING_TRUE);
         }
     },
@@ -259,12 +198,8 @@ public enum MavenOption implements CiOption {
      */
     SKIPITS("skipITs", BOOL_STRING_FALSE) {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return FAST.getValue(gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return FAST.getValue(context);
         }
     },
     /**
@@ -274,33 +209,21 @@ public enum MavenOption implements CiOption {
      */
     SKIPTESTS("skipTests", BOOL_STRING_FALSE) {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return FAST.getValue(gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return FAST.getValue(context);
         }
     },
     SONAR_BUILDBREAKER_SKIP("sonar.buildbreaker.skip") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return Optional.ofNullable(FAST.getValue(gitProperties, systemProperties, userProperties)
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return Optional.ofNullable(FAST.getValue(context)
                 .map(Boolean::parseBoolean).orElse(FALSE) ? BOOL_STRING_TRUE : null);
         }
     },
     SPOTBUGS_SKIP("spotbugs.skip") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return Optional.ofNullable(GENERATEREPORTS.calculateValue(gitProperties, systemProperties, userProperties)
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return Optional.ofNullable(GENERATEREPORTS.calculateValue(context)
                 .map(Boolean::parseBoolean).orElse(TRUE) ? null : BOOL_STRING_TRUE);
         }
     },

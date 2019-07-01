@@ -33,7 +33,8 @@
                     <!-- <debug>true</debug> -->
                     <showErrors>true</showErrors>
                     <streamLogs>true</streamLogs>
-                    <localRepositoryPath>${project.basedir}/test-repo</localRepositoryPath>
+                    <localRepositoryPath>${project.basedir}/../test-repo</localRepositoryPath>
+                    <mavenHome>${project.basedir}/../extension-core/target/apache-maven-3.6.1/apache-maven-3.6.1</mavenHome>
                     <pomIncludes>
                         <include>test-extension</include>
                     </pomIncludes>
@@ -44,7 +45,9 @@
 
     <!-- @formatter:off -->
     <dependencies>
-        <dependency><groupId>top.infra</groupId><artifactId>extension-core</artifactId></dependency>
+        <dependency><groupId>top.infra</groupId><artifactId>extension-core</artifactId><scope>provided</scope></dependency>
+
+        <dependency><groupId>top.infra</groupId><artifactId>extension-test</artifactId><scope>test</scope></dependency>
     </dependencies>
     <!-- @formatter:on -->
 

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension>
+    <exportedPackages>
+        <exportedPackage>top.infra.maven.extension.infra</exportedPackage>
+    </exportedPackages>
+
+    <exportedArtifacts>
+        <exportedArtifact>top.infra:infrastructure-extension</exportedArtifact>
+    </exportedArtifacts>
+</extension>

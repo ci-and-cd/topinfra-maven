@@ -15,37 +15,29 @@ import java.util.Optional;
 import java.util.Properties;
 
 import top.infra.maven.core.CiOption;
+import top.infra.maven.core.CiOptionContext;
 import top.infra.maven.core.CiOptionNames;
-import top.infra.maven.core.GitProperties;
 import top.infra.maven.utils.MavenUtils;
 
 public enum InfraOption implements CiOption {
     //
     CACHE_SETTINGS_PATH("cache.settings.path") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
+        public Optional<String> calculateValue(final CiOptionContext context) {
             // We need a stable global cache path
-            final String infrastructure = INFRASTRUCTURE.getValue(gitProperties, systemProperties, userProperties)
-                .orElseGet(() -> MavenUtils.rootProjectPath(systemProperties).getFileName().toString());
+            final String infrastructure = INFRASTRUCTURE.getValue(context)
+                .orElseGet(() -> MavenUtils.rootProjectPath(context.getSystemProperties()).getFileName().toString());
             return Optional.of(Paths.get(systemUserHome(), ".ci-and-cd", infrastructure).toString());
         }
     },
     CI_OPTS_FILE("ci.opts.file") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
+        public Optional<String> calculateValue(final CiOptionContext context) {
             final Optional<String> result;
             if (new File(SRC_CI_OPTS_PROPERTIES).exists()) {
                 result = Optional.of(SRC_CI_OPTS_PROPERTIES);
             } else {
-                final String cacheDirectory = CACHE_SETTINGS_PATH.getValue(gitProperties, systemProperties, userProperties)
+                final String cacheDirectory = CACHE_SETTINGS_PATH.getValue(context)
                     .orElse(systemJavaIoTmp());
                 final String cachedCiOptsProperties = Paths.get(cacheDirectory, SRC_CI_OPTS_PROPERTIES).toString();
                 result = Optional.of(cachedCiOptsProperties);
@@ -55,25 +47,16 @@ public enum InfraOption implements CiOption {
     },
     GIT_AUTH_TOKEN("git.auth.token") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return getInfrastructureSpecificValue(this, gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
         }
 
         @Override
-        public Optional<String> setProperties(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties,
-            final Properties properties
-        ) {
-            final Optional<String> result = super.setProperties(gitProperties, systemProperties, userProperties, properties);
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            final Optional<String> result = super.setProperties(context, properties);
 
             result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(gitProperties, systemProperties, userProperties).ifPresent(infra ->
+                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
                     properties.setProperty(infra + "." + this.getPropertyName(), value))
             );
 
@@ -86,22 +69,18 @@ public enum InfraOption implements CiOption {
      */
     GIT_PREFIX("git.prefix") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            final Optional<String> found = getInfrastructureSpecificValue(this, gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            final Optional<String> found = getInfrastructureSpecificValue(this, context);
 
             final Optional<String> result;
             if (found.isPresent()) {
                 result = found;
             } else {
-                final Optional<String> ciProjectUrl = Optional.ofNullable(systemProperties.getProperty("env.CI_PROJECT_URL"));
+                final Optional<String> ciProjectUrl = Optional.ofNullable(context.getSystemProperties().getProperty("env.CI_PROJECT_URL"));
                 if (ciProjectUrl.isPresent()) {
                     result = ciProjectUrl.map(url -> urlWithoutPath(url).orElse(null));
                 } else {
-                    result = gitProperties.remoteOriginUrl()
+                    result = context.getGitProperties().remoteOriginUrl()
                         .map(url -> url.startsWith("http")
                             ? urlWithoutPath(url).orElse(null)
                             : domainOrHostFromUrl(url).map(value -> "http://" + value).orElse(null));
@@ -111,16 +90,11 @@ public enum InfraOption implements CiOption {
         }
 
         @Override
-        public Optional<String> setProperties(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties,
-            final Properties properties
-        ) {
-            final Optional<String> result = super.setProperties(gitProperties, systemProperties, userProperties, properties);
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            final Optional<String> result = super.setProperties(context, properties);
 
             result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(gitProperties, systemProperties, userProperties).ifPresent(infra ->
+                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
                     properties.setProperty(infra + "." + this.getPropertyName(), value))
             );
 
@@ -136,16 +110,12 @@ public enum InfraOption implements CiOption {
 
     MAVEN_BUILD_OPTS_REPO("maven.build.opts.repo") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return INFRASTRUCTURE.getValue(gitProperties, systemProperties, userProperties)
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return INFRASTRUCTURE.getValue(context)
                 .map(infra -> {
                     final String repoOwner = "ci-and-cd";
                     final String repoName = String.format("maven-build-opts-%s", infra);
-                    return GIT_PREFIX.getValue(gitProperties, systemProperties, userProperties)
+                    return GIT_PREFIX.getValue(context)
                         .map(gitPrefix -> String.format("%s/%s/%s", gitPrefix, repoOwner, repoName));
                 })
                 .orElse(Optional.empty());
@@ -155,12 +125,8 @@ public enum InfraOption implements CiOption {
 
     MAVEN_SETTINGS_FILE("maven.settings.file") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            final Path rootProjectPath = MavenUtils.rootProjectPath(systemProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            final Path rootProjectPath = MavenUtils.rootProjectPath(context.getSystemProperties());
             final String settingsFile = rootProjectPath.resolve(SRC_MAVEN_SETTINGS_XML).toAbsolutePath().toString();
 
             final Optional<String> result;
@@ -168,11 +134,11 @@ public enum InfraOption implements CiOption {
             if (Paths.get(settingsFile).toFile().exists()) {
                 result = Optional.of(settingsFile);
             } else {
-                final String cacheDir = CACHE_SETTINGS_PATH.getValue(gitProperties, systemProperties, userProperties)
+                final String cacheDir = CACHE_SETTINGS_PATH.getValue(context)
                     .orElse(systemJavaIoTmp());
 
                 final String filename = "settings"
-                    + INFRASTRUCTURE.getValue(gitProperties, systemProperties, userProperties).map(infra -> "-" + infra).orElse("")
+                    + INFRASTRUCTURE.getValue(context).map(infra -> "-" + infra).orElse("")
                     + ".xml";
 
                 final String targetFile = Paths.get(cacheDir, filename).toString();
@@ -186,13 +152,8 @@ public enum InfraOption implements CiOption {
     @Deprecated
     MAVEN_SETTINGS_SECURITY_FILE("maven.settings.security.file") {
         @Override
-        public Optional<String> setProperties(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties,
-            final Properties properties
-        ) {
-            final Optional<String> result = super.setProperties(gitProperties, systemProperties, userProperties, properties);
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            final Optional<String> result = super.setProperties(context, properties);
 
             result.ifPresent(file -> {
                 if (Paths.get(file).toFile().exists()) {
@@ -206,25 +167,16 @@ public enum InfraOption implements CiOption {
 
     NEXUS2("nexus2") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return getInfrastructureSpecificValue(this, gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
         }
 
         @Override
-        public Optional<String> setProperties(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties,
-            final Properties properties
-        ) {
-            final Optional<String> result = super.setProperties(gitProperties, systemProperties, userProperties, properties);
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            final Optional<String> result = super.setProperties(context, properties);
 
             result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(gitProperties, systemProperties, userProperties).ifPresent(infra ->
+                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
                     properties.setProperty(infra + "." + this.getPropertyName(), value))
             );
 
@@ -234,25 +186,16 @@ public enum InfraOption implements CiOption {
 
     NEXUS3("nexus3") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return getInfrastructureSpecificValue(this, gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
         }
 
         @Override
-        public Optional<String> setProperties(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties,
-            final Properties properties
-        ) {
-            final Optional<String> result = super.setProperties(gitProperties, systemProperties, userProperties, properties);
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            final Optional<String> result = super.setProperties(context, properties);
 
             result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(gitProperties, systemProperties, userProperties).ifPresent(infra ->
+                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
                     properties.setProperty(infra + "." + this.getPropertyName(), value))
             );
 
@@ -263,25 +206,16 @@ public enum InfraOption implements CiOption {
     // OSSRH_MVNSITE_USERNAME("ossrh.mvnsite.username"),
     SONAR_HOST_URL("sonar.host.url") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return getInfrastructureSpecificValue(this, gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
         }
 
         @Override
-        public Optional<String> setProperties(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties,
-            final Properties properties
-        ) {
-            final Optional<String> result = super.setProperties(gitProperties, systemProperties, userProperties, properties);
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            final Optional<String> result = super.setProperties(context, properties);
 
             result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(gitProperties, systemProperties, userProperties).ifPresent(infra ->
+                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
                     properties.setProperty(infra + "." + this.getPropertyName(), value))
             );
 
@@ -290,25 +224,16 @@ public enum InfraOption implements CiOption {
     },
     SONAR_LOGIN("sonar.login") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return getInfrastructureSpecificValue(this, gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
         }
 
         @Override
-        public Optional<String> setProperties(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties,
-            final Properties properties
-        ) {
-            final Optional<String> result = super.setProperties(gitProperties, systemProperties, userProperties, properties);
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            final Optional<String> result = super.setProperties(context, properties);
 
             result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(gitProperties, systemProperties, userProperties).ifPresent(infra ->
+                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
                     properties.setProperty(infra + "." + this.getPropertyName(), value))
             );
 
@@ -317,25 +242,16 @@ public enum InfraOption implements CiOption {
     },
     SONAR_ORGANIZATION("sonar.organization") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return getInfrastructureSpecificValue(this, gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
         }
 
         @Override
-        public Optional<String> setProperties(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties,
-            final Properties properties
-        ) {
-            final Optional<String> result = super.setProperties(gitProperties, systemProperties, userProperties, properties);
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            final Optional<String> result = super.setProperties(context, properties);
 
             result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(gitProperties, systemProperties, userProperties).ifPresent(infra ->
+                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
                     properties.setProperty(infra + "." + this.getPropertyName(), value))
             );
 
@@ -344,25 +260,16 @@ public enum InfraOption implements CiOption {
     },
     SONAR_PASSWORD("sonar.password") {
         @Override
-        public Optional<String> calculateValue(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties
-        ) {
-            return getInfrastructureSpecificValue(this, gitProperties, systemProperties, userProperties);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
         }
 
         @Override
-        public Optional<String> setProperties(
-            final GitProperties gitProperties,
-            final Properties systemProperties,
-            final Properties userProperties,
-            final Properties properties
-        ) {
-            final Optional<String> result = super.setProperties(gitProperties, systemProperties, userProperties, properties);
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            final Optional<String> result = super.setProperties(context, properties);
 
             result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(gitProperties, systemProperties, userProperties).ifPresent(infra ->
+                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
                     properties.setProperty(infra + "." + this.getPropertyName(), value))
             );
 
@@ -408,16 +315,14 @@ public enum InfraOption implements CiOption {
 
     public static Optional<String> getInfrastructureSpecificValue(
         final CiOption ciOption,
-        final GitProperties gitProperties,
-        final Properties systemProperties,
-        final Properties userProperties
+        final CiOptionContext context
     ) {
-        return INFRASTRUCTURE.getValue(gitProperties, systemProperties, userProperties)
+        return INFRASTRUCTURE.getValue(context)
             .map(infra -> {
                 final String propName = infra + "." + ciOption.getPropertyName();
                 final String systemPropName = CiOptionNames.systemPropertyName(propName);
-                return Optional.ofNullable(userProperties.getProperty(propName))
-                    .orElseGet(() -> systemProperties.getProperty(systemPropName));
+                return Optional.ofNullable(context.getUserProperties().getProperty(propName))
+                    .orElseGet(() -> context.getSystemProperties().getProperty(systemPropName));
             });
     }
 }

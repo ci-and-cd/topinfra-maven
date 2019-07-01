@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension>
+    <exportedPackages>
+        <exportedPackage>top.infra.maven.extension.docker</exportedPackage>
+    </exportedPackages>
+
+    <exportedArtifacts>
+        <exportedArtifact>top.infra:docker-login-extension</exportedArtifact>
+    </exportedArtifacts>
+</extension>

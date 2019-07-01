@@ -20,36 +20,24 @@ public interface CiOption {
     /**
      * Get value.
      *
-     * @param gitProperties    gitProperties
-     * @param systemProperties systemProperties
-     * @param userProperties   userProperties
+     * @param context context
      * @return Optional value
      */
-    default Optional<String> getValue(
-        final GitProperties gitProperties,
-        final Properties systemProperties,
-        final Properties userProperties
-    ) {
-        final Optional<String> foundInProperties = this.findInProperties(systemProperties, userProperties);
+    default Optional<String> getValue(final CiOptionContext context) {
+        final Optional<String> foundInProperties = this.findInProperties(context.getSystemProperties(), context.getUserProperties());
         final Optional<String> value = foundInProperties.isPresent()
             ? foundInProperties
-            : this.calculateValue(gitProperties, systemProperties, userProperties);
+            : this.calculateValue(context);
         return value.isPresent() ? value : this.getDefaultValue();
     }
 
     /**
      * Calculate value.
      *
-     * @param gitProperties    gitProperties
-     * @param systemProperties systemProperties
-     * @param userProperties   userProperties
+     * @param context context
      * @return Optional value
      */
-    default Optional<String> calculateValue(
-        final GitProperties gitProperties,
-        final Properties systemProperties,
-        final Properties userProperties
-    ) {
+    default Optional<String> calculateValue(final CiOptionContext context) {
         return Optional.empty();
     }
 
@@ -73,23 +61,16 @@ public interface CiOption {
     /**
      * Set value into properties, use defaultValue if value absent.
      *
-     * @param gitProperties    gitProperties
-     * @param systemProperties systemProperties
-     * @param userProperties   userProperties
-     * @param properties       properties to set key/value in
+     * @param context    context
+     * @param properties properties to set key/value in
      * @return Optional value
      */
-    default Optional<String> setProperties(
-        final GitProperties gitProperties,
-        final Properties systemProperties,
-        final Properties userProperties,
-        final Properties properties
-    ) {
+    default Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
         final Optional<String> result;
 
-        final Optional<String> foundInProperties = this.findInProperties(systemProperties, userProperties);
+        final Optional<String> foundInProperties = this.findInProperties(context.getSystemProperties(), context.getUserProperties());
         if (foundInProperties.isPresent()) { // found in properties
-            final Optional<String> got = this.getValue(gitProperties, systemProperties, userProperties);
+            final Optional<String> got = this.getValue(context);
             if (got.map(value -> value.equals(foundInProperties.get())).orElse(FALSE)) {
                 properties.setProperty(this.getPropertyName(), foundInProperties.get());
             } else { // getValue is overridden by custom CiOption impl (got present and not equals to value found in properties).
@@ -99,7 +80,7 @@ public interface CiOption {
 
             result = foundInProperties;
         } else { // not found in properties
-            final Optional<String> calculated = this.calculateValue(gitProperties, systemProperties, userProperties);
+            final Optional<String> calculated = this.calculateValue(context);
             final String propertyValue = calculated.orElseGet(() -> this.getDefaultValue().orElse(null));
             if (propertyValue != null) {
                 properties.setProperty(this.getPropertyName(), propertyValue);

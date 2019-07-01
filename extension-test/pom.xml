@@ -18,7 +18,7 @@
 
     <!-- @formatter:off -->
     <dependencies>
-        <dependency><groupId>top.infra</groupId><artifactId>extension-core</artifactId></dependency>
+        <dependency><groupId>top.infra</groupId><artifactId>extension-core</artifactId><scope>provided</scope></dependency>
 
         <dependency><groupId>com.google.guava</groupId><artifactId>guava</artifactId></dependency>
         <dependency><groupId>org.apache.commons</groupId><artifactId>commons-lang3</artifactId></dependency>

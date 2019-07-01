@@ -8,7 +8,7 @@ import org.apache.maven.settings.building.SettingsBuildingResult;
 import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
 import org.apache.maven.toolchain.building.ToolchainsBuildingResult;
 
-import top.infra.maven.core.CiOptions;
+import top.infra.maven.core.CiOptionContext;
 
 public interface MavenEventAware extends Ordered {
 
@@ -16,7 +16,7 @@ public interface MavenEventAware extends Ordered {
         // no-op
     }
 
-    default void afterInit(final Context context, final CiOptions ciOpts) {
+    default void afterInit(final Context context, final CiOptionContext ciOptContext) {
         // no-op
     }
 
@@ -24,13 +24,13 @@ public interface MavenEventAware extends Ordered {
      * First event on maven execution.
      *
      * @param request SettingsBuildingRequest
-     * @param ciOpts  ciOpts
+     * @param ciOptContext  ciOptContext
      */
-    default void onSettingsBuildingRequest(final SettingsBuildingRequest request, final CiOptions ciOpts) {
+    default void onSettingsBuildingRequest(final SettingsBuildingRequest request, final CiOptionContext ciOptContext) {
         // no-op
     }
 
-    default void onSettingsBuildingResult(final SettingsBuildingResult result, final CiOptions ciOpts) {
+    default void onSettingsBuildingResult(final SettingsBuildingResult result, final CiOptionContext ciOptContext) {
         // no-op
     }
 
@@ -38,13 +38,13 @@ public interface MavenEventAware extends Ordered {
      * After SettingsBuildingRequest.
      *
      * @param request ToolchainsBuildingRequest
-     * @param ciOpts  ciOpts
+     * @param ciOptContext  ciOptContext
      */
-    default void onToolchainsBuildingRequest(final ToolchainsBuildingRequest request, final CiOptions ciOpts) {
+    default void onToolchainsBuildingRequest(final ToolchainsBuildingRequest request, final CiOptionContext ciOptContext) {
         // no-op
     }
 
-    default void onToolchainsBuildingResult(final ToolchainsBuildingResult result, final CiOptions ciOpts) {
+    default void onToolchainsBuildingResult(final ToolchainsBuildingResult result, final CiOptionContext ciOptContext) {
         // no-op
     }
 
@@ -52,9 +52,9 @@ public interface MavenEventAware extends Ordered {
      * After ToolchainsBuildingRequest.
      *
      * @param request MavenExecutionRequest
-     * @param ciOpts  ciOpts
+     * @param ciOptContext  ciOptContext
      */
-    default void onMavenExecutionRequest(final MavenExecutionRequest request, final CiOptions ciOpts) {
+    default void onMavenExecutionRequest(final MavenExecutionRequest request, final CiOptionContext ciOptContext) {
         // no-op
     }
 
@@ -63,12 +63,12 @@ public interface MavenEventAware extends Ordered {
      *
      * @param mavenExecution  MavenExecutionRequest
      * @param projectBuilding ProjectBuildingRequest
-     * @param ciOpts          ciOpts
+     * @param ciOptContext          ciOptContext
      */
     default void onProjectBuildingRequest(
         final MavenExecutionRequest mavenExecution,
         final ProjectBuildingRequest projectBuilding,
-        final CiOptions ciOpts
+        final CiOptionContext ciOptContext
     ) {
         // no-op
     }

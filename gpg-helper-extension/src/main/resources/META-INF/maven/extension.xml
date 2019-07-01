@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension>
+    <exportedPackages>
+        <exportedPackage>top.infra.maven.extension.gpg</exportedPackage>
+    </exportedPackages>
+
+    <exportedArtifacts>
+        <exportedArtifact>top.infra:gpg-helper-extension</exportedArtifact>
+    </exportedArtifacts>
+</extension>

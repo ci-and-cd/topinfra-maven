@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>top.infra</groupId>
+        <artifactId>maven-build</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>build-docker</artifactId>
+    <description>Parent pom for docker projects</description>
+    <name>build-docker</name>
+    <packaging>pom</packaging>
+
+
+    <profiles>
+        <!-- Produce marker file for integration test. -->
+        <profile>
+            <id>build-docker-java8-profile1</id>
+            <properties>
+                <magic.file.build-docker-java8-profile1>${project.basedir}/target/build-docker-java8-profile1.md</magic.file.build-docker-java8-profile1>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <configuration>
+                                    <target name="magic-file-build-docker-java8-profile1">
+                                        <echo file="${magic.file.build-docker-java8-profile1}" append="false">${magic.file}</echo>
+                                    </target>
+                                </configuration>
+                                <id>build-docker-java8-profile1-magic-file</id>
+                                <goals><goal>run</goal></goals>
+                                <phase>validate</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>build-docker-java-8-profile2</id>
+            <activation>
+                <file><missing>${basedir}/src/main/groovy</missing></file>
+            </activation>
+            <properties>
+                <magic.file.build-docker-java-8-profile2>${project.basedir}/target/build-docker-java-8-profile2.md</magic.file.build-docker-java-8-profile2>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <configuration>
+                                    <target name="magic-file-build-docker-java-8-profile2">
+                                        <echo file="${magic.file.build-docker-java-8-profile2}" append="false">${magic.file}</echo>
+                                    </target>
+                                </configuration>
+                                <id>build-docker-java-8-profile2-magic-file</id>
+                                <goals><goal>run</goal></goals>
+                                <phase>validate</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

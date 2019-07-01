@@ -33,7 +33,8 @@
                     <!-- <debug>true</debug> -->
                     <showErrors>true</showErrors>
                     <streamLogs>true</streamLogs>
-                    <localRepositoryPath>${project.basedir}/test-repo</localRepositoryPath>
+                    <localRepositoryPath>${project.basedir}/../test-repo</localRepositoryPath>
+                    <mavenHome>${project.basedir}/../extension-core/target/apache-maven-3.6.1/apache-maven-3.6.1</mavenHome>
                     <settingsFile>src/it/test-ss-in-working-dir/settings.xml</settingsFile>
                     <pomIncludes>
                         <include>test-ss-in-working-dir</include>
@@ -46,7 +47,7 @@
     <!-- @formatter:off -->
     <dependencies>
         <dependency><groupId>org.apache.maven</groupId><artifactId>maven-embedder</artifactId><scope>provided</scope></dependency>
-        <dependency><groupId>top.infra</groupId><artifactId>extension-core</artifactId></dependency>
+        <dependency><groupId>top.infra</groupId><artifactId>extension-core</artifactId><scope>provided</scope></dependency>
 
         <dependency><groupId>top.infra</groupId><artifactId>extension-test</artifactId><scope>test</scope></dependency>
     </dependencies>
