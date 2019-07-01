@@ -8,8 +8,6 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
 import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.Orders;
 import top.infra.maven.extension.activator.model.ProjectBuilderActivatorModelResolver;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
@@ -23,7 +21,7 @@ public class ModelResolverEventAware implements MavenEventAware {
     protected final ProjectBuilderActivatorModelResolver resolver;
 
     @Inject
-    protected ModelResolverEventAware(
+    public ModelResolverEventAware(
         final org.codehaus.plexus.logging.Logger logger,
         final ProjectBuilderActivatorModelResolver resolver
     ) {

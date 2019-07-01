@@ -47,7 +47,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
     @Override
     public int getOrder() {
-        return Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
+        return Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES;
     }
 
     @Override
