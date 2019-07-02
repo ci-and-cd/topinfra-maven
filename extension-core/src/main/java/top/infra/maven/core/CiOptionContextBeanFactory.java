@@ -15,7 +15,7 @@ import top.infra.maven.utils.MavenUtils;
 
 @Named
 @Singleton
-public class CiOptionContextFactoryBean implements MavenEventAware {
+public class CiOptionContextBeanFactory implements MavenEventAware {
 
     private final Logger logger;
 
@@ -24,12 +24,12 @@ public class CiOptionContextFactoryBean implements MavenEventAware {
     private CiOptionContext ciOptContext;
 
     @Inject
-    public CiOptionContextFactoryBean(
+    public CiOptionContextBeanFactory(
         final org.codehaus.plexus.logging.Logger logger,
-        final GitPropertiesFactoryBean gitPropertiesFactoryBean
+        final GitPropertiesBeanFactory gitPropertiesBeanFactory
     ) {
         this.logger = new LoggerPlexusImpl(logger);
-        this.gitProperties = gitPropertiesFactoryBean.getObjct().orElseGet(GitProperties::newBlankGitProperties);
+        this.gitProperties = gitPropertiesBeanFactory.getObject();
     }
 
     @Override

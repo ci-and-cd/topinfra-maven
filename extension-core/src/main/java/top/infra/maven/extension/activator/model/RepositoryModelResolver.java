@@ -5,6 +5,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -188,9 +189,9 @@ public class RepositoryModelResolver implements ModelResolver {
             final String filePath = localRepoFile.getAbsolutePath().substring(this.localRepository.getAbsolutePath().length());
             final String sourceUrl = repoUrl + filePath;
 
-            final String pathname = localRepoFile.toPath().normalize().toString();
+            final Path path = localRepoFile.toPath().normalize();
             final Entry<Optional<Integer>, Optional<Exception>> result = DownloadUtils.download(
-                logger, sourceUrl, pathname, emptyMap(), 3);
+                logger, sourceUrl, path, emptyMap(), 3);
             final Optional<Integer> status = result.getKey();
             final Optional<Exception> error = result.getValue();
             final boolean is2xxStatus = status.map(DownloadUtils::is2xxStatus).orElse(FALSE);

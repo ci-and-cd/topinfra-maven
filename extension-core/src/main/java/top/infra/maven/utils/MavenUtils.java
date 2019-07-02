@@ -24,6 +24,7 @@ import org.apache.maven.model.profile.ProfileActivationContext;
 public abstract class MavenUtils {
 
     public static Optional<Boolean> cmdArgOffline(final Context context) {
+        // TODO full length arg
         return cmdArgOffline(systemProperties(context));
     }
 
@@ -109,20 +110,6 @@ public abstract class MavenUtils {
         }
     }
 
-    public static String settingsSecurityXml() {
-        final String homeDir = SystemUtils.systemUserHome();
-        return pathnameInUserHomeDotM2(homeDir, "settings-security.xml");
-    }
-
-    public static String toolchainsXml() {
-        final String homeDir = SystemUtils.systemUserHome();
-        return pathnameInUserHomeDotM2(homeDir, "toolchains.xml");
-    }
-
-    private static String pathnameInUserHomeDotM2(final String homeDir, final String filename) {
-        return Paths.get(homeDir, ".m2", filename).toString();
-    }
-
     /**
      * Fail-safe pom.xml model reader.
      */
@@ -146,7 +133,7 @@ public abstract class MavenUtils {
 
     public static final String PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY = "maven.multiModuleProjectDirectory";
 
-    public static Path rootProjectPath(final Properties systemProperties) {
+    public static Path executionRootPath(final Properties systemProperties) {
         return mavenMultiModuleProjectDirectory(systemProperties).orElseGet(() -> Paths.get(systemUserDir()));
     }
 

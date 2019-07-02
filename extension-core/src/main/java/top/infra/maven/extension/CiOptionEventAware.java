@@ -14,7 +14,7 @@ import org.apache.maven.eventspy.EventSpy.Context;
 
 import top.infra.maven.core.CiOption;
 import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.core.CiOptionContextFactoryBean;
+import top.infra.maven.core.CiOptionContextBeanFactory;
 import top.infra.maven.core.CiOptionFactoryBean;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
@@ -27,14 +27,14 @@ public class CiOptionEventAware implements MavenEventAware {
 
     private final Logger logger;
 
-    private CiOptionContextFactoryBean ciOptContextFactoryBean;
+    private CiOptionContextBeanFactory ciOptContextFactoryBean;
 
     private List<List<CiOption>> optionCollections;
 
     @Inject
     public CiOptionEventAware(
         final org.codehaus.plexus.logging.Logger logger,
-        final CiOptionContextFactoryBean ciOptContextFactoryBean,
+        final CiOptionContextBeanFactory ciOptContextFactoryBean,
         final List<CiOptionFactoryBean> optionFactoryBeans
     ) {
         this.logger = new LoggerPlexusImpl(logger);

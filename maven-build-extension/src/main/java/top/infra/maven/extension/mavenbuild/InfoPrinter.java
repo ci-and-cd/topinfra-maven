@@ -72,7 +72,7 @@ public class InfoPrinter implements MavenEventAware {
         logger.info(PropertiesUtils.toString(userProperties, null));
         logger.info("<<<<<<<<<< ---------- init userProperties ---------- <<<<<<<<<<");
 
-        final Path rootProjectPath = MavenUtils.rootProjectPath(systemProperties).toAbsolutePath();
+        final Path rootProjectPath = MavenUtils.executionRootPath(systemProperties).toAbsolutePath();
         final String artifactId = new File(rootProjectPath.toString()).getName();
         if (logger.isInfoEnabled()) {
             logger.info(String.format("artifactId: [%s]", artifactId));

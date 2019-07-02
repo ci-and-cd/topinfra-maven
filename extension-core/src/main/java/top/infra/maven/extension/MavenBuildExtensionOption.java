@@ -16,13 +16,13 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import top.infra.maven.cienv.AppveyorVariables;
+import top.infra.maven.cienv.GitlabCiVariables;
+import top.infra.maven.cienv.TravisCiVariables;
 import top.infra.maven.core.CiOption;
 import top.infra.maven.core.CiOptionContext;
 import top.infra.maven.core.CiOptionNames;
 import top.infra.maven.core.GitProperties;
-import top.infra.maven.cienv.AppveyorVariables;
-import top.infra.maven.cienv.GitlabCiVariables;
-import top.infra.maven.cienv.TravisCiVariables;
 import top.infra.maven.utils.FileUtils;
 import top.infra.maven.utils.SupportFunction;
 

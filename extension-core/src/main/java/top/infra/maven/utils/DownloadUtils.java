@@ -11,6 +11,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -42,7 +43,7 @@ public abstract class DownloadUtils {
     public static Entry<Optional<Integer>, Optional<Exception>> download(
         final Logger logger,
         final String fromUrl,
-        final String saveToFile,
+        final Path saveToFile,
         final Map<String, String> headers,
         final int maxTry
     ) {
@@ -109,7 +110,7 @@ public abstract class DownloadUtils {
                 if (newUrl != null) {
                     return download(logger, newUrl, saveToFile, headers, maxTry);
                 } else if (is2xxStatus(lastStatus)) {
-                    final File saveToDir = Paths.get(saveToFile).toFile().getParentFile();
+                    final File saveToDir = saveToFile.toFile().getParentFile();
                     try {
                         if (!saveToDir.exists()) {
                             Files.createDirectories(Paths.get(saveToDir.toString()));
@@ -119,7 +120,7 @@ public abstract class DownloadUtils {
                     }
 
                     try (final ReadableByteChannel rbc = Channels.newChannel(inputStream)) {
-                        try (final FileOutputStream fos = new FileOutputStream(saveToFile)) {
+                        try (final FileOutputStream fos = new FileOutputStream(saveToFile.toFile())) {
                             fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
                         }
                         return newTupleOptional(lastStatus, null);

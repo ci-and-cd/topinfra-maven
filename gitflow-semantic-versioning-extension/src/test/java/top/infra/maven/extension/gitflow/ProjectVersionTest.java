@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import top.infra.maven.core.CiOptionContext;
 import top.infra.maven.core.GitProperties;
-import top.infra.maven.core.GitPropertiesFactoryBean;
+import top.infra.maven.core.GitPropertiesBeanFactory;
 import top.infra.maven.extension.OptionCollections;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerSlf4jImpl;
@@ -35,10 +35,7 @@ public class ProjectVersionTest {
     }
 
     private static GitProperties gitProperties() {
-        final Logger logger = logger();
-        return new GitPropertiesFactoryBean(logger)
-            .getObjct()
-            .orElseGet(GitProperties::newBlankGitProperties);
+        return new GitPropertiesBeanFactory(logger()).getObject();
     }
 
     @Test

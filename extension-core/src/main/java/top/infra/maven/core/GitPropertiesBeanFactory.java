@@ -31,13 +31,12 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.RevWalkUtils;
 
-import top.infra.maven.core.GitProperties;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 
 @Named
 @Singleton
-public class GitPropertiesFactoryBean {
+public class GitPropertiesBeanFactory {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
@@ -49,16 +48,16 @@ public class GitPropertiesFactoryBean {
     private Logger logger;
 
     @Inject
-    public GitPropertiesFactoryBean(final org.codehaus.plexus.logging.Logger logger) {
+    public GitPropertiesBeanFactory(final org.codehaus.plexus.logging.Logger logger) {
         this.logger = new LoggerPlexusImpl(logger);
     }
 
-    public GitPropertiesFactoryBean(final Logger logger) {
+    public GitPropertiesBeanFactory(final Logger logger) {
         this.logger = logger;
     }
 
-    public Optional<GitProperties> getObjct() {
-        return newJgitProperties(this.logger).map(GitProperties::newGitProperties);
+    public GitProperties getObject() {
+        return newJgitProperties(this.logger).map(GitProperties::newGitProperties).orElseGet(GitProperties::newBlankGitProperties);
     }
 
     private static Optional<Properties> newJgitProperties(final Logger logger) {

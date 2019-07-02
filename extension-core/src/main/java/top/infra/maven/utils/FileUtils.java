@@ -14,6 +14,14 @@ import top.infra.maven.exception.RuntimeIOException;
 
 public class FileUtils {
 
+    public static boolean isSameFile(final Path p1, final Path p2) {
+        try {
+            return Files.isSameFile(p1, p2);
+        } catch (final IOException ex) {
+            return false;
+        }
+    }
+
     private static void copyFile(final String from, final String to) {
         try {
             Files.copy(Paths.get(from), Paths.get(to), StandardCopyOption.REPLACE_EXISTING);

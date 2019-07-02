@@ -24,7 +24,7 @@ import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
 import org.apache.maven.toolchain.building.ToolchainsBuildingResult;
 
 import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.core.CiOptionContextFactoryBean;
+import top.infra.maven.core.CiOptionContextBeanFactory;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.Orders;
 import top.infra.maven.logging.Logger;
@@ -44,7 +44,7 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
 
     private final Logger logger;
 
-    private final CiOptionContextFactoryBean ciOptContextFactory;
+    private final CiOptionContextBeanFactory ciOptContextFactory;
 
     private final List<MavenEventAware> eventAwares;
 
@@ -60,7 +60,7 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
     @Inject
     public MavenBuildEventSpy(
         final org.codehaus.plexus.logging.Logger logger,
-        final CiOptionContextFactoryBean ciOptContextFactory,
+        final CiOptionContextBeanFactory ciOptContextFactory,
         final List<MavenEventAware> eventAwares
     ) {
         this.logger = new LoggerPlexusImpl(logger);

@@ -54,7 +54,7 @@ public class GpgEventAware implements MavenEventAware {
             final Gpg gpg = new Gpg(
                 logger,
                 Paths.get(SystemUtils.systemUserHome()),
-                MavenUtils.rootProjectPath(projectBuilding.getSystemProperties()),
+                MavenUtils.executionRootPath(projectBuilding.getSystemProperties()),
                 executable.get(),
                 gpgKeyid.orElse(null),
                 gpgKeyname,

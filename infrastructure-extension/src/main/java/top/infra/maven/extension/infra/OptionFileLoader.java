@@ -8,6 +8,7 @@ import static top.infra.maven.utils.SupportFunction.isEmpty;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -19,7 +20,8 @@ import org.apache.maven.cli.CliRequest;
 import org.apache.maven.eventspy.EventSpy.Context;
 
 import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.core.CiOptionContextFactoryBean;
+import top.infra.maven.core.CiOptionContextBeanFactory;
+import top.infra.maven.core.GitPropertiesBeanFactory;
 import top.infra.maven.exception.RuntimeIOException;
 import top.infra.maven.extension.InfraOption;
 import top.infra.maven.extension.MavenEventAware;
@@ -36,15 +38,19 @@ public class OptionFileLoader implements MavenEventAware {
 
     private final Logger logger;
 
-    private CiOptionContextFactoryBean ciOptionContextFactoryBean;
+    private final String remoteOriginUrl;
+
+    private final CiOptionContextBeanFactory ciOptionContextBeanFactory;
 
     @Inject
     public OptionFileLoader(
         final org.codehaus.plexus.logging.Logger logger,
-        final CiOptionContextFactoryBean ciOptionContextFactoryBean
+        final CiOptionContextBeanFactory ciOptionContextBeanFactory,
+        final GitPropertiesBeanFactory gitPropertiesBeanFactory
     ) {
         this.logger = new LoggerPlexusImpl(logger);
-        this.ciOptionContextFactoryBean = ciOptionContextFactoryBean;
+        this.remoteOriginUrl = gitPropertiesBeanFactory.getObject().remoteOriginUrl().orElse(null);
+        this.ciOptionContextBeanFactory = ciOptionContextBeanFactory;
     }
 
     @Override
@@ -58,12 +64,12 @@ public class OptionFileLoader implements MavenEventAware {
     }
 
     public void load() {
-        final CiOptionContext context = this.ciOptionContextFactoryBean.getCiOpts();
+        final CiOptionContext context = this.ciOptionContextBeanFactory.getCiOpts();
         CACHE_SETTINGS_PATH.getValue(context).ifPresent(FileUtils::createDirectories);
         checkGitAuthToken(logger, context);
 
         // ci options from file
-        final Optional<Properties> loadedProperties = ciOptContextFromFile(context, logger);
+        final Optional<Properties> loadedProperties = ciOptContextFromFile(context, logger, this.remoteOriginUrl);
 
         loadedProperties.ifPresent(props -> {
             logger.info(">>>>>>>>>> ---------- load options from file ---------- >>>>>>>>>>");
@@ -85,20 +91,21 @@ public class OptionFileLoader implements MavenEventAware {
 
     static Optional<Properties> ciOptContextFromFile(
         final CiOptionContext ciOptContext,
-        final Logger logger
+        final Logger logger,
+        final String remoteOriginUrl
     ) {
-        return InfraOption.CI_OPTS_FILE.getValue(ciOptContext).map(ciOptContextFile -> {
+        return InfraOption.CI_OPTS_FILE.getValue(ciOptContext).map(optsFile -> {
             final Properties properties = new Properties();
 
             CACHE_SETTINGS_PATH.getValue(ciOptContext).ifPresent(FileUtils::createDirectories);
 
             final boolean offline = MavenUtils.cmdArgOffline(ciOptContext.getSystemProperties()).orElse(FALSE);
             final boolean update = MavenUtils.cmdArgUpdate(ciOptContext.getSystemProperties()).orElse(FALSE);
-            GitRepository.newGitRepository(ciOptContext, logger).ifPresent(repo -> {
-                repo.download(SRC_CI_OPTS_PROPERTIES, ciOptContextFile, true, offline, update);
+            GitRepository.newGitRepository(ciOptContext, logger, remoteOriginUrl).ifPresent(repo -> {
+                repo.download(SRC_CI_OPTS_PROPERTIES, Paths.get(optsFile), true, offline, update);
 
                 try {
-                    properties.load(new FileInputStream(ciOptContextFile));
+                    properties.load(new FileInputStream(optsFile));
                 } catch (final IOException ex) {
                     final String errorMsg = String.format("Can not load ci options file %s", ex.getMessage());
                     throw new RuntimeIOException(errorMsg, ex);

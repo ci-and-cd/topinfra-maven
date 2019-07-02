@@ -1,11 +1,11 @@
 package top.infra.maven.extension.docker;
 
-import static top.infra.maven.extension.InfraOption.MAVEN_SETTINGS_FILE;
 import static top.infra.maven.utils.SupportFunction.isEmpty;
-import static top.infra.maven.utils.SupportFunction.isNotEmpty;
 
 import cn.home1.tools.maven.MavenSettingsSecurity;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +28,7 @@ import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.unix4j.Unix4j;
 
 import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.extension.InfraOption;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.Orders;
 import top.infra.maven.logging.Logger;
@@ -110,19 +111,18 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
      */
     @Override
     public void afterInit(final Context context, final CiOptionContext ciOptContext) {
-        final String settingsXmlPathname = MAVEN_SETTINGS_FILE.getValue(ciOptContext).orElse(null);
-
-        final Properties systemProperties = (Properties) context.getData().get("systemProperties");
-        // final Properties absentVarsInSettingsXml = absentVarsInSettingsXml(logger, settingsXmlPathname, systemProperties);
-        // PropertiesUtils.merge(absentVarsInSettingsXml, systemProperties);
-
-        final List<String> envVars = absentVarsInSettingsXml(logger, settingsXmlPathname, systemProperties);
-        envVars.forEach(envVar -> {
-            if (!systemProperties.containsKey(envVar)) {
-                logger.warn(String.format(
-                    "Please set a value for env variable [%s] (in settings.xml), to avoid passphrase decrypt error.", envVar));
-            }
-        });
+        InfraOption.SETTINGS
+            .findInProperties(ciOptContext.getSystemProperties(), ciOptContext.getUserProperties())
+            .ifPresent(settingsXml -> {
+                final Properties systemProperties = MavenUtils.systemProperties(context);
+                final List<String> envVars = absentVarsInSettingsXml(Paths.get(settingsXml), systemProperties);
+                envVars.forEach(envVar -> {
+                    if (!systemProperties.containsKey(envVar)) {
+                        logger.warn(String.format(
+                            "Please set a value for env variable [%s] (in settings.xml), to avoid passphrase decrypt error.", envVar));
+                    }
+                });
+            });
     }
 
     /**
@@ -133,7 +133,10 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
      */
     @Override
     public void onMavenExecutionRequest(final MavenExecutionRequest request, final CiOptionContext ciOptContext) {
-        this.settingsSecurity = new MavenSettingsSecurity(MavenUtils.settingsSecurityXml(), false);
+        final String settingsSecurityXml = InfraOption.SETTINGS_SECURITY
+            .findInProperties(ciOptContext.getSystemProperties(), ciOptContext.getUserProperties())
+            .orElse(null);
+        this.settingsSecurity = new MavenSettingsSecurity(settingsSecurityXml, false);
         this.encryptedBlankString = this.settingsSecurity.encodeText(" ");
         this.checkServers(request.getServers());
     }
@@ -223,18 +226,16 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
     /**
      * Find properties that absent in systemProperties but used in settings.xml.
      *
-     * @param logger              logger
-     * @param settingsXmlPathname settings.xml
-     * @param systemProperties    systemProperties of current maven session
+     * @param settingsXml      settings.xml
+     * @param systemProperties systemProperties of current maven session
      * @return variables absent in systemProperties but used in settings.xml
      */
     private static List<String> absentVarsInSettingsXml(
-        final Logger logger,
-        final String settingsXmlPathname,
+        final Path settingsXml,
         final Properties systemProperties
     ) {
-        return isNotEmpty(settingsXmlPathname)
-            ? SupportFunction.lines(Unix4j.cat(settingsXmlPathname).toStringResult())
+        return settingsXml != null
+            ? SupportFunction.lines(Unix4j.cat(settingsXml.toFile()).toStringResult())
             .stream()
             .flatMap(line -> {
                 final Matcher matcher = PATTERN_ENV_VAR.matcher(line);

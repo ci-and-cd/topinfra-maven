@@ -7,7 +7,6 @@ import static java.nio.file.StandardOpenOption.SYNC;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static top.infra.maven.Constants.GIT_REF_NAME_MASTER;
 import static top.infra.maven.extension.InfraOption.GIT_AUTH_TOKEN;
-import static top.infra.maven.extension.InfraOption.MAVEN_BUILD_OPTS_REPO;
 import static top.infra.maven.extension.InfraOption.MAVEN_BUILD_OPTS_REPO_REF;
 import static top.infra.maven.utils.FileUtils.readFile;
 import static top.infra.maven.utils.FileUtils.writeFile;
@@ -16,7 +15,7 @@ import static top.infra.maven.utils.SupportFunction.isNotEmpty;
 import static top.infra.maven.utils.SupportFunction.newTuple;
 import static top.infra.maven.utils.SupportFunction.newTupleOptional;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 import top.infra.maven.core.CiOptionContext;
@@ -31,6 +31,7 @@ import top.infra.maven.extension.InfraOption;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.utils.DownloadUtils;
 import top.infra.maven.utils.DownloadUtils.DownloadException;
+import top.infra.maven.utils.UrlUtils;
 
 public class GitRepository {
 
@@ -55,25 +56,49 @@ public class GitRepository {
         this.token = token;
     }
 
-    public static Optional<GitRepository> newGitRepository(final CiOptionContext ciOptContext, final Logger logger) {
-        return MAVEN_BUILD_OPTS_REPO.getValue(ciOptContext).map(repo -> new GitRepository(
-            logger,
-            repo,
-            MAVEN_BUILD_OPTS_REPO_REF.getValue(ciOptContext).orElse(null),
-            GIT_AUTH_TOKEN.getValue(ciOptContext).orElse(null)
-        ));
+    public static Optional<GitRepository> newGitRepository(
+        final CiOptionContext ciOptContext,
+        final Logger logger,
+        @Nullable final String remoteOriginUrl
+    ) {
+        // prefix of git service url (infrastructure specific), i.e. https://github.com
+        final Optional<String> gitPrefix;
+        final Optional<String> ciProjectUrl = Optional.ofNullable(ciOptContext.getSystemProperties().getProperty("env.CI_PROJECT_URL"));
+        if (ciProjectUrl.isPresent()) {
+            gitPrefix = ciProjectUrl.map(url -> UrlUtils.urlWithoutPath(url).orElse(null));
+        } else {
+            gitPrefix = Optional.ofNullable(remoteOriginUrl)
+                .map(url -> url.startsWith("http")
+                    ? UrlUtils.urlWithoutPath(url).orElse(null)
+                    : UrlUtils.domainOrHostFromUrl(url).map(value -> "http://" + value).orElse(null));
+        }
+
+        final Optional<String> gitRepo = InfraOption.INFRASTRUCTURE.getValue(ciOptContext)
+            .map(infra -> {
+                final String repoOwner = "ci-and-cd";
+                final String repoName = String.format("maven-build-opts-%s", infra);
+                return gitPrefix.map(prefix -> String.format("%s/%s/%s", prefix, repoOwner, repoName)).orElse(null);
+            });
+
+        return gitRepo
+            .map(repo -> new GitRepository(
+                logger,
+                repo,
+                MAVEN_BUILD_OPTS_REPO_REF.getValue(ciOptContext).orElse(null),
+                GIT_AUTH_TOKEN.getValue(ciOptContext).orElse(null)
+            ));
     }
 
     public void download(
         final String sourceFile,
-        final String targetFile,
+        final Path targetFile,
         final boolean reThrowException,
         final boolean offline,
         final boolean update
     ) {
         final boolean doDownload;
 
-        final boolean targetFileExists = Paths.get(targetFile).toFile().exists();
+        final boolean targetFileExists = targetFile.toFile().exists();
         if (update) {
             doDownload = true;
         } else {
@@ -110,7 +135,7 @@ public class GitRepository {
      */
     public void download(
         final String sourceFile,
-        final String targetFile,
+        final Path targetFile,
         final boolean reThrowException
     ) {
         if (logger.isInfoEnabled()) {
@@ -154,7 +179,7 @@ public class GitRepository {
      */
     private Entry<Optional<String>, Entry<Optional<Integer>, Optional<Exception>>> downloadAndDecode(
         final String sourceFile,
-        final String targetFile
+        final Path targetFile
     ) {
         final Entry<Optional<Integer>, Optional<Exception>> statusOrException;
 
@@ -172,7 +197,7 @@ public class GitRepository {
             if (PATTERN_GITLAB_URL.matcher(this.repo).matches()) {
                 fromUrl = (this.repo.endsWith("/") ? this.repo : this.repo + "/")
                     + sourceFilePath.replaceAll("/", "%2F") + "?ref=" + this.repoRef;
-                final String saveToFile = targetFile + ".json";
+                final Path saveToFile = targetFile.resolveSibling(targetFile.getFileName() + ".json");
                 statusOrException = DownloadUtils.download(logger, fromUrl, saveToFile, headers, 3);
                 status = statusOrException.getKey();
 
@@ -182,14 +207,14 @@ public class GitRepository {
                         logger.debug(String.format("decode [%s]", saveToFile));
                     }
                     // cat "${target_file}.json" | jq -r ".content" | base64 --decode | tee "${target_file}"
-                    final JSONObject jsonFile = new JSONObject(readFile(Paths.get(saveToFile), UTF_8).orElse("{\"content\": \"\"}"));
+                    final JSONObject jsonFile = new JSONObject(readFile(saveToFile, UTF_8).orElse("{\"content\": \"\"}"));
                     final String content = jsonFile.getString("content");
                     if (!isEmpty(content)) {
                         final byte[] bytes = Base64.getDecoder().decode(content);
                         if (logger.isDebugEnabled()) {
                             logger.debug(String.format("Write content into targetFile [%s] (%s bytes)", targetFile, bytes.length));
                         }
-                        writeFile(Paths.get(targetFile), bytes, CREATE, SYNC, TRUNCATE_EXISTING);
+                        writeFile(targetFile, bytes, CREATE, SYNC, TRUNCATE_EXISTING);
                     } else {
                         if (logger.isDebugEnabled()) {
                             logger.debug(String.format("Content is empty. Skip write content into targetFile [%s]", targetFile));

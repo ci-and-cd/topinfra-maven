@@ -151,13 +151,9 @@ public enum MavenBuildPomOption implements CiOption {
 
             final Optional<String> result;
             if (generateReports) {
-                final Boolean githubSitePublish = GITHUB_SITE_PUBLISH.getValue(context)
-                    .map(Boolean::parseBoolean).orElse(FALSE);
                 final Optional<String> gitRepoSlug = MavenBuildExtensionOption
                     .gitRepoSlug(context.getGitProperties(), context.getSystemProperties());
-                result = githubSitePublish
-                    ? gitRepoSlug.map(slug -> slug.split("/")[1])
-                    : gitRepoSlug;
+                result = gitRepoSlug.map(slug -> slug.split("/")[0]);
             } else {
                 result = Optional.empty();
             }
