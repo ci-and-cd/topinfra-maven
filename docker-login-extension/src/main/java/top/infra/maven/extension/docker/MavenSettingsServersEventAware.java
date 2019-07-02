@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,8 +53,6 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
 
     private String encryptedBlankString;
 
-    private MavenSettingsSecurity settingsSecurity;
-
     @Inject
     public MavenSettingsServersEventAware(
         final org.codehaus.plexus.logging.Logger logger,
@@ -64,7 +63,6 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         this.settingsDecrypter = settingsDecrypter;
 
         this.encryptedBlankString = null;
-        this.settingsSecurity = null;
     }
 
     /**
@@ -82,11 +80,22 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
                     .flatMap(server -> this.absentEnvVars(server).stream())
                     .distinct()
                     .collect(Collectors.toList());
-                envVars.forEach(envVar -> {
-                    logger.info(
-                        String.format("Set a value for env variable [%s] (in settings.xml), to avoid passphrase decrypt error.", envVar));
-                    session.getSystemProperties().setProperty(envVar, this.getEncryptedBlankString());
-                });
+
+                if (!envVars.isEmpty()) {
+                    final Optional<String> blankString = this.getEncryptedBlankString();
+                    if (blankString.isPresent()) {
+                        envVars.forEach(envVar -> {
+                            logger.info(String.format(
+                                "Write blank value for env variable [%s] (in settings.xml), to avoid passphrase decrypt error.",
+                                envVar));
+                            session.getSystemProperties().setProperty(envVar, blankString.get());
+                        });
+                    } else {
+                        logger.info(String.format(
+                            "Skip writting blank value for env variables [%s] (in settings.xml), settings-security.xml not found.",
+                            envVars));
+                    }
+                }
 
                 this.checkServers(settings.getServers());
             }
@@ -133,11 +142,11 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
      */
     @Override
     public void onMavenExecutionRequest(final MavenExecutionRequest request, final CiOptionContext ciOptContext) {
-        final String settingsSecurityXml = InfraOption.SETTINGS_SECURITY
-            .findInProperties(ciOptContext.getSystemProperties(), ciOptContext.getUserProperties())
-            .orElse(null);
-        this.settingsSecurity = new MavenSettingsSecurity(settingsSecurityXml, false);
-        this.encryptedBlankString = this.settingsSecurity.encodeText(" ");
+        final Optional<String> settingsSecurityXml = InfraOption.SETTINGS_SECURITY
+            .findInProperties(ciOptContext.getSystemProperties(), ciOptContext.getUserProperties());
+        final Optional<MavenSettingsSecurity> settingsSecurity = settingsSecurityXml
+            .map(xml -> new MavenSettingsSecurity(xml, false));
+        this.encryptedBlankString = settingsSecurity.map(ss -> ss.encodeText(" ")).orElse(null);
         this.checkServers(request.getServers());
     }
 
@@ -175,8 +184,8 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         }
     }
 
-    private String getEncryptedBlankString() {
-        return this.encryptedBlankString;
+    private Optional<String> getEncryptedBlankString() {
+        return Optional.ofNullable(this.encryptedBlankString);
     }
 
     private boolean isSystemPropertyNameOfEnvVar(final String str) {
