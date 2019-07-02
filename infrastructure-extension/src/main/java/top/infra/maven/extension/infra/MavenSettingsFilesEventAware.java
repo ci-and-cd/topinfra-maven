@@ -2,8 +2,6 @@ package top.infra.maven.extension.infra;
 
 import static java.lang.Boolean.FALSE;
 import static top.infra.maven.Constants.SETTINGS_SECURITY_XML;
-import static top.infra.maven.Constants.SETTINGS_XML;
-import static top.infra.maven.Constants.SRC_MAIN_MAVEN;
 import static top.infra.maven.core.CiOptionNames.systemPropertyName;
 import static top.infra.maven.extension.InfraOption.CACHE_SETTINGS_PATH;
 import static top.infra.maven.extension.InfraOption.SETTINGS;
@@ -23,10 +21,12 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.maven.building.FileSource;
 import org.apache.maven.cli.CLIManager;
 import org.apache.maven.cli.CliRequest;
 import org.apache.maven.eventspy.EventSpy.Context;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
+import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
 
 import top.infra.maven.core.CiOption;
 import top.infra.maven.core.CiOptionContext;
@@ -43,6 +43,10 @@ import top.infra.maven.utils.SystemUtils;
 @Singleton
 public class MavenSettingsFilesEventAware implements MavenEventAware {
 
+    private static final String SRC_MAIN_MAVEN = "src/main/maven";
+    private static final String SETTINGS_XML = "settings.xml";
+    private static final String TOOLCHAINS_XML = "toolchains.xml";
+
     private final Logger logger;
 
     private final String remoteOriginUrl;
@@ -50,6 +54,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
     private GitRepository gitRepository;
 
     private Path settingsXml;
+    private Path toolchainsXml;
 
     @Inject
     public MavenSettingsFilesEventAware(
@@ -61,6 +66,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
         this.gitRepository = null;
         this.settingsXml = null;
+        this.toolchainsXml = null;
     }
 
     @Override
@@ -96,14 +102,14 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
         logger.info(">>>>>>>>>> ---------- Setting file [toolchains.xml]. ---------- >>>>>>>>>>");
         final String os = os();
-        this.findOrDownload(
+        this.toolchainsXml = this.findOrDownload(
             context,
             ciOptContext,
             TOOLCHAINS,
             "generic".equals(os) ? "src/main/maven/toolchains.xml" : "src/main/maven/toolchains-" + os + ".xml",
-            "toolchains.xml",
+            TOOLCHAINS_XML,
             false
-        );
+        ).orElse(null);
         logger.info("<<<<<<<<<< ---------- Setting file [toolchains.xml]. ---------- <<<<<<<<<<");
     }
 
@@ -119,6 +125,21 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
             }
 
             request.setUserSettingsFile(this.settingsXml.toFile());
+        }
+    }
+
+    @Override
+    public void onToolchainsBuildingRequest(
+        final ToolchainsBuildingRequest request,
+        final CiOptionContext ciOptContext
+    ) {
+        if (this.toolchainsXml != null) {
+            if (logger.isInfoEnabled()) {
+                logger.info(String.format("Setting file [%s], using [%s]. (override userToolchainsSource [%s])",
+                    TOOLCHAINS_XML, this.toolchainsXml, request.getUserToolchainsSource()));
+            }
+
+            request.setUserToolchainsSource(new FileSource(this.toolchainsXml.toFile()));
         }
     }
 

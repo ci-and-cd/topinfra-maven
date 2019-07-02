@@ -19,8 +19,6 @@ public final class Constants {
     public static final String PHASE_SITE = "site";
 
     public static final String SRC_CI_OPTS_PROPERTIES = "src/main/ci-script/ci_opts.properties"; // TODO rename
-    public static final String SRC_MAIN_MAVEN = "src/main/maven";
-    public static final String SETTINGS_XML = "settings.xml";
     public static final String SETTINGS_SECURITY_XML = "settings-security.xml";
 
     public static final String PUBLISH_CHANNEL_RELEASE = "release";
