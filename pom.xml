@@ -193,7 +193,7 @@
             <dependency><groupId>${project.groupId}</groupId><artifactId>maven-build-pom-extension</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>settings-security-extension</artifactId><version>${project.version}</version></dependency>
 
-            <dependency><groupId>cn.home1.tools</groupId><artifactId>maven-settings-decoder-core</artifactId><version>1.1.0-SNAPSHOT</version></dependency>
+            <dependency><groupId>cn.home1.tools</groupId><artifactId>maven-settings-decoder-core</artifactId><version>1.1.0</version></dependency>
             <dependency><groupId>com.google.code.findbugs</groupId><artifactId>annotations</artifactId><version>3.0.1u2</version></dependency>
             <dependency><groupId>com.google.guava</groupId><artifactId>guava</artifactId><version>${version.guava}</version></dependency>
             <dependency><groupId>org.jetbrains</groupId><artifactId>annotations</artifactId><version>16.0.3</version></dependency>
@@ -261,7 +261,7 @@
         </profile>
         <profile>
             <id>gpg-for-travis-and-maven-central</id>
-            <activation><file><exists>${maven.multiModuleProjectDirectory}/codesigning.asc</exists></file><activeByDefault>false</activeByDefault></activation>
+            <activation><property><name>gpg.executable</name></property></activation>
             <properties>
                 <!-- Do not set gpg.executable here -->
                 <!--<gpg.executable>gpg</gpg.executable>-->

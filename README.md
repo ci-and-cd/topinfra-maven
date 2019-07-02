@@ -2,6 +2,11 @@
 Maven core extensions (for github.com/ci-and-cd/maven-build)
 
 
+```bash
+mvn -N io.takari:maven:0.7.7-SNAPSHOT:wrapper -DdistributionUrl=https://oss.sonatype.org/content/repositories/snapshots/top/infra/extension-core/0.0.1-SNAPSHOT/extension-core-0.0.1-20190702.121020-13.zip
+```
+
+
 Support overriding maven local repository by user property settings.localRepository
 Allow overriding value of localRepository in settings.xml by user property settings.localRepository.
 e.g. `./mvnw -Dsettings.localRepository=${HOME}/.m3/repository clean install`
@@ -28,13 +33,9 @@ Fix 'Failed to decrypt passphrase for server foo: org.sonatype.plexus.components
 ### Build this extension
 
 ```bash
-CI_OPT_SONAR="true" CI_OPT_SONAR_ORGANIZATION="home1-oss-github" ./mvnw -ntp -s settings.xml clean install
+./mvnw -s settings.xml clean install
 
-CI_OPT_SONAR="true" CI_OPT_SONAR_ORGANIZATION="home1-oss-github" ./mvnw -ntp -Dgpg.executable=gpg2 -Dgpg.loopback=true -s settings.xml clean install
-
-#CI_OPT_GITHUB_SITE_PUBLISH="true" CI_OPT_INFRASTRUCTURE=ossrh CI_OPT_OSSRH_GIT_AUTH_TOKEN="${CI_OPT_OSSRH_GIT_AUTH_TOKEN}" CI_OPT_SITE="true" CI_OPT_GITHUB_GLOBAL_REPOSITORYOWNER="ci-and-cd" CI_OPT_SITE_PATH_PREFIX="maven-build-extension" ./mvnw -e -U clean install site-deploy
-
-#CI_OPT_GITHUB_SITE_PUBLISH="false" CI_OPT_INFRASTRUCTURE=ossrh CI_OPT_OSSRH_MVNSITE_PASSWORD="${CI_OPT_OSSRH_MVNSITE_PASSWORD}" CI_OPT_OSSRH_MVNSITE_USERNAME="${CI_OPT_OSSRH_MVNSITE_USERNAME}" CI_OPT_NEXUS3="https://nexus3.infra.top" CI_OPT_SITE="true" CI_OPT_SITE_PATH_PREFIX="ci-and-cd/maven-build-extension" ./mvnw -e -U clean install site site-deploy
+CI_OPT_SONAR="true" CI_OPT_SONAR_ORGANIZATION="home1-oss-github" ./mvnw -Dgpg.executable=gpg -Dgpg.loopback=true -s settings.xml clean deploy
 
 ./mvnw dependency:tree
 
