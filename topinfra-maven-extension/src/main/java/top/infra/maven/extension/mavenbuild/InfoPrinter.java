@@ -2,10 +2,8 @@ package top.infra.maven.extension.mavenbuild;
 
 import static top.infra.maven.utils.SystemUtils.systemUserHome;
 
-import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -65,19 +63,6 @@ public class InfoPrinter implements MavenEventAware {
     ) {
         this.printClassPath(mavenClass);
 
-        logger.info(">>>>>>>>>> ---------- init systemProperties ---------- >>>>>>>>>>");
-        logger.info(PropertiesUtils.toString(systemProperties, CiOptionNames.PATTERN_VARS_ENV_DOT_CI));
-        logger.info("<<<<<<<<<< ---------- init systemProperties ---------- <<<<<<<<<<");
-        logger.info(">>>>>>>>>> ---------- init userProperties ---------- >>>>>>>>>>");
-        logger.info(PropertiesUtils.toString(userProperties, null));
-        logger.info("<<<<<<<<<< ---------- init userProperties ---------- <<<<<<<<<<");
-
-        final Path rootProjectPath = MavenUtils.executionRootPath(systemProperties).toAbsolutePath();
-        final String artifactId = new File(rootProjectPath.toString()).getName();
-        if (logger.isInfoEnabled()) {
-            logger.info(String.format("artifactId: [%s]", artifactId));
-        }
-
         if (logger.isInfoEnabled()) {
             logger.info(">>>>>>>>>> ---------- build context info ---------- >>>>>>>>>>");
             logger.info(String.format("user.language [%s], user.region [%s], user.timezone [%s]",
@@ -85,7 +70,6 @@ public class InfoPrinter implements MavenEventAware {
             logger.info(String.format("USER [%s]", System.getProperty("user.name")));
             logger.info(String.format("HOME [%s]", systemUserHome()));
             logger.info(String.format("JAVA_HOME [%s]", System.getProperty("java.home")));
-            logger.info(String.format("PWD [%s]", rootProjectPath));
 
             final String runtimeImplVersion = Runtime.class.getPackage().getImplementationVersion();
             final String javaVersion = runtimeImplVersion != null ? runtimeImplVersion : System.getProperty("java.runtime.version");
@@ -94,6 +78,13 @@ public class InfoPrinter implements MavenEventAware {
             logger.info(String.format("Maven version [%s]", this.runtime.getMavenVersion()));
             logger.info("<<<<<<<<<< ---------- build context info ---------- <<<<<<<<<<");
         }
+
+        logger.info(">>>>>>>>>> ---------- init systemProperties ---------- >>>>>>>>>>");
+        logger.info(PropertiesUtils.toString(systemProperties, CiOptionNames.PATTERN_VARS_ENV_DOT_CI));
+        logger.info("<<<<<<<<<< ---------- init systemProperties ---------- <<<<<<<<<<");
+        logger.info(">>>>>>>>>> ---------- init userProperties ---------- >>>>>>>>>>");
+        logger.info(PropertiesUtils.toString(userProperties, null));
+        logger.info("<<<<<<<<<< ---------- init userProperties ---------- <<<<<<<<<<");
     }
 
     private void printClassPath(final Class<?> mavenClass) {

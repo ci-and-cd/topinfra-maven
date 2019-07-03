@@ -20,11 +20,12 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.maven.AbstractMavenLifecycleParticipant;
-import org.apache.maven.eventspy.EventSpy.Context;
+import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.building.SettingsBuildingRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.unix4j.Unix4j;
 
@@ -34,7 +35,6 @@ import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
-import top.infra.maven.utils.MavenUtils;
 import top.infra.maven.utils.SupportFunction;
 
 /**
@@ -115,15 +115,20 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
     /**
      * Method of {@link MavenEventAware}.
      *
-     * @param context      context
+     * @param cliRequest   cliRequest
+     * @param request      SettingsBuildingRequest
      * @param ciOptContext ciOptContext
      */
     @Override
-    public void afterInit(final Context context, final CiOptionContext ciOptContext) {
+    public void onSettingsBuildingRequest(
+        final CliRequest cliRequest,
+        final SettingsBuildingRequest request,
+        final CiOptionContext ciOptContext
+    ) {
         InfraOption.SETTINGS
             .findInProperties(ciOptContext.getSystemProperties(), ciOptContext.getUserProperties())
             .ifPresent(settingsXml -> {
-                final Properties systemProperties = MavenUtils.systemProperties(context);
+                final Properties systemProperties = ciOptContext.getSystemProperties();
                 final List<String> envVars = absentVarsInSettingsXml(Paths.get(settingsXml), systemProperties);
                 envVars.forEach(envVar -> {
                     if (!systemProperties.containsKey(envVar)) {
@@ -141,7 +146,11 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
      * @param ciOptContext ciOptContext
      */
     @Override
-    public void onMavenExecutionRequest(final MavenExecutionRequest request, final CiOptionContext ciOptContext) {
+    public void onMavenExecutionRequest(
+        final CliRequest cliRequest,
+        final MavenExecutionRequest request,
+        final CiOptionContext ciOptContext
+    ) {
         final Optional<String> settingsSecurityXml = InfraOption.SETTINGS_SECURITY
             .findInProperties(ciOptContext.getSystemProperties(), ciOptContext.getUserProperties());
         final Optional<MavenSettingsSecurity> settingsSecurity = settingsSecurityXml

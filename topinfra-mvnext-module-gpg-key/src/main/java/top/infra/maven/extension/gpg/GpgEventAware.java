@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
@@ -41,6 +42,7 @@ public class GpgEventAware implements MavenEventAware {
 
     @Override
     public void onProjectBuildingRequest(
+        final CliRequest cliRequest,
         final MavenExecutionRequest mavenExecution,
         final ProjectBuildingRequest projectBuilding,
         final CiOptionContext ciOptContext
@@ -54,7 +56,7 @@ public class GpgEventAware implements MavenEventAware {
             final Gpg gpg = new Gpg(
                 logger,
                 Paths.get(SystemUtils.systemUserHome()),
-                MavenUtils.executionRootPath(projectBuilding.getSystemProperties()),
+                MavenUtils.executionRootPath(cliRequest),
                 executable.get(),
                 gpgKeyid.orElse(null),
                 gpgKeyname,

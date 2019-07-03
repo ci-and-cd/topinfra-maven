@@ -12,12 +12,15 @@ import javax.inject.Singleton;
 import org.apache.maven.cli.CliRequest;
 import org.apache.maven.cli.configuration.ConfigurationProcessor;
 import org.apache.maven.cli.configuration.SettingsXmlConfigurationProcessor;
+import org.apache.maven.settings.building.SettingsBuildingRequest;
 
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 
 /**
  * See {@link org.apache.maven.cli.MavenCli}.
+ * <p/>
+ * Run before {@link SettingsBuildingRequest}.
  */
 // @Component(role = ConfigurationProcessor.class, hint = "settings-security")
 @Named
@@ -30,6 +33,8 @@ public class MavenBuildConfigurationProcessor implements ConfigurationProcessor 
 
     // @Requirement(role = ConfigurationProcessor.class, hint = SettingsXmlConfigurationProcessor.HINT)
     private ConfigurationProcessor settingsXmlConfigurationProcessor;
+
+    private CliRequest cliRequest;
 
     @Inject
     public MavenBuildConfigurationProcessor(
@@ -55,8 +60,16 @@ public class MavenBuildConfigurationProcessor implements ConfigurationProcessor 
             });
     }
 
+    public CliRequest getCliRequest() {
+        return this.cliRequest;
+    }
+
     @Override
     public void process(final CliRequest cliRequest) throws Exception {
+        logger.info("MavenBuildConfigurationProcessor process");
+
+        this.cliRequest = cliRequest;
+
         for (final OrderedConfigurationProcessor processor : this.processors) {
             processor.process(cliRequest);
         }

@@ -12,17 +12,18 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
-import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.MavenOption;
-import top.infra.maven.extension.Orders;
 import top.infra.maven.cienv.AppveyorVariables;
 import top.infra.maven.cienv.GitlabCiVariables;
 import top.infra.maven.cienv.TravisCiVariables;
+import top.infra.maven.core.CiOptionContext;
 import top.infra.maven.extension.MavenBuildExtensionOption;
+import top.infra.maven.extension.MavenEventAware;
+import top.infra.maven.extension.MavenOption;
+import top.infra.maven.extension.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.PropertiesUtils;
@@ -47,6 +48,7 @@ public class MavenGoalEditorEventAware implements MavenEventAware {
 
     @Override
     public void onProjectBuildingRequest(
+        final CliRequest cliRequest,
         final MavenExecutionRequest mavenExecution,
         final ProjectBuildingRequest projectBuilding,
         final CiOptionContext ciOptContext

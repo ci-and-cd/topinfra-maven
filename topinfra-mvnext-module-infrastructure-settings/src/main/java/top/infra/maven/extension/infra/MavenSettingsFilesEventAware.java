@@ -24,7 +24,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.maven.building.FileSource;
 import org.apache.maven.cli.CLIManager;
 import org.apache.maven.cli.CliRequest;
-import org.apache.maven.eventspy.EventSpy.Context;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
 import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
 
@@ -37,7 +36,6 @@ import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.FileUtils;
 import top.infra.maven.utils.MavenUtils;
-import top.infra.maven.utils.SystemUtils;
 
 @Named
 @Singleton
@@ -45,7 +43,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
     private static final String SRC_MAIN_MAVEN = "src/main/maven";
     private static final String SETTINGS_XML = "settings.xml";
-    private static final String TOOLCHAINS_XML = "toolchains.xml";
+    private static final String TOOLCHAINS_XML = toolchainsXml();
 
     private final Logger logger;
 
@@ -75,12 +73,16 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
     }
 
     @Override
-    public void afterInit(final Context context, final CiOptionContext ciOptContext) {
+    public void onSettingsBuildingRequest(
+        final CliRequest cliRequest,
+        final SettingsBuildingRequest request,
+        final CiOptionContext ciOptContext
+    ) {
         this.gitRepository = GitRepository.newGitRepository(ciOptContext, logger, this.remoteOriginUrl).orElse(null);
 
         logger.info(">>>>>>>>>> ---------- Setting file [settings.xml]. ---------- >>>>>>>>>>");
         this.settingsXml = this.findOrDownload(
-            context,
+            cliRequest,
             ciOptContext,
             SETTINGS,
             SRC_MAIN_MAVEN + "/" + SETTINGS_XML,
@@ -91,7 +93,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
         logger.info(">>>>>>>>>> ---------- Setting file [settings-security.xml]. ---------- >>>>>>>>>>");
         this.findOrDownload(
-            context,
+            cliRequest,
             ciOptContext,
             SETTINGS_SECURITY,
             SRC_MAIN_MAVEN + "/" + SETTINGS_SECURITY_XML,
@@ -100,24 +102,6 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         );
         logger.info("<<<<<<<<<< ---------- Setting file [settings-security.xml]. ---------- <<<<<<<<<<");
 
-        logger.info(">>>>>>>>>> ---------- Setting file [toolchains.xml]. ---------- >>>>>>>>>>");
-        final String os = os();
-        this.toolchainsXml = this.findOrDownload(
-            context,
-            ciOptContext,
-            TOOLCHAINS,
-            "generic".equals(os) ? "src/main/maven/toolchains.xml" : "src/main/maven/toolchains-" + os + ".xml",
-            TOOLCHAINS_XML,
-            false
-        ).orElse(null);
-        logger.info("<<<<<<<<<< ---------- Setting file [toolchains.xml]. ---------- <<<<<<<<<<");
-    }
-
-    @Override
-    public void onSettingsBuildingRequest(
-        final SettingsBuildingRequest request,
-        final CiOptionContext ciOptContext
-    ) {
         if (this.settingsXml != null) {
             if (logger.isInfoEnabled()) {
                 logger.info(String.format("Setting file [%s], using [%s]. (override userSettingsFile [%s])",
@@ -130,9 +114,21 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
     @Override
     public void onToolchainsBuildingRequest(
+        final CliRequest cliRequest,
         final ToolchainsBuildingRequest request,
         final CiOptionContext ciOptContext
     ) {
+        logger.info(">>>>>>>>>> ---------- Setting file [toolchains.xml]. ---------- >>>>>>>>>>");
+        this.toolchainsXml = this.findOrDownload(
+            cliRequest,
+            ciOptContext,
+            TOOLCHAINS,
+            SRC_MAIN_MAVEN + "/" + TOOLCHAINS_XML,
+            TOOLCHAINS_XML,
+            false
+        ).orElse(null);
+        logger.info("<<<<<<<<<< ---------- Setting file [toolchains.xml]. ---------- <<<<<<<<<<");
+
         if (this.toolchainsXml != null) {
             if (logger.isInfoEnabled()) {
                 logger.info(String.format("Setting file [%s], using [%s]. (override userToolchainsSource [%s])",
@@ -144,7 +140,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
     }
 
     private Optional<Path> findOrDownload(
-        final Context context,
+        final CliRequest cliRequest,
         final CiOptionContext ciOptContext,
         final CiOption option,
         final String sourceFile,
@@ -155,12 +151,12 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
         final Optional<String> cacheDir = CACHE_SETTINGS_PATH.getValue(ciOptContext);
 
-        final boolean offline = MavenUtils.cmdArgOffline(context).orElse(FALSE);
-        final boolean update = MavenUtils.cmdArgUpdate(context).orElse(FALSE);
+        final boolean offline = MavenUtils.cmdArgOffline(cliRequest);
+        final boolean update = MavenUtils.cmdArgUpdateSnapshots(cliRequest);
 
         final Optional<Path> result;
         final Optional<Path> inM2 = userHomeDotM2(filename);
-        final Optional<Path> foundAtLocal = findFile(context, filename, propertyName);
+        final Optional<Path> foundAtLocal = findFile(cliRequest, filename, propertyName);
         if (cacheDir.isPresent()) {
             final Path targetFile = Paths.get(cacheDir.get(), filename);
             if (foundAtLocal.map(value -> !FileUtils.isSameFile(value, targetFile)).orElse(FALSE)) {
@@ -195,21 +191,26 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         return result;
     }
 
+    private static String toolchainsXml() {
+        final String os = os();
+        return "generic".equals(os) ? "toolchains.xml" : "toolchains-" + os + ".xml";
+    }
+
     private static Optional<Path> userHomeDotM2(final String filename) {
-        final Path path = Paths.get(SystemUtils.systemUserHome(), ".m2", filename);
+        final Path path = MavenUtils.userHomeDotM2().resolve(filename);
         return path.toFile().exists() ? Optional.of(path) : Optional.empty();
     }
 
     public static Optional<Path> findFile(
-        final Context context,
+        final CliRequest cliRequest,
         final String filename,
         final String propertyName
-
     ) {
         return Stream.of(
-            SettingsFiles.findInUserProperties(MavenUtils.userProperties(context), propertyName),
-            SettingsFiles.findInSystemProperties(MavenUtils.systemProperties(context), propertyName),
-            SettingsFiles.findInWorkingDir(MavenUtils.executionRootPath(MavenUtils.systemProperties(context)), filename)
+            SettingsFiles.findInUserProperties(cliRequest.getUserProperties(), propertyName),
+            SettingsFiles.findInSystemProperties(cliRequest.getSystemProperties(), propertyName),
+            SettingsFiles.findInWorkingDir(MavenUtils.executionRootPath(cliRequest), filename),
+            SettingsFiles.findInCustomSettingsDir(cliRequest, filename)
         )
             .filter(Optional::isPresent)
             .map(Optional::get)
@@ -217,23 +218,6 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
     }
 
     private static class SettingsFiles {
-
-        static Optional<Path> findFile(
-            final CliRequest cliRequest,
-            final String filename,
-            final String propertyName
-
-        ) {
-            return Stream.of(
-                SettingsFiles.findInUserProperties(cliRequest.getUserProperties(), propertyName),
-                SettingsFiles.findInSystemProperties(cliRequest.getSystemProperties(), propertyName),
-                SettingsFiles.findInWorkingDir(Paths.get(cliRequest.getWorkingDirectory()), filename),
-                SettingsFiles.findInCustomSettingsDir(cliRequest, filename)
-            )
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .findFirst();
-        }
 
         private static Optional<Path> findInUserProperties(
             final Properties userProperties,
@@ -271,7 +255,6 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         }
 
         private static Optional<Path> findInCustomSettingsDir(
-            // TODO support read user settings from session context (include .mvn/maven.config)
             final CliRequest cliRequest,
             final String filename
         ) {

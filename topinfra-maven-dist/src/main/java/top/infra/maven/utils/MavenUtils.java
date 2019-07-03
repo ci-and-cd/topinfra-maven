@@ -1,7 +1,5 @@
 package top.infra.maven.utils;
 
-import static top.infra.maven.utils.SystemUtils.systemUserDir;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -11,6 +9,9 @@ import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.maven.cli.CLIManager;
+import org.apache.maven.cli.CliRequest;
 import org.apache.maven.eventspy.EventSpy.Context;
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.Model;
@@ -23,23 +24,23 @@ import org.apache.maven.model.profile.ProfileActivationContext;
 
 public abstract class MavenUtils {
 
-    public static Optional<Boolean> cmdArgOffline(final Context context) {
-        // TODO full length arg
-        return cmdArgOffline(systemProperties(context));
+    public static Optional<String> cmdArgFile(final CliRequest cliRequest) {
+        final Optional<String> result;
+        final CommandLine commandLine = cliRequest.getCommandLine();
+        if (commandLine.hasOption(CLIManager.ALTERNATE_POM_FILE)) {
+            result = Optional.ofNullable(commandLine.getOptionValue(CLIManager.ALTERNATE_POM_FILE));
+        } else {
+            result = Optional.empty();
+        }
+        return result;
     }
 
-    public static Optional<Boolean> cmdArgOffline(final Properties systemProperties) {
-        final String value = systemProperties != null ? systemProperties.getProperty(ENV_MAVEN_CMD_LINE_ARGS) : null;
-        return Optional.ofNullable(value != null ? value.contains(" -o ") : null);
+    public static Boolean cmdArgOffline(final CliRequest cliRequest) {
+        return cliRequest.getCommandLine().hasOption(CLIManager.OFFLINE);
     }
 
-    public static Optional<Boolean> cmdArgUpdate(final Context context) {
-        return cmdArgUpdate(systemProperties(context));
-    }
-
-    public static Optional<Boolean> cmdArgUpdate(final Properties systemProperties) {
-        final String value = systemProperties != null ? systemProperties.getProperty(ENV_MAVEN_CMD_LINE_ARGS) : null;
-        return Optional.ofNullable(value != null ? value.contains(" -U ") : null);
+    public static Boolean cmdArgUpdateSnapshots(final CliRequest cliRequest) {
+        return cliRequest.getCommandLine().hasOption(CLIManager.UPDATE_SNAPSHOTS);
     }
 
     /**
@@ -133,8 +134,18 @@ public abstract class MavenUtils {
 
     public static final String PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY = "maven.multiModuleProjectDirectory";
 
-    public static Path executionRootPath(final Properties systemProperties) {
-        return mavenMultiModuleProjectDirectory(systemProperties).orElseGet(() -> Paths.get(systemUserDir()));
+    public static Path executionRootPath(final CliRequest cliRequest) {
+        return mavenMultiModuleProjectDirectory(cliRequest.getSystemProperties())
+            .orElseGet(() -> {
+                final Optional<Path> argFile = cmdArgFile(cliRequest).map(Paths::get).filter(path -> path.toFile().exists());
+                final Path result;
+                if (argFile.isPresent()) {
+                    result = argFile.map(path -> path.toFile().isDirectory() ? path : path.getParent()).get();
+                } else {
+                    result = Paths.get(Optional.ofNullable(cliRequest.getWorkingDirectory()).orElseGet(SystemUtils::systemUserDir));
+                }
+                return result;
+            });
     }
 
     private static Optional<Path> mavenMultiModuleProjectDirectory(final Properties systemProperties) {
@@ -148,10 +159,12 @@ public abstract class MavenUtils {
         return result;
     }
 
-    private static final String ENV_MAVEN_CMD_LINE_ARGS = "env.MAVEN_CMD_LINE_ARGS";
-
     public static Properties systemProperties(final Context context) {
         return (Properties) context.getData().get("systemProperties");
+    }
+
+    public static Path userHomeDotM2() {
+        return Paths.get(SystemUtils.systemUserHome(), ".m2");
     }
 
     public static Properties userProperties(final Context context) {

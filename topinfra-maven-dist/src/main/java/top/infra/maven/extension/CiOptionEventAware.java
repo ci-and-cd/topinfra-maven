@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.apache.maven.eventspy.EventSpy.Context;
+import org.apache.maven.cli.CliRequest;
 
 import top.infra.maven.core.CiOption;
 import top.infra.maven.core.CiOptionContext;
@@ -18,7 +18,6 @@ import top.infra.maven.core.CiOptionContextBeanFactory;
 import top.infra.maven.core.CiOptionFactoryBean;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
-import top.infra.maven.utils.MavenUtils;
 import top.infra.maven.utils.PropertiesUtils;
 
 @Named
@@ -48,10 +47,12 @@ public class CiOptionEventAware implements MavenEventAware {
     }
 
     @Override
-    public void onInit(final Context context) {
+    public void afterInit(
+        final CliRequest cliRequest
+    ) {
         final CiOptionContext ciOptContext = this.ciOptContextFactoryBean.getCiOpts();
 
-        final Properties userProperties = MavenUtils.userProperties(context);
+        final Properties userProperties = ciOptContext.getUserProperties();
         // write all ciOpt properties into userProperties
         final Properties ciOptProperties = ciOptContext.setCiOptPropertiesInto(this.optionCollections, userProperties);
 
@@ -67,7 +68,7 @@ public class CiOptionEventAware implements MavenEventAware {
                 });
             logger.info("<<<<<<<<<< ---------- set options (update userProperties) ---------- <<<<<<<<<<");
 
-            final Properties systemProperties = MavenUtils.systemProperties(context);
+            final Properties systemProperties = cliRequest.getSystemProperties();
             logger.info(PropertiesUtils.toString(systemProperties, PATTERN_VARS_ENV_DOT_CI));
             logger.info(PropertiesUtils.toString(userProperties, null));
         }

@@ -1,6 +1,5 @@
 package top.infra.maven.extension.infra;
 
-import static java.lang.Boolean.FALSE;
 import static top.infra.maven.Constants.SRC_CI_OPTS_PROPERTIES;
 import static top.infra.maven.extension.InfraOption.CACHE_SETTINGS_PATH;
 import static top.infra.maven.extension.InfraOption.GIT_AUTH_TOKEN;
@@ -17,7 +16,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.maven.cli.CliRequest;
-import org.apache.maven.eventspy.EventSpy.Context;
 
 import top.infra.maven.core.CiOptionContext;
 import top.infra.maven.core.CiOptionContextBeanFactory;
@@ -59,17 +57,21 @@ public class OptionFileLoader implements MavenEventAware {
     }
 
     @Override
-    public void onInit(final Context context) {
-        this.load();
+    public void afterInit(
+        final CliRequest cliRequest
+    ) {
+        this.load(cliRequest);
     }
 
-    public void load() {
+    public void load(final CliRequest cliRequest) {
         final CiOptionContext context = this.ciOptionContextBeanFactory.getCiOpts();
         CACHE_SETTINGS_PATH.getValue(context).ifPresent(FileUtils::createDirectories);
         checkGitAuthToken(logger, context);
 
         // ci options from file
-        final Optional<Properties> loadedProperties = ciOptContextFromFile(context, logger, this.remoteOriginUrl);
+        final boolean offline = MavenUtils.cmdArgOffline(cliRequest);
+        final boolean update = MavenUtils.cmdArgUpdateSnapshots(cliRequest);
+        final Optional<Properties> loadedProperties = ciOptContextFromFile(context, logger, this.remoteOriginUrl, offline, update);
 
         loadedProperties.ifPresent(props -> {
             logger.info(">>>>>>>>>> ---------- load options from file ---------- >>>>>>>>>>");
@@ -92,15 +94,15 @@ public class OptionFileLoader implements MavenEventAware {
     static Optional<Properties> ciOptContextFromFile(
         final CiOptionContext ciOptContext,
         final Logger logger,
-        final String remoteOriginUrl
+        final String remoteOriginUrl,
+        final boolean offline,
+        final boolean update
     ) {
         return InfraOption.CI_OPTS_FILE.getValue(ciOptContext).map(optsFile -> {
             final Properties properties = new Properties();
 
             CACHE_SETTINGS_PATH.getValue(ciOptContext).ifPresent(FileUtils::createDirectories);
 
-            final boolean offline = MavenUtils.cmdArgOffline(ciOptContext.getSystemProperties()).orElse(FALSE);
-            final boolean update = MavenUtils.cmdArgUpdate(ciOptContext.getSystemProperties()).orElse(FALSE);
             GitRepository.newGitRepository(ciOptContext, logger, remoteOriginUrl).ifPresent(repo -> {
                 repo.download(SRC_CI_OPTS_PROPERTIES, Paths.get(optsFile), true, offline, update);
 
@@ -114,10 +116,5 @@ public class OptionFileLoader implements MavenEventAware {
 
             return properties;
         });
-    }
-
-    @Deprecated
-    public void process(final CliRequest request) throws Exception {
-        this.load();
     }
 }

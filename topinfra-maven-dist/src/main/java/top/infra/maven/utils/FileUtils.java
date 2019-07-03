@@ -3,6 +3,7 @@ package top.infra.maven.utils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,6 +35,10 @@ public class FileUtils {
         final Path path = Paths.get(pathname);
         try {
             Files.createDirectories(path);
+        } catch (final FileAlreadyExistsException ex) {
+            if (path.toFile().isFile()) {
+                throw new RuntimeIOException(String.format("Error create directory '%s'. %s", pathname, ex.getMessage()), ex);
+            }
         } catch (final IOException ex) {
             throw new RuntimeIOException(String.format("Error create directory '%s'. %s", pathname, ex.getMessage()), ex);
         }

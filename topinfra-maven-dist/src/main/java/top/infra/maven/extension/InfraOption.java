@@ -22,9 +22,9 @@ public enum InfraOption implements CiOption {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             // We need a stable global cache path
-            final String infrastructure = INFRASTRUCTURE.getValue(context)
-                .orElseGet(() -> MavenUtils.executionRootPath(context.getSystemProperties()).getFileName().toString());
-            return Optional.of(Paths.get(systemUserHome(), ".ci-and-cd", infrastructure).toString());
+            return Optional.of(INFRASTRUCTURE.getValue(context)
+                .map(infra -> Paths.get(systemUserHome(), ".ci-and-cd", infra).toString())
+                .orElseGet(() -> MavenUtils.userHomeDotM2().toString()));
         }
     },
     CI_OPTS_FILE("ci.opts.file") {

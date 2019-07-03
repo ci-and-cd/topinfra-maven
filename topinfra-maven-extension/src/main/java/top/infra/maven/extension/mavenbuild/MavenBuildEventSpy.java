@@ -4,6 +4,7 @@ import static top.infra.maven.core.CiOptionNames.PATTERN_VARS_ENV_DOT_CI;
 import static top.infra.maven.extension.MavenBuildExtensionOption.GIT_REF_NAME;
 import static top.infra.maven.utils.SupportFunction.isEmpty;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,6 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.maven.cli.CliRequest;
 import org.apache.maven.eventspy.AbstractEventSpy;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
@@ -25,10 +27,12 @@ import org.apache.maven.toolchain.building.ToolchainsBuildingResult;
 
 import top.infra.maven.core.CiOptionContext;
 import top.infra.maven.core.CiOptionContextBeanFactory;
+import top.infra.maven.extension.MavenBuildConfigurationProcessor;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
+import top.infra.maven.utils.MavenUtils;
 import top.infra.maven.utils.PropertiesUtils;
 
 /**
@@ -45,6 +49,7 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
     private final Logger logger;
 
     private final CiOptionContextBeanFactory ciOptContextFactory;
+    private final MavenBuildConfigurationProcessor cliRequestFactory;
 
     private final List<MavenEventAware> eventAwares;
 
@@ -61,10 +66,12 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
     public MavenBuildEventSpy(
         final org.codehaus.plexus.logging.Logger logger,
         final CiOptionContextBeanFactory ciOptContextFactory,
+        final MavenBuildConfigurationProcessor cliRequestFactory,
         final List<MavenEventAware> eventAwares
     ) {
         this.logger = new LoggerPlexusImpl(logger);
         this.ciOptContextFactory = ciOptContextFactory;
+        this.cliRequestFactory = cliRequestFactory;
         this.eventAwares = eventAwares.stream().sorted().collect(Collectors.toList());
 
         this.ciOptContext = null;
@@ -86,21 +93,6 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
     @Override
     public void init(final Context context) throws Exception {
         try {
-            if (logger.isInfoEnabled()) {
-                logger.info(String.format("init with context [%s]", context));
-
-                final Map<String, Object> contextData = context.getData();
-                contextData.keySet().stream().sorted().forEach(k -> {
-                    final Object v = contextData.get(k);
-                    if (v instanceof Properties) {
-                        logger.info(String.format("contextData found properties %s => ", k));
-                        logger.info(PropertiesUtils.toString((Properties) v, null));
-                    } else {
-                        logger.info(String.format("contextData found property   %s => %s", k, v));
-                    }
-                });
-            }
-
             this.onInit(context);
         } catch (final Exception ex) {
             logger.error("Exception on init.", ex);
@@ -111,21 +103,25 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
     @Override
     public void onEvent(final Object event) throws Exception {
         try {
+            final CliRequest cliRequest = this.cliRequestFactory.getCliRequest();
+
             if (event instanceof SettingsBuildingRequest) {
+                this.afterInit(cliRequest);
+
                 final SettingsBuildingRequest request = (SettingsBuildingRequest) event;
-                this.onSettingsBuildingRequest(request, this.ciOptContext);
+                this.onSettingsBuildingRequest(cliRequest, request, this.ciOptContext);
             } else if (event instanceof SettingsBuildingResult) {
                 final SettingsBuildingResult result = (SettingsBuildingResult) event;
-                this.onSettingsBuildingResult(result, this.ciOptContext);
+                this.onSettingsBuildingResult(cliRequest, result, this.ciOptContext);
             } else if (event instanceof ToolchainsBuildingRequest) {
                 final ToolchainsBuildingRequest request = (ToolchainsBuildingRequest) event;
-                this.onToolchainsBuildingRequest(request, this.ciOptContext);
+                this.onToolchainsBuildingRequest(cliRequest, request, this.ciOptContext);
             } else if (event instanceof ToolchainsBuildingResult) {
                 final ToolchainsBuildingResult result = (ToolchainsBuildingResult) event;
-                this.onToolchainsBuildingResult(result, this.ciOptContext);
+                this.onToolchainsBuildingResult(cliRequest, result, this.ciOptContext);
             } else if (event instanceof MavenExecutionRequest) {
                 final MavenExecutionRequest request = (MavenExecutionRequest) event;
-                this.onMavenExecutionRequest(request, this.ciOptContext);
+                this.onMavenExecutionRequest(cliRequest, request, this.ciOptContext);
             } else {
                 if (logger.isDebugEnabled()) {
                     logger.debug(String.format("onEvent %s", event));
@@ -140,13 +136,43 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
     }
 
     public void onInit(final Context context) {
+        if (logger.isInfoEnabled()) {
+            logger.info(String.format("init with context [%s]", context));
+
+            final Map<String, Object> contextData = context.getData();
+            contextData.keySet().stream().sorted().forEach(k -> {
+                final Object v = contextData.get(k);
+                if (v instanceof Properties) {
+                    logger.info(String.format("contextData found properties %s => ", k));
+                    logger.info(PropertiesUtils.toString((Properties) v, null));
+                } else {
+                    logger.info(String.format("contextData found property   %s => %s", k, v));
+                }
+            });
+        }
+
         // print info
         assert Orders.ORDER_INFO_PRINTER < Orders.ORDER_SYSTEM_TO_USER_PROPERTIES;
+        // ciOptionContext
+        assert Orders.ORDER_SYSTEM_TO_USER_PROPERTIES < Orders.ORDER_OPTIONS_FACTORY;
+
+        this.eventAwares.forEach(it -> it.onInit(context));
+    }
+
+    public void afterInit(
+        final CliRequest cliRequest
+    ) {
+        final Path rootProjectPath = MavenUtils.executionRootPath(cliRequest).toAbsolutePath();
+        logger.info(String.format("executionRootPath [%s]", rootProjectPath));
+
+        assert Orders.ORDER_OPTIONS_FACTORY < Orders.ORDER_OPTION_FILE_LOADER;
         // move -Dproperty=value in MAVEN_OPTS from systemProperties into userProperties (maven does not do this automatically)
         assert Orders.ORDER_SYSTEM_TO_USER_PROPERTIES < Orders.EVENT_AWARE_ORDER_CI_OPTION;
         // init ci options
+        // try to read settings.localRepository from request.userProperties
+        assert Orders.EVENT_AWARE_ORDER_CI_OPTION < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
 
-        this.eventAwares.forEach(it -> it.onInit(context));
+        this.eventAwares.forEach(it -> it.afterInit(cliRequest));
 
         this.ciOptContext = this.ciOptContextFactory.getCiOpts();
         final Optional<String> gitRefName = GIT_REF_NAME.getValue(this.ciOptContext);
@@ -156,23 +182,17 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
                 GIT_REF_NAME.getEnvVariableName(), GIT_REF_NAME.getPropertyName()
             ));
         }
-
-        this.afterInit(context, this.ciOptContext);
     }
 
-    public void afterInit(final Context context, final CiOptionContext ciOptContext) {
-        // try to read settings.localRepository from request.userProperties
-        assert Orders.EVENT_AWARE_ORDER_CI_OPTION < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
-        // download maven settings.xml, settings-security.xml (optional) and toolchains.xml
-        assert Orders.EVENT_AWARE_ORDER_CI_OPTION < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES;
-        assert Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_LOCALREPOSITORY < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES;
-        // warn about absent env.VARIABLEs in settings.xml's server tags
-        assert Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SERVERS;
-
-        this.eventAwares.forEach(it -> it.afterInit(context, ciOptContext));
-    }
-
+    /**
+     * After org.apache.maven.cli.configuration.ConfigurationProcessor.
+     *
+     * @param cliRequest   cliRequest
+     * @param request      {@link SettingsBuildingRequest}
+     * @param ciOptContext context
+     */
     public void onSettingsBuildingRequest(
+        final CliRequest cliRequest,
         final SettingsBuildingRequest request,
         final CiOptionContext ciOptContext
     ) {
@@ -184,13 +204,18 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
             logger.info(String.format("onEvent SettingsBuildingRequest. userSettingsSource: [%s]", request.getUserSettingsSource()));
         }
 
+        // download maven settings.xml, settings-security.xml (optional) and toolchains.xml
+        assert Orders.EVENT_AWARE_ORDER_CI_OPTION < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES;
         // set custom settings file (if present) into request.userSettingsFile
         assert Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_LOCALREPOSITORY < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES;
+        // warn about absent env.VARIABLEs in settings.xml's server tags
+        assert Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SERVERS;
 
-        this.eventAwares.forEach(it -> it.onSettingsBuildingRequest(request, ciOptContext));
+        this.eventAwares.forEach(it -> it.onSettingsBuildingRequest(cliRequest, request, ciOptContext));
     }
 
     public void onSettingsBuildingResult(
+        final CliRequest cliRequest,
         final SettingsBuildingResult result,
         final CiOptionContext ciOptContext
     ) {
@@ -201,10 +226,11 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         // set settings.localRepository (if present) into effectiveSettings
         assert Orders.EVENT_AWARE_ORDER_CI_OPTION < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
 
-        this.eventAwares.forEach(it -> it.onSettingsBuildingResult(result, ciOptContext));
+        this.eventAwares.forEach(it -> it.onSettingsBuildingResult(cliRequest, result, ciOptContext));
     }
 
     public void onToolchainsBuildingRequest(
+        final CliRequest cliRequest,
         final ToolchainsBuildingRequest request,
         final CiOptionContext ciOptContext
     ) {
@@ -212,10 +238,11 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
             logger.info(String.format("onEvent ToolchainsBuildingRequest %s", request));
         }
 
-        this.eventAwares.forEach(it -> it.onToolchainsBuildingRequest(request, ciOptContext));
+        this.eventAwares.forEach(it -> it.onToolchainsBuildingRequest(cliRequest, request, ciOptContext));
     }
 
     public void onToolchainsBuildingResult(
+        final CliRequest cliRequest,
         final ToolchainsBuildingResult result,
         final CiOptionContext ciOptContext
     ) {
@@ -223,10 +250,11 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
             logger.info(String.format("onEvent ToolchainsBuildingResult %s", result));
         }
 
-        this.eventAwares.forEach(it -> it.onToolchainsBuildingResult(result, ciOptContext));
+        this.eventAwares.forEach(it -> it.onToolchainsBuildingResult(cliRequest, result, ciOptContext));
     }
 
     public void onMavenExecutionRequest(
+        final CliRequest cliRequest,
         final MavenExecutionRequest request,
         final CiOptionContext ciOptContext
     ) {
@@ -238,7 +266,7 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         assert Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_LOCALREPOSITORY < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SERVERS;
         // check empty or blank property values in settings.servers
 
-        this.eventAwares.forEach(it -> it.onMavenExecutionRequest(request, ciOptContext));
+        this.eventAwares.forEach(it -> it.onMavenExecutionRequest(cliRequest, request, ciOptContext));
 
 
         final ProjectBuildingRequest projectBuildingRequest = request.getProjectBuildingRequest();
@@ -256,7 +284,7 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
                 logger.info("     <<<<< projectBuildingRequest (ProfileActivationContext) userProperties <<<<<");
             }
 
-            this.onProjectBuildingRequest(request, projectBuildingRequest, ciOptContext);
+            this.onProjectBuildingRequest(cliRequest, request, projectBuildingRequest, ciOptContext);
         } else {
             if (logger.isInfoEnabled()) {
                 logger.info(String.format("onEvent MavenExecutionRequest %s but projectBuildingRequest is null.", request));
@@ -265,6 +293,7 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
     }
 
     public void onProjectBuildingRequest(
+        final CliRequest cliRequest,
         final MavenExecutionRequest mavenExecution,
         final ProjectBuildingRequest projectBuilding,
         final CiOptionContext ciOptContext
@@ -287,6 +316,6 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         assert Orders.EVENT_AWARE_ORDER_GOAL_EDITOR < Orders.EVENT_AWARE_ORDER_DOCKER;
         // prepare docker
 
-        this.eventAwares.forEach(it -> it.onProjectBuildingRequest(mavenExecution, projectBuilding, ciOptContext));
+        this.eventAwares.forEach(it -> it.onProjectBuildingRequest(cliRequest, mavenExecution, projectBuilding, ciOptContext));
     }
 }

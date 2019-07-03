@@ -38,7 +38,8 @@ public class CiOptionTests {
         assertEquals(TRUE.toString(), GENERATEREPORTS.getValue(ciOptContext).orElse(null));
 
         final String remoteOriginUrl = gitProperties().remoteOriginUrl().orElse(null);
-        OptionFileLoader.ciOptContextFromFile(ciOptContext, logger(), remoteOriginUrl).ifPresent(ciOptContext::updateSystemProperties);
+        OptionFileLoader.ciOptContextFromFile(ciOptContext, logger(), remoteOriginUrl, false, true)
+            .ifPresent(ciOptContext::updateSystemProperties);
 
         slf4jLogger.info("generateReports {}", GENERATEREPORTS.getValue(ciOptContext).orElse(null));
         assertEquals(TRUE.toString(), GENERATEREPORTS.getValue(ciOptContext).orElse(null));

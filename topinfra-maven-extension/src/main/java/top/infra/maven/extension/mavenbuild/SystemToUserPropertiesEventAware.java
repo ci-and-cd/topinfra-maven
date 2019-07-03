@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.apache.maven.eventspy.EventSpy.Context;
+import org.apache.maven.cli.CliRequest;
 
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.Orders;
@@ -46,10 +46,12 @@ public class SystemToUserPropertiesEventAware implements MavenEventAware {
     }
 
     @Override
-    public void onInit(final Context context) {
+    public void afterInit(
+        final CliRequest cliRequest
+    ) {
         this.systemToUserProperties(
-            MavenUtils.systemProperties(context),
-            MavenUtils.userProperties(context)
+            cliRequest.getSystemProperties(),
+            cliRequest.getUserProperties()
         );
     }
 

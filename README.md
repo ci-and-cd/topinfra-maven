@@ -6,7 +6,7 @@ snapshots: https://oss.sonatype.org/content/repositories/snapshots/top/infra/mav
 
 ```bash
 git clone -b feature/distributionUrl git@github.com:ci-and-cd/takari-maven-plugin.git
-(cd takari-maven-plugin; mvn clean install)
+mvn -f takari-maven-plugin clean install
 
 mvn -N io.takari:maven:0.7.7-SNAPSHOT:wrapper -DdistributionUrl=https://oss.sonatype.org/content/repositories/snapshots/top/infra/maven/topinfra-maven-dist/0.0.1-SNAPSHOT/topinfra-maven-dist-0.0.1-20190703.071528-2.zip
 ```

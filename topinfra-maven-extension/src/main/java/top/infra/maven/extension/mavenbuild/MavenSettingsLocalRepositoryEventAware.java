@@ -7,7 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.apache.maven.eventspy.EventSpy.Context;
+import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
 import org.apache.maven.settings.building.SettingsBuildingResult;
@@ -17,11 +17,12 @@ import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
-import top.infra.maven.utils.MavenUtils;
 
 /**
  * Support specify maven local repository by user property settings.localRepository.
+ * TODO -Dmaven.repo.local=
  */
+@Deprecated
 @Named
 @Singleton
 public class MavenSettingsLocalRepositoryEventAware implements MavenEventAware {
@@ -47,22 +48,32 @@ public class MavenSettingsLocalRepositoryEventAware implements MavenEventAware {
     }
 
     @Override
-    public void onInit(final Context context) {
+    public void afterInit(
+        final CliRequest cliRequest
+    ) {
         copyOrSetDefaultToUserProps(
-            MavenUtils.systemProperties(context),
-            MavenUtils.userProperties(context),
+            cliRequest.getSystemProperties(),
+            cliRequest.getUserProperties(),
             USER_PROPERTY_SETTINGS_LOCALREPOSITORY,
             null
         );
     }
 
     @Override
-    public void onSettingsBuildingRequest(final SettingsBuildingRequest request, final CiOptionContext ciOptContext) {
+    public void onSettingsBuildingRequest(
+        final CliRequest cliRequest,
+        final SettingsBuildingRequest request,
+        final CiOptionContext ciOptContext
+    ) {
         // no-op
     }
 
     @Override
-    public void onSettingsBuildingResult(final SettingsBuildingResult result, final CiOptionContext ciOptContext) {
+    public void onSettingsBuildingResult(
+        final CliRequest cliRequest,
+        final SettingsBuildingResult result,
+        final CiOptionContext ciOptContext
+    ) {
         // Allow override value of localRepository in settings.xml by user property settings.localRepository.
         // e.g. ./mvnw -Dsettings.localRepository=${HOME}/.m3/repository clean install
         if (!isEmpty(this.settingsLocalRepository)) {
@@ -76,7 +87,11 @@ public class MavenSettingsLocalRepositoryEventAware implements MavenEventAware {
     }
 
     @Override
-    public void onMavenExecutionRequest(final MavenExecutionRequest request, final CiOptionContext ciOptContext) {
+    public void onMavenExecutionRequest(
+        final CliRequest cliRequest,
+        final MavenExecutionRequest request,
+        final CiOptionContext ciOptContext
+    ) {
         if (isEmpty(this.settingsLocalRepository)) {
             this.settingsLocalRepository = request.getLocalRepository().getBasedir();
             if (logger.isInfoEnabled()) {

@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
@@ -48,6 +49,7 @@ public class DockerEventAware implements MavenEventAware {
 
     @Override
     public void onProjectBuildingRequest(
+        final CliRequest cliRequest,
         final MavenExecutionRequest mavenExecution,
         final ProjectBuildingRequest projectBuilding,
         final CiOptionContext ciOptContext
