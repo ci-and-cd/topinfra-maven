@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>top.infra</groupId>
+        <groupId>top.infra.maven</groupId>
         <artifactId>maven-core-extensions</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
@@ -18,7 +18,7 @@
 
     <!-- @formatter:off -->
     <dependencies>
-        <dependency><groupId>top.infra</groupId><artifactId>extension-core</artifactId><scope>provided</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>extension-core</artifactId><scope>provided</scope></dependency>
 
         <dependency><groupId>com.google.guava</groupId><artifactId>guava</artifactId></dependency>
         <dependency><groupId>org.apache.commons</groupId><artifactId>commons-lang3</artifactId></dependency>

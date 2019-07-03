@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>top.infra</groupId>
+        <groupId>top.infra.maven</groupId>
         <artifactId>maven-core-extensions</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
@@ -45,16 +45,16 @@
 
     <!-- @formatter:off -->
     <dependencies>
-        <dependency><groupId>top.infra</groupId><artifactId>extension-core</artifactId><scope>provided</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>extension-core</artifactId><scope>provided</scope></dependency>
 
-        <dependency><groupId>top.infra</groupId><artifactId>extension-test</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>extension-test</artifactId><scope>test</scope></dependency>
 
-        <dependency><groupId>top.infra</groupId><artifactId>docker-login-extension</artifactId><scope>test</scope></dependency>
-        <dependency><groupId>top.infra</groupId><artifactId>gitflow-semantic-versioning-extension</artifactId><scope>test</scope></dependency>
-        <dependency><groupId>top.infra</groupId><artifactId>gpg-helper-extension</artifactId><scope>test</scope></dependency>
-        <dependency><groupId>top.infra</groupId><artifactId>infrastructure-extension</artifactId><scope>test</scope></dependency>
-        <dependency><groupId>top.infra</groupId><artifactId>maven-build-pom-extension</artifactId><scope>test</scope></dependency>
-        <dependency><groupId>top.infra</groupId><artifactId>settings-security-extension</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>docker-login-extension</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>gitflow-semantic-versioning-extension</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>gpg-helper-extension</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>infrastructure-extension</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>maven-build-pom-extension</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>settings-security-extension</artifactId><scope>test</scope></dependency>
     </dependencies>
     <!-- @formatter:on -->
 
