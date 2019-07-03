@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>top.infra.maven</groupId>
-    <artifactId>maven-core-extensions</artifactId>
+    <artifactId>topinfra-maven</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -183,16 +183,16 @@
     </dependencies>
     <dependencyManagement>
         <dependencies>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>extension-core</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>extension-core</artifactId><classifier>mvn${version.maven}</classifier><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>extension-test</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>docker-login-extension</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>gitflow-semantic-versioning-extension</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>gpg-helper-extension</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>infrastructure-extension</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>maven-build-extension</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>maven-build-pom-extension</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>settings-security-extension</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><classifier>mvn${version.maven}</classifier><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-test</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-docker</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-gitflow-semver</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-gpg-key</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-infrastructure-settings</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-extension</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-maven-build-pom</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-settings-security</artifactId><version>${project.version}</version></dependency>
 
             <dependency><groupId>cn.home1.tools</groupId><artifactId>maven-settings-decoder-core</artifactId><version>1.1.0</version></dependency>
             <dependency><groupId>com.google.code.findbugs</groupId><artifactId>annotations</artifactId><version>3.0.1u2</version></dependency>
@@ -230,15 +230,15 @@
     <!-- @formatter:on -->
 
     <modules>
-        <module>docker-login-extension</module>
-        <module>extension-core</module>
-        <module>extension-test</module>
-        <module>gitflow-semantic-versioning-extension</module>
-        <module>gpg-helper-extension</module>
-        <module>infrastructure-extension</module>
-        <module>maven-build-extension</module>
-        <module>maven-build-pom-extension</module>
-        <module>settings-security-extension</module>
+        <module>topinfra-maven-dist</module>
+        <module>topinfra-maven-extension</module>
+        <module>topinfra-maven-test</module>
+        <module>topinfra-mvnext-module-docker</module>
+        <module>topinfra-mvnext-module-gitflow-semver</module>
+        <module>topinfra-mvnext-module-gpg-key</module>
+        <module>topinfra-mvnext-module-infrastructure-settings</module>
+        <module>topinfra-mvnext-module-maven-build-pom</module>
+        <module>topinfra-mvnext-module-settings-security</module>
     </modules>
 
     <profiles>

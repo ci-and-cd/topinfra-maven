@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension>
+    <exportedPackages>
+        <exportedPackage>top.infra.maven.extension.docker</exportedPackage>
+    </exportedPackages>
+
+    <exportedArtifacts>
+        <exportedArtifact>${project.groupId}:topinfra-mvnext-module-docker</exportedArtifact>
+    </exportedArtifacts>
+</extension>
