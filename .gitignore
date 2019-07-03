@@ -14,7 +14,15 @@ buildNumber.properties
 !/.mvn/wrapper/maven-wrapper.jar
 /.profiler
 
-.idea/
+# see: https://tjrobinson.net/2019/04/28/a-gitignore-file-for-excluding-rider-idea-directories-except-runconfigurations.html
+# Ignore only specific Rider files/directories
+# For syntax see: https://stackoverflow.com/a/14422549/12124
+/.idea/*
+!/.idea/.idea.*
+/.idea/.idea.*/*
+!/.idea/.idea.*/.idea
+/.idea/.idea.*/.idea/*
+!/.idea/.idea.*/.idea/runConfigurations
 *.iml
 *.ipr
 *.iws
@@ -25,6 +33,6 @@ buildNumber.properties
 git.properties
 
 /test-repo/
-*/test-repo/**/*
+*/test-repo/**/*/
 
 /TODO*.*
