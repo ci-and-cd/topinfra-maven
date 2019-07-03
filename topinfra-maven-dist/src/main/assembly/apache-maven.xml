@@ -10,6 +10,9 @@
     </formats>
     <fileSets>
         <fileSet>
+            <excludes>
+                <exclude>/conf/settings.xml</exclude>
+            </excludes>
             <directory>${project.basedir}/src/main/assembly/apache-maven/apache-maven-${version.maven}</directory>
             <outputDirectory>/</outputDirectory>
         </fileSet>
@@ -18,6 +21,10 @@
         <file>
             <source>${project.build.directory}/${project.artifactId}-${project.version}-mvn${version.maven}.${project.packaging}</source>
             <outputDirectory>/lib</outputDirectory>
+        </file>
+        <file>
+            <source>${project.basedir}/src/main/assembly/settings.xml</source>
+            <outputDirectory>/conf</outputDirectory>
         </file>
     </files>
     <dependencySets>

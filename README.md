@@ -1,11 +1,14 @@
 # maven-core-extensions
 Maven core extensions (for github.com/ci-and-cd/maven-build)
 
+
+snapshots: https://oss.sonatype.org/content/repositories/snapshots/top/infra/maven/
+
 ```bash
 git clone -b feature/distributionUrl git@github.com:ci-and-cd/takari-maven-plugin.git
 (cd takari-maven-plugin; mvn clean install)
 
-mvn -N io.takari:maven:0.7.7-SNAPSHOT:wrapper -DdistributionUrl=https://oss.sonatype.org/content/repositories/snapshots/top/infra/extension-core/0.0.1-SNAPSHOT/extension-core-0.0.1-20190702.121020-13.zip
+mvn -N io.takari:maven:0.7.7-SNAPSHOT:wrapper -DdistributionUrl=https://oss.sonatype.org/content/repositories/snapshots/top/infra/maven/topinfra-maven-dist/0.0.1-SNAPSHOT/topinfra-maven-dist-0.0.1-20190703.071528-2.zip
 ```
 
 Support overriding maven local repository by user property settings.localRepository
