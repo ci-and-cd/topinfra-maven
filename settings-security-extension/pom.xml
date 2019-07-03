@@ -34,7 +34,7 @@
                     <showErrors>true</showErrors>
                     <streamLogs>true</streamLogs>
                     <localRepositoryPath>${project.basedir}/../test-repo</localRepositoryPath>
-                    <mavenHome>${project.basedir}/../extension-core/target/apache-maven-3.6.1/apache-maven-3.6.1</mavenHome>
+                    <mavenHome>${project.basedir}/../extension-core/target/apache-maven-${version.maven}/apache-maven-${version.maven}</mavenHome>
                     <settingsFile>src/it/test-ss-in-working-dir/settings.xml</settingsFile>
                     <pomIncludes>
                         <include>test-ss-in-working-dir</include>

@@ -10,13 +10,13 @@
     </formats>
     <fileSets>
         <fileSet>
-            <directory>${project.basedir}/src/main/assembly/apache-maven/apache-maven-3.6.1</directory>
+            <directory>${project.basedir}/src/main/assembly/apache-maven/apache-maven-${version.maven}</directory>
             <outputDirectory>/</outputDirectory>
         </fileSet>
     </fileSets>
     <files>
         <file>
-            <source>${project.build.directory}/${project.artifactId}-${project.version}.${project.packaging}</source>
+            <source>${project.build.directory}/${project.artifactId}-${project.version}-mvn${version.maven}.${project.packaging}</source>
             <outputDirectory>/lib</outputDirectory>
         </file>
     </files>

@@ -24,7 +24,6 @@
                     <execution><id>attach-test-javadocs</id><goals><goal>test-jar</goal></goals><phase>prepare-package</phase></execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -115,6 +114,7 @@
                         <useStandardDocletOptions>true</useStandardDocletOptions>
                     </configuration>
                 </plugin>
+                <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId><version>${version.maven-jar-plugin}</version></plugin>
                 <plugin><artifactId>maven-source-plugin</artifactId><version>${version.maven-source-plugin}</version></plugin>
                 <plugin><artifactId>nexus-staging-maven-plugin</artifactId><groupId>org.sonatype.plugins</groupId><version>${version.nexus-staging-maven-plugin}</version></plugin>
 
@@ -184,6 +184,7 @@
     <dependencyManagement>
         <dependencies>
             <dependency><groupId>${project.groupId}</groupId><artifactId>extension-core</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>extension-core</artifactId><classifier>mvn${version.maven}</classifier><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>extension-test</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>docker-login-extension</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>gitflow-semantic-versioning-extension</artifactId><version>${project.version}</version></dependency>
@@ -307,6 +308,8 @@
         <version.logback>1.2.3</version.logback>
         <version.lombok>1.16.14</version.lombok>
         <version.maven>3.6.1</version.maven>
+        <md5.maven>fd43b329dcf4c837f4951ff9834f0e6f</md5.maven>
+        <version.maven-jar-plugin>3.1.2</version.maven-jar-plugin>
         <version.maven.testing>2.22.2</version.maven.testing>
         <version.nexus-staging-maven-plugin>1.6.8</version.nexus-staging-maven-plugin>
         <version.plexus-cipher>1.7</version.plexus-cipher>

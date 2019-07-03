@@ -14,6 +14,22 @@
     <build>
         <plugins>
             <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <!--<configuration><classifier>mvn${version.maven}</classifier></configuration>-->
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>mvn${version.maven}</classifier>
+                            <excludes></excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>com.googlecode.maven-download-plugin</groupId>
                 <artifactId>download-maven-plugin</artifactId>
                 <version>1.4.2</version>
@@ -25,10 +41,10 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.6.1/apache-maven-3.6.1-bin.zip</url>
+                            <url>https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${version.maven}/apache-maven-${version.maven}-bin.zip</url>
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}/src/main/assembly/apache-maven</outputDirectory>
-                            <md5>fd43b329dcf4c837f4951ff9834f0e6f</md5>
+                            <md5>${md5.maven}</md5>
                         </configuration>
                     </execution>
                 </executions>
@@ -46,7 +62,7 @@
                             <descriptors>
                                 <descriptor>src/main/assembly/apache-maven.xml</descriptor>
                             </descriptors>
-                            <finalName>apache-maven-3.6.1</finalName>
+                            <finalName>apache-maven-${version.maven}</finalName>
                         </configuration>
                     </execution>
                 </executions>
