@@ -11,11 +11,15 @@ public interface CiOption {
 
     Optional<String> getDefaultValue();
 
-    String getEnvVariableName();
+    default String getEnvVariableName() {
+        return CiOptionNames.envVariableName(this.getPropertyName());
+    }
 
     String getPropertyName();
 
-    String getSystemPropertyName();
+    default String getSystemPropertyName() {
+        return CiOptionNames.systemPropertyName(this.getPropertyName());
+    }
 
     /**
      * Get value.

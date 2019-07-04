@@ -10,7 +10,6 @@ import top.infra.maven.cienv.GitlabCiVariables;
 import top.infra.maven.cienv.TravisCiVariables;
 import top.infra.maven.core.CiOption;
 import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.core.CiOptionNames;
 
 public enum VcsProperties implements CiOption {
 
@@ -58,24 +57,17 @@ public enum VcsProperties implements CiOption {
     ;
 
     static final Pattern PATTERN_GIT_REPO_SLUG = Pattern.compile(".*[:/]([^/]+(/[^/.]+))(\\.git)?");
+
     private final String defaultValue;
-    private final String envVariableName;
     private final String propertyName;
-    private final String systemPropertyName;
 
     VcsProperties(final String propertyName) {
         this(propertyName, null);
     }
 
     VcsProperties(final String propertyName, final String defaultValue) {
-        if (!CiOptionNames.name(propertyName).equals(this.name())) {
-            throw new IllegalArgumentException(String.format("invalid property name [%s] for enum name [%s]", this.name(), propertyName));
-        }
-
         this.defaultValue = defaultValue;
-        this.envVariableName = CiOptionNames.envVariableName(propertyName);
         this.propertyName = propertyName;
-        this.systemPropertyName = CiOptionNames.systemPropertyName(propertyName);
     }
 
     /**
@@ -130,19 +122,13 @@ public enum VcsProperties implements CiOption {
         return result;
     }
 
+    @Override
     public Optional<String> getDefaultValue() {
         return Optional.ofNullable(this.defaultValue);
     }
 
-    public String getEnvVariableName() {
-        return this.envVariableName;
-    }
-
+    @Override
     public String getPropertyName() {
         return this.propertyName;
-    }
-
-    public String getSystemPropertyName() {
-        return this.systemPropertyName;
     }
 }

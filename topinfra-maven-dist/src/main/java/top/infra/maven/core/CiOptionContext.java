@@ -29,15 +29,22 @@ public class CiOptionContext {
     }
 
     public Properties setCiOptPropertiesInto(
-        final Collection<List<CiOption>> optionCollections,
+        final Collection<List<CiOption>> optionGroups,
         final Properties... targetProperties
     ) {
         final Properties properties = new Properties();
 
-        optionCollections
+        optionGroups
             .stream()
-            .flatMap(collection -> collection.stream().sorted())
-            .forEach(ciOption -> ciOption.setProperties(this, properties));
+            .flatMap(group -> group.stream().sorted())
+            .forEach(ciOption -> {
+                if (!ciOption.name().equals(CiOptionNames.name(ciOption.getPropertyName()))) {
+                    throw new IllegalArgumentException(String.format(
+                        "invalid property name [%s] for enum name [%s]", ciOption.name(), ciOption.getPropertyName()));
+                }
+
+                ciOption.setProperties(this, properties);
+            });
 
         for (final Properties target : targetProperties) {
             PropertiesUtils.merge(properties, target);

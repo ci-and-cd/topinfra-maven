@@ -22,7 +22,6 @@ import java.util.Properties;
 
 import top.infra.maven.core.CiOption;
 import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.core.CiOptionNames;
 import top.infra.maven.extension.MavenOption;
 import top.infra.maven.extension.VcsProperties;
 
@@ -220,7 +219,6 @@ public enum MavenBuildPomOption implements CiOption {
     WAGON_MERGEMAVENREPOS_TARGETID("wagon.merge-maven-repos.targetId") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            final Optional<String> result;
             final Optional<String> infrastructure = INFRASTRUCTURE.getValue(context);
             return Optional.of(infrastructure
                 .map(infra -> String.format("%s-${publish.channel}s", infra))
@@ -230,38 +228,24 @@ public enum MavenBuildPomOption implements CiOption {
     ;
 
     private final String defaultValue;
-    private final String envVariableName;
     private final String propertyName;
-    private final String systemPropertyName;
 
     MavenBuildPomOption(final String propertyName) {
         this(propertyName, null);
     }
 
     MavenBuildPomOption(final String propertyName, final String defaultValue) {
-        if (!CiOptionNames.name(propertyName).equals(this.name())) {
-            throw new IllegalArgumentException(String.format("invalid property name [%s] for enum name [%s]", this.name(), propertyName));
-        }
-
         this.defaultValue = defaultValue;
-        this.envVariableName = CiOptionNames.envVariableName(propertyName);
         this.propertyName = propertyName;
-        this.systemPropertyName = CiOptionNames.systemPropertyName(propertyName);
     }
 
+    @Override
     public Optional<String> getDefaultValue() {
         return Optional.ofNullable(this.defaultValue);
     }
 
-    public String getEnvVariableName() {
-        return this.envVariableName;
-    }
-
+    @Override
     public String getPropertyName() {
         return this.propertyName;
-    }
-
-    public String getSystemPropertyName() {
-        return this.systemPropertyName;
     }
 }
