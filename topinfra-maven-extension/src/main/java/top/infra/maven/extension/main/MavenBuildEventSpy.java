@@ -1,4 +1,4 @@
-package top.infra.maven.extension.mavenbuild;
+package top.infra.maven.extension.main;
 
 import static top.infra.maven.core.CiOptionNames.PATTERN_VARS_ENV_DOT_CI;
 import static top.infra.maven.extension.VcsProperties.GIT_REF_NAME;

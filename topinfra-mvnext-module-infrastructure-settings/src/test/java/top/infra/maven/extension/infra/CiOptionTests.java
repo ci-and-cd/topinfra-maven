@@ -3,6 +3,8 @@ package top.infra.maven.extension.infra;
 import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.assertEquals;
 import static top.infra.maven.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.extension.InfraOption.SONAR_HOST_URL;
+import static top.infra.maven.extension.InfraOption.SONAR_ORGANIZATION;
 import static top.infra.maven.extension.MavenOption.GENERATEREPORTS;
 import static top.infra.maven.extension.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 
@@ -48,6 +50,41 @@ public class CiOptionTests {
 
         slf4jLogger.info("generateReports {}", GENERATEREPORTS.getValue(ciOptContext).orElse(null));
         assertEquals(TRUE.toString(), GENERATEREPORTS.getValue(ciOptContext).orElse(null));
+    }
+
+    @Test
+    public void testSonarOptions() {
+        final String expectedSonarHostUrl = "https://sonarqube.com";
+        final String expectedSonarOrganization = "home1-oss-github";
+
+        final Properties systemProperties = new Properties();
+        systemProperties.setProperty(GENERATEREPORTS.getSystemPropertyName(), BOOL_STRING_TRUE);
+        systemProperties.setProperty(SONAR_ORGANIZATION.getSystemPropertyName(), expectedSonarOrganization);
+
+        final Properties userProperties = new Properties();
+
+        // gitProperties if needed
+
+        final CiOptionContext ciOptContext = new CiOptionContext(
+            systemProperties,
+            userProperties
+        );
+
+        final Properties loadedProperties = new Properties();
+        loadedProperties.setProperty(SONAR_HOST_URL.getEnvVariableName(), expectedSonarHostUrl);
+        ciOptContext.updateSystemProperties(loadedProperties);
+
+        final Properties newProperties = ciOptContext.setCiOptPropertiesInto(OptionCollections.optionCollections(), userProperties);
+
+        slf4jLogger.info("{} {}", SONAR_HOST_URL.getEnvVariableName(), SONAR_HOST_URL.getValue(ciOptContext).orElse(null));
+        slf4jLogger.info("{} {}", SONAR_HOST_URL.getPropertyName(), userProperties.getProperty(SONAR_HOST_URL.getPropertyName()));
+        assertEquals(expectedSonarHostUrl, SONAR_HOST_URL.getValue(ciOptContext).orElse(null));
+        assertEquals(expectedSonarHostUrl, userProperties.getProperty(SONAR_HOST_URL.getPropertyName()));
+
+        slf4jLogger.info("{} {}", SONAR_ORGANIZATION.getEnvVariableName(), SONAR_ORGANIZATION.getValue(ciOptContext).orElse(null));
+        slf4jLogger.info("{} {}", SONAR_ORGANIZATION.getPropertyName(), userProperties.getProperty(SONAR_ORGANIZATION.getPropertyName()));
+        assertEquals(expectedSonarOrganization, SONAR_ORGANIZATION.getValue(ciOptContext).orElse(null));
+        assertEquals(expectedSonarOrganization, userProperties.getProperty(SONAR_ORGANIZATION.getPropertyName()));
     }
 
     private static Logger logger() {

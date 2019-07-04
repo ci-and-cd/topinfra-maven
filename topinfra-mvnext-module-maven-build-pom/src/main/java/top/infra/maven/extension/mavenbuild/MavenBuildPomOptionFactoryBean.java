@@ -1,4 +1,4 @@
-package top.infra.maven.extension;
+package top.infra.maven.extension.mavenbuild;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,6 +8,7 @@ import javax.inject.Singleton;
 
 import top.infra.maven.core.CiOption;
 import top.infra.maven.core.CiOptionFactoryBean;
+import top.infra.maven.extension.Orders;
 
 @Named
 @Singleton

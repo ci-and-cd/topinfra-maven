@@ -1,4 +1,4 @@
-package top.infra.maven.extension.mavenbuild;
+package top.infra.maven.extension.main;
 
 import static org.eclipse.jgit.lib.Repository.shortenRefName;
 import static top.infra.maven.extension.VcsProperties.GIT_COMMIT_ID;

@@ -1,4 +1,4 @@
-package top.infra.maven.extension.mavenbuild;
+package top.infra.maven.extension.main;
 
 import java.util.Collections;
 import java.util.List;

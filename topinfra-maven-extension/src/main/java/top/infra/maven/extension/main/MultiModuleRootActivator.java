@@ -1,4 +1,4 @@
-package top.infra.maven.extension.mavenbuild;
+package top.infra.maven.extension.main;
 
 import static top.infra.maven.utils.MavenUtils.profileId;
 import static top.infra.maven.utils.MavenUtils.projectName;

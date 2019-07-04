@@ -1,6 +1,6 @@
-package top.infra.maven.extension.mavenbuild;
+package top.infra.maven.extension.main;
 
-import static top.infra.maven.extension.mavenbuild.SystemToUserPropertiesEventAware.copyOrSetDefaultToUserProps;
+import static top.infra.maven.extension.main.SystemToUserPropertiesEventAware.copyOrSetDefaultToUserProps;
 import static top.infra.maven.utils.SupportFunction.isEmpty;
 
 import javax.inject.Inject;

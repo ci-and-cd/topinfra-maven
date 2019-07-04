@@ -1,4 +1,4 @@
-package top.infra.maven.extension.mavenbuild;
+package top.infra.maven.extension.main;
 
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toMap;

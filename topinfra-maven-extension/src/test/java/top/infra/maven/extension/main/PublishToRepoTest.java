@@ -1,4 +1,4 @@
-package top.infra.maven.extension.mavenbuild;
+package top.infra.maven.extension.main;
 
 import static java.lang.Boolean.FALSE;
 import static org.junit.Assert.assertTrue;

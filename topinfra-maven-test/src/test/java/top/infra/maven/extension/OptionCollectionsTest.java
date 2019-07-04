@@ -19,6 +19,6 @@ public class OptionCollectionsTest {
 
         optionCollections.forEach(it -> log.info("optionCollections: {}", it));
 
-        assertEquals(5, optionCollections.size());
+        assertEquals(4, optionCollections.size());
     }
 }

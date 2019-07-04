@@ -2,6 +2,7 @@
 <extension>
     <exportedPackages>
         <exportedPackage>top.infra.maven.*</exportedPackage>
+        <exportedPackage>top.infra.maven.cienv</exportedPackage>
         <exportedPackage>top.infra.maven.core</exportedPackage>
         <exportedPackage>top.infra.maven.exception</exportedPackage>
         <exportedPackage>top.infra.maven.extension</exportedPackage>
@@ -12,6 +13,6 @@
     </exportedPackages>
 
     <exportedArtifacts>
-        <exportedArtifact>${project.groupId}:topinfra-maven</exportedArtifact>
+        <exportedArtifact>${project.groupId}:topinfra-maven-dist</exportedArtifact>
     </exportedArtifacts>
 </extension>

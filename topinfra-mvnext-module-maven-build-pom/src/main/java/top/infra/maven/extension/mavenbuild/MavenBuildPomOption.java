@@ -1,13 +1,13 @@
-package top.infra.maven.extension;
+package top.infra.maven.extension.mavenbuild;
 
 import static java.lang.Boolean.FALSE;
 import static top.infra.maven.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
 import static top.infra.maven.Constants.GIT_REF_PREFIX_FEATURE;
 import static top.infra.maven.Constants.GIT_REF_PREFIX_HOTFIX;
 import static top.infra.maven.Constants.GIT_REF_PREFIX_RELEASE;
 import static top.infra.maven.Constants.GIT_REF_PREFIX_SUPPORT;
-import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
 import static top.infra.maven.Constants.PUBLISH_CHANNEL_RELEASE;
 import static top.infra.maven.Constants.PUBLISH_CHANNEL_SNAPSHOT;
 import static top.infra.maven.extension.FastOption.FAST;
@@ -23,6 +23,9 @@ import java.util.Properties;
 import top.infra.maven.core.CiOption;
 import top.infra.maven.core.CiOptionContext;
 import top.infra.maven.core.CiOptionNames;
+import top.infra.maven.extension.MavenBuildExtensionOption;
+import top.infra.maven.extension.MavenOption;
+import top.infra.maven.extension.VcsProperties;
 
 public enum MavenBuildPomOption implements CiOption {
     CHECKSTYLE_CONFIG_LOCATION("checkstyle.config.location",
