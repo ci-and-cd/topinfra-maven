@@ -68,44 +68,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>com.googlecode.maven-download-plugin</groupId>
-                <artifactId>download-maven-plugin</artifactId>
-                <version>1.4.2</version>
-                <executions>
-                    <execution>
-                        <id>install-jbpm</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <url>https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${version.maven}/apache-maven-${version.maven}-bin.zip</url>
-                            <unpack>true</unpack>
-                            <outputDirectory>${project.basedir}/src/main/assembly/apache-maven</outputDirectory>
-                            <md5>${md5.maven}</md5>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <descriptors>
-                                <descriptor>src/main/assembly/apache-maven.xml</descriptor>
-                            </descriptors>
-                            <finalName>apache-maven-${version.maven}</finalName>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -114,6 +76,56 @@
         <dependency><groupId>org.apache.maven</groupId><artifactId>maven-embedder</artifactId><scope>provided</scope></dependency>
         <dependency><groupId>org.apache.maven</groupId><artifactId>maven-model</artifactId><scope>provided</scope></dependency>
     </dependencies>
+    <!-- @formatter:on -->
+
+    <!-- @formatter:off -->
+    <profiles>
+        <profile>
+            <id>skip-these-plugins-when-fast-option-present</id>
+            <activation><property><name>!fast</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.googlecode.maven-download-plugin</groupId>
+                        <artifactId>download-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>download-apache-maven</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <url>https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${version.maven}/apache-maven-${version.maven}-bin.zip</url>
+                                    <unpack>true</unpack>
+                                    <outputDirectory>${project.basedir}/src/main/assembly/apache-maven</outputDirectory>
+                                    <md5>${md5.maven}</md5>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <appendAssemblyId>false</appendAssemblyId>
+                                    <descriptors>
+                                        <descriptor>src/main/assembly/apache-maven.xml</descriptor>
+                                    </descriptors>
+                                    <finalName>apache-maven-${version.maven}</finalName>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <!-- @formatter:on -->
 
     <properties>

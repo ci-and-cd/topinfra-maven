@@ -109,6 +109,7 @@
         <module>topinfra-mvnext-module-settings-security</module>
     </modules>
 
+    <!-- @formatter:off -->
     <profiles>
         <profile>
             <id>gpg2-arguments</id>
@@ -191,6 +192,8 @@
                 </plugins>
                 <pluginManagement>
                     <plugins>
+                        <plugin><groupId>com.googlecode.maven-download-plugin</groupId><artifactId>download-maven-plugin</artifactId><version>1.4.2</version></plugin>
+
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-invoker-plugin</artifactId>
@@ -303,6 +306,7 @@
             </build>
         </profile>
     </profiles>
+    <!-- @formatter:on -->
 
     <properties>
         <java.version>8</java.version>
