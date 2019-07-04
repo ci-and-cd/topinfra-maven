@@ -1,9 +1,9 @@
-package top.infra.maven.core;
+package top.infra.maven.extension.mavenbuild;
 
 import static org.eclipse.jgit.lib.Repository.shortenRefName;
-import static top.infra.maven.core.GitProperties.GIT_COMMIT_ID;
-import static top.infra.maven.core.GitProperties.GIT_REF_NAME;
-import static top.infra.maven.core.GitProperties.GIT_REMOTE_ORIGIN_URL;
+import static top.infra.maven.extension.VcsProperties.GIT_COMMIT_ID;
+import static top.infra.maven.extension.VcsProperties.GIT_REF_NAME;
+import static top.infra.maven.extension.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +20,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.maven.cli.CliRequest;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -31,12 +32,16 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.RevWalkUtils;
 
+import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.extension.MavenEventAware;
+import top.infra.maven.extension.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
+import top.infra.maven.utils.PropertiesUtils;
 
 @Named
 @Singleton
-public class GitPropertiesBeanFactory {
+public class GitPropertiesEventAware implements MavenEventAware {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
@@ -48,16 +53,31 @@ public class GitPropertiesBeanFactory {
     private Logger logger;
 
     @Inject
-    public GitPropertiesBeanFactory(final org.codehaus.plexus.logging.Logger logger) {
-        this.logger = new LoggerPlexusImpl(logger);
+    public GitPropertiesEventAware(
+        final org.codehaus.plexus.logging.Logger logger
+    ) {
+        this(new LoggerPlexusImpl(logger));
     }
 
-    public GitPropertiesBeanFactory(final Logger logger) {
+    public GitPropertiesEventAware(
+        final Logger logger
+    ) {
         this.logger = logger;
     }
 
-    public GitProperties getObject() {
-        return newJgitProperties(this.logger).map(GitProperties::newGitProperties).orElseGet(GitProperties::newBlankGitProperties);
+    @Override
+    public int getOrder() {
+        return Orders.ORDER_GIT_PROPERTIES;
+    }
+
+    @Override
+    public void afterInit(
+        final CliRequest cliRequest,
+        final CiOptionContext ciOptContext
+    ) {
+        // TODO heck if .git file (git submodules) or .git directory exists.
+        final Optional<Properties> gitProperties = newJgitProperties(this.logger);
+        gitProperties.ifPresent(props -> PropertiesUtils.merge(props, ciOptContext.getSystemProperties()));
     }
 
     private static Optional<Properties> newJgitProperties(final Logger logger) {
@@ -122,17 +142,17 @@ public class GitPropertiesBeanFactory {
                     }
                 }
                 if (logger.isInfoEnabled()) {
-                    logger.info(String.format(GIT_PROPERTIES_LOG_FORMAT, GIT_REF_NAME, refName));
+                    logger.info(String.format(GIT_PROPERTIES_LOG_FORMAT, GIT_REF_NAME.getPropertyName(), refName));
                     logger.info(String.format(GIT_PROPERTIES_LOG_FORMAT, GIT_REF_NAME_FULL, refNameFull));
                 }
                 map.put(GIT_REF_NAME_FULL, refNameFull);
-                map.put(GIT_REF_NAME, refName);
+                map.put(GIT_REF_NAME.getPropertyName(), refName);
 
                 final String commitId = head.name();
                 if (logger.isInfoEnabled()) {
-                    logger.info(String.format(GIT_PROPERTIES_LOG_FORMAT, GIT_COMMIT_ID, commitId));
+                    logger.info(String.format(GIT_PROPERTIES_LOG_FORMAT, GIT_COMMIT_ID.getPropertyName(), commitId));
                 }
-                map.put(GIT_COMMIT_ID, commitId);
+                map.put(GIT_COMMIT_ID.getPropertyName(), commitId);
 
                 try (final ObjectReader objectReader = repository.newObjectReader()) {
                     final String commitIdAbbrev = objectReader.abbreviate(head).name();
@@ -151,9 +171,9 @@ public class GitPropertiesBeanFactory {
 
                 final String remoteOriginUrl = repository.getConfig().getString("remote", "origin", "url");
                 if (logger.isInfoEnabled()) {
-                    logger.info(String.format(GIT_PROPERTIES_LOG_FORMAT, GIT_REMOTE_ORIGIN_URL, remoteOriginUrl));
+                    logger.info(String.format(GIT_PROPERTIES_LOG_FORMAT, GIT_REMOTE_ORIGIN_URL.getPropertyName(), remoteOriginUrl));
                 }
-                map.put(GIT_REMOTE_ORIGIN_URL, remoteOriginUrl);
+                map.put(GIT_REMOTE_ORIGIN_URL.getPropertyName(), remoteOriginUrl);
 
                 final Properties properties = new Properties();
                 properties.putAll(map);

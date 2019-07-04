@@ -14,22 +14,10 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.core.GitProperties;
-import top.infra.maven.core.GitPropertiesBeanFactory;
-import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerSlf4jImpl;
 
 public class CiOptionTests {
 
     private static final org.slf4j.Logger slf4jLogger = LoggerFactory.getLogger(CiOptionTests.class);
-
-    private static Logger logger() {
-        return new LoggerSlf4jImpl(slf4jLogger);
-    }
-
-    private static GitProperties gitProperties() {
-        return new GitPropertiesBeanFactory(logger()).getObject();
-    }
 
     @Test
     public void testGithubSiteRepoOwner() {
@@ -38,8 +26,9 @@ public class CiOptionTests {
         final Properties userProperties = new Properties();
         userProperties.setProperty(GENERATEREPORTS.getPropertyName(), BOOL_STRING_TRUE);
 
+        // gitProperties if needed
+
         final CiOptionContext ciOptContext = new CiOptionContext(
-            gitProperties(),
             systemProperties,
             userProperties
         );
@@ -66,8 +55,9 @@ public class CiOptionTests {
 
         final Properties userProperties = new Properties();
 
+        // gitProperties if needed
+
         final CiOptionContext ciOptContext = new CiOptionContext(
-            gitProperties(),
             systemProperties,
             userProperties
         );

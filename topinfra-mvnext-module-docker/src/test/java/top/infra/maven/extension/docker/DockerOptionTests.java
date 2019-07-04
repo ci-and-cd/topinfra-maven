@@ -14,11 +14,7 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.core.GitProperties;
-import top.infra.maven.core.GitPropertiesBeanFactory;
 import top.infra.maven.extension.OptionCollections;
-import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerSlf4jImpl;
 
 
 public class DockerOptionTests {
@@ -32,8 +28,9 @@ public class DockerOptionTests {
         final Properties userProperties = new Properties();
         userProperties.setProperty(GENERATEREPORTS.getPropertyName(), BOOL_STRING_TRUE);
 
+        // gitProperties if needed
+
         final CiOptionContext ciOptContext = new CiOptionContext(
-            gitProperties(),
             systemProperties,
             userProperties
         );
@@ -54,13 +51,5 @@ public class DockerOptionTests {
         assertNull(DOCKER_REGISTRY.getValue(ciOptContext).orElse(null));
         assertNull(newProperties.getProperty(DOCKER_REGISTRY.getPropertyName()));
         assertFalse(newProperties.containsKey(DOCKER_REGISTRY.getPropertyName()));
-    }
-
-    private static GitProperties gitProperties() {
-        return new GitPropertiesBeanFactory(logger()).getObject();
-    }
-
-    private static Logger logger() {
-        return new LoggerSlf4jImpl(slf4jLogger);
     }
 }

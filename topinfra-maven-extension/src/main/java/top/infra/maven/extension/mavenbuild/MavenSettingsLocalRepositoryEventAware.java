@@ -49,11 +49,12 @@ public class MavenSettingsLocalRepositoryEventAware implements MavenEventAware {
 
     @Override
     public void afterInit(
-        final CliRequest cliRequest
+        final CliRequest cliRequest,
+        final CiOptionContext ciOptContext
     ) {
         copyOrSetDefaultToUserProps(
-            cliRequest.getSystemProperties(),
-            cliRequest.getUserProperties(),
+            ciOptContext.getSystemProperties(),
+            ciOptContext.getUserProperties(),
             USER_PROPERTY_SETTINGS_LOCALREPOSITORY,
             null
         );

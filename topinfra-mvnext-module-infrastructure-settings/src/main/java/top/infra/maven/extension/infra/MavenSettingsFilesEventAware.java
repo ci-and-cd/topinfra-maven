@@ -7,6 +7,7 @@ import static top.infra.maven.extension.InfraOption.CACHE_SETTINGS_PATH;
 import static top.infra.maven.extension.InfraOption.SETTINGS;
 import static top.infra.maven.extension.InfraOption.SETTINGS_SECURITY;
 import static top.infra.maven.extension.InfraOption.TOOLCHAINS;
+import static top.infra.maven.extension.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 import static top.infra.maven.utils.SystemUtils.os;
 
 import java.nio.file.Path;
@@ -29,7 +30,6 @@ import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
 
 import top.infra.maven.core.CiOption;
 import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.core.GitPropertiesBeanFactory;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.Orders;
 import top.infra.maven.logging.Logger;
@@ -47,8 +47,6 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
     private final Logger logger;
 
-    private final String remoteOriginUrl;
-
     private GitRepository gitRepository;
 
     private Path settingsXml;
@@ -56,11 +54,9 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
     @Inject
     public MavenSettingsFilesEventAware(
-        final org.codehaus.plexus.logging.Logger logger,
-        final GitPropertiesBeanFactory gitPropertiesBeanFactory
+        final org.codehaus.plexus.logging.Logger logger
     ) {
         this.logger = new LoggerPlexusImpl(logger);
-        this.remoteOriginUrl = gitPropertiesBeanFactory.getObject().remoteOriginUrl().orElse(null);
 
         this.gitRepository = null;
         this.settingsXml = null;
@@ -78,7 +74,8 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         final SettingsBuildingRequest request,
         final CiOptionContext ciOptContext
     ) {
-        this.gitRepository = GitRepository.newGitRepository(ciOptContext, logger, this.remoteOriginUrl).orElse(null);
+        final String remoteOriginUrl = GIT_REMOTE_ORIGIN_URL.getValue(ciOptContext).orElse(null);
+        this.gitRepository = GitRepository.newGitRepository(ciOptContext, logger, remoteOriginUrl).orElse(null);
 
         logger.info(">>>>>>>>>> ---------- Setting file [settings.xml]. ---------- >>>>>>>>>>");
         this.settingsXml = this.findOrDownload(
@@ -156,7 +153,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
         final Optional<Path> result;
         final Optional<Path> inM2 = userHomeDotM2(filename);
-        final Optional<Path> foundAtLocal = findFile(cliRequest, filename, propertyName);
+        final Optional<Path> foundAtLocal = findFile(cliRequest, ciOptContext, filename, propertyName);
         if (cacheDir.isPresent()) {
             final Path targetFile = Paths.get(cacheDir.get(), filename);
             if (foundAtLocal.map(value -> !FileUtils.isSameFile(value, targetFile)).orElse(FALSE)) {
@@ -203,13 +200,14 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
     public static Optional<Path> findFile(
         final CliRequest cliRequest,
+        final CiOptionContext ciOptContext,
         final String filename,
         final String propertyName
     ) {
         return Stream.of(
-            SettingsFiles.findInUserProperties(cliRequest.getUserProperties(), propertyName),
-            SettingsFiles.findInSystemProperties(cliRequest.getSystemProperties(), propertyName),
-            SettingsFiles.findInWorkingDir(MavenUtils.executionRootPath(cliRequest), filename),
+            SettingsFiles.findInUserProperties(ciOptContext.getUserProperties(), propertyName),
+            SettingsFiles.findInSystemProperties(ciOptContext.getSystemProperties(), propertyName),
+            SettingsFiles.findInWorkingDir(MavenUtils.executionRootPath(cliRequest, ciOptContext), filename),
             SettingsFiles.findInCustomSettingsDir(cliRequest, filename)
         )
             .filter(Optional::isPresent)

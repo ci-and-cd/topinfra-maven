@@ -18,7 +18,8 @@ public interface MavenEventAware extends Ordered {
     }
 
     default void afterInit(
-        final CliRequest cliRequest
+        final CliRequest cliRequest,
+        final CiOptionContext ciOptContext
     ) {
         // no-op
     }

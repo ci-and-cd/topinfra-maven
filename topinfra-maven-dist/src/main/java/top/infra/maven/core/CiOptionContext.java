@@ -7,24 +7,16 @@ import top.infra.maven.utils.PropertiesUtils;
 
 public class CiOptionContext {
 
-    private final GitProperties gitProperties;
-
     private final Properties systemProperties;
 
     private final Properties userProperties;
 
     public CiOptionContext(
-        final GitProperties gitProperties,
         final Properties systemProperties,
         final Properties userProperties
     ) {
-        this.gitProperties = gitProperties;
         this.systemProperties = systemProperties;
         this.userProperties = userProperties;
-    }
-
-    public GitProperties getGitProperties() {
-        return this.gitProperties;
     }
 
     public Properties getSystemProperties() {

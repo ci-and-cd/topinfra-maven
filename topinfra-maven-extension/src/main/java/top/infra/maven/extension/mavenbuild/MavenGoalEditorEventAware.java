@@ -24,6 +24,7 @@ import top.infra.maven.extension.MavenBuildExtensionOption;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.MavenOption;
 import top.infra.maven.extension.Orders;
+import top.infra.maven.extension.VcsProperties;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.PropertiesUtils;
@@ -83,7 +84,7 @@ public class MavenGoalEditorEventAware implements MavenEventAware {
         final MavenGoalEditor goalEditor = new MavenGoalEditor(
             logger,
             MavenOption.GENERATEREPORTS.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null),
-            MavenBuildExtensionOption.GIT_REF_NAME.getValue(ciOptContext).orElse(null),
+            VcsProperties.GIT_REF_NAME.getValue(ciOptContext).orElse(null),
             MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(FALSE),
             MavenBuildExtensionOption.ORIGIN_REPO.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null),
             MavenBuildExtensionOption.PUBLISH_TO_REPO.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null) // make sure version is valid too

@@ -22,7 +22,6 @@ import top.infra.maven.cienv.TravisCiVariables;
 import top.infra.maven.core.CiOption;
 import top.infra.maven.core.CiOptionContext;
 import top.infra.maven.core.CiOptionNames;
-import top.infra.maven.core.GitProperties;
 import top.infra.maven.utils.FileUtils;
 import top.infra.maven.utils.SupportFunction;
 
@@ -33,7 +32,7 @@ public enum MavenBuildExtensionOption implements CiOption {
             // We need a stable path prefix for cache
             // java.io.tmp changed on every time java process start.
             final String prefix = Paths.get(systemUserHome(), ".ci-and-cd", "sessions").toString();
-            final String commitId = context.getGitProperties().commitId().map(value -> value.substring(0, 8)).orElse("unknown-commit");
+            final String commitId = VcsProperties.GIT_COMMIT_ID.getValue(context).map(value -> value.substring(0, 8)).orElse("unknown-commit");
             final String pathname = Paths.get(prefix, SupportFunction.uniqueKey(), commitId).toString();
             return Optional.of(pathname);
         }
@@ -45,44 +44,6 @@ public enum MavenBuildExtensionOption implements CiOption {
             return result;
         }
     },
-    // GIT_AUTH_TOKEN("git.auth.token"),
-    /**
-     * Auto detect current build ref name by CI environment variables or local git info.
-     * Current build ref name, i.e. develop, release ...
-     * <p>
-     * travis-ci<br/>
-     * TRAVIS_BRANCH for travis-ci, see: https://docs.travis-ci.com/user/environment-variables/<br/>
-     * for builds triggered by a tag, this is the same as the name of the tag (TRAVIS_TAG).<br/>
-     * </p>
-     * <p>
-     * appveyor<br/>
-     * APPVEYOR_REPO_BRANCH - build branch. For Pull Request commits it is base branch PR is merging into<br/>
-     * APPVEYOR_REPO_TAG - true if build has started by pushed tag; otherwise false<br/>
-     * APPVEYOR_REPO_TAG_NAME - contains tag name for builds started by tag; otherwise this variable is<br/>
-     * </p>
-     */
-    GIT_REF_NAME("git.ref.name") {
-        @Override
-        public Optional<String> calculateValue(final CiOptionContext context) {
-            final Optional<String> result;
-
-            final Optional<String> appveyorRefName = new AppveyorVariables(context.getSystemProperties()).refName();
-            final Optional<String> gitlabCiRefName = new GitlabCiVariables(context.getSystemProperties()).refName();
-            final Optional<String> travisBranch = new TravisCiVariables(context.getSystemProperties()).branch();
-
-            if (appveyorRefName.isPresent()) {
-                result = appveyorRefName;
-            } else if (gitlabCiRefName.isPresent()) {
-                result = gitlabCiRefName;
-            } else if (travisBranch.isPresent()) {
-                result = travisBranch;
-            } else {
-                result = context.getGitProperties().refName();
-            }
-
-            return result;
-        }
-    },
     MVN_DEPLOY_PUBLISH_SEGREGATION("mvn.deploy.publish.segregation"),
     /**
      * Determine current is origin (original) or forked.
@@ -91,7 +52,7 @@ public enum MavenBuildExtensionOption implements CiOption {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             final AppveyorVariables appveyor = new AppveyorVariables(context.getSystemProperties());
-            final Optional<String> gitRepoSlug = gitRepoSlug(context.getGitProperties(), context.getSystemProperties());
+            final Optional<String> gitRepoSlug = gitRepoSlug(context);
             final Optional<String> originRepoSlug = ORIGIN_REPO_SLUG.getValue(context);
             final TravisCiVariables travisCi = new TravisCiVariables(context.getSystemProperties());
 
@@ -110,7 +71,7 @@ public enum MavenBuildExtensionOption implements CiOption {
         public Optional<String> calculateValue(final CiOptionContext context) {
             final String result;
 
-            final String refName = GIT_REF_NAME.getValue(context).orElse("");
+            final String refName = VcsProperties.GIT_REF_NAME.getValue(context).orElse("");
             final boolean originRepo = ORIGIN_REPO.getValue(context)
                 .map(Boolean::parseBoolean).orElse(FALSE);
 
@@ -173,14 +134,13 @@ public enum MavenBuildExtensionOption implements CiOption {
     /**
      * Get slug info of current repository (directory).
      *
-     * @param gitProperties    gitProperties
-     * @param systemProperties systemProperties
+     * @param ciOptionContext ciOptionContext
      * @return 'group/project' or 'owner/project'
      */
     public static Optional<String> gitRepoSlug(
-        final GitProperties gitProperties,
-        final Properties systemProperties
+        final CiOptionContext ciOptionContext
     ) {
+        final Properties systemProperties = ciOptionContext.getSystemProperties();
         final Optional<String> appveyorRepoSlug = new AppveyorVariables(systemProperties).repoSlug();
         final Optional<String> gitlabCiRepoSlug = new GitlabCiVariables(systemProperties).repoSlug();
         final Optional<String> travisRepoSlug = new TravisCiVariables(systemProperties).repoSlug();
@@ -193,7 +153,7 @@ public enum MavenBuildExtensionOption implements CiOption {
         } else if (travisRepoSlug.isPresent()) {
             result = travisRepoSlug;
         } else {
-            final Optional<String> gitRemoteOriginUrl = gitProperties.remoteOriginUrl();
+            final Optional<String> gitRemoteOriginUrl = VcsProperties.GIT_REMOTE_ORIGIN_URL.getValue(ciOptionContext);
             if (gitRemoteOriginUrl.isPresent()) {
                 result = gitRepoSlugFromUrl(gitRemoteOriginUrl.get());
             } else {

@@ -13,6 +13,7 @@ import javax.inject.Singleton;
 
 import org.apache.maven.cli.CliRequest;
 
+import top.infra.maven.core.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.Orders;
 import top.infra.maven.logging.Logger;
@@ -47,11 +48,12 @@ public class SystemToUserPropertiesEventAware implements MavenEventAware {
 
     @Override
     public void afterInit(
-        final CliRequest cliRequest
+        final CliRequest cliRequest,
+        final CiOptionContext ciOptContext
     ) {
         this.systemToUserProperties(
-            cliRequest.getSystemProperties(),
-            cliRequest.getUserProperties()
+            ciOptContext.getSystemProperties(),
+            ciOptContext.getUserProperties()
         );
     }
 

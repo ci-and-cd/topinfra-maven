@@ -63,7 +63,7 @@ public enum MavenBuildPomOption implements CiOption {
                 .map(Boolean::parseBoolean).orElse(FALSE);
 
             return generateReports
-                ? MavenBuildExtensionOption.gitRepoSlug(context.getGitProperties(), context.getSystemProperties())
+                ? MavenBuildExtensionOption.gitRepoSlug(context)
                 .map(slug -> slug.split("/")[0])
                 : Optional.empty();
         }
@@ -123,7 +123,7 @@ public enum MavenBuildPomOption implements CiOption {
         public Optional<String> calculateValue(final CiOptionContext context) {
             final String result;
 
-            final String refName = MavenBuildExtensionOption.GIT_REF_NAME.getValue(
+            final String refName = VcsProperties.GIT_REF_NAME.getValue(
                 context).orElse("");
             if (GIT_REF_NAME_DEVELOP.equals(refName)) {
                 result = PUBLISH_CHANNEL_SNAPSHOT;
@@ -151,8 +151,7 @@ public enum MavenBuildPomOption implements CiOption {
 
             final Optional<String> result;
             if (generateReports) {
-                final Optional<String> gitRepoSlug = MavenBuildExtensionOption
-                    .gitRepoSlug(context.getGitProperties(), context.getSystemProperties());
+                final Optional<String> gitRepoSlug = MavenBuildExtensionOption.gitRepoSlug(context);
                 result = gitRepoSlug.map(slug -> slug.split("/")[0]);
             } else {
                 result = Optional.empty();
@@ -181,7 +180,7 @@ public enum MavenBuildPomOption implements CiOption {
 
             final Optional<String> result;
             if (segregation) {
-                final String commitId = context.getGitProperties().commitId()
+                final String commitId = VcsProperties.GIT_COMMIT_ID.getValue(context)
                     .map(value -> value.substring(0, 8))
                     .orElse("unknown-commit");
                 // final String prefix = Paths.get(systemUserHome(), ".ci-and-cd", "local-deploy").toString();

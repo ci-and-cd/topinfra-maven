@@ -25,6 +25,7 @@ import top.infra.maven.Constants;
 import top.infra.maven.MavenPhase;
 import top.infra.maven.extension.MavenBuildExtensionOption;
 import top.infra.maven.extension.MavenOption;
+import top.infra.maven.extension.VcsProperties;
 import top.infra.maven.logging.Logger;
 
 public class MavenGoalEditor {
@@ -131,7 +132,7 @@ public class MavenGoalEditor {
                         logger.info(String.format("onMavenExecutionRequest skip goal %s (%s: %s, %s: %s)",
                             goal,
                             MavenBuildExtensionOption.ORIGIN_REPO.getEnvVariableName(), this.originRepo,
-                            MavenBuildExtensionOption.GIT_REF_NAME.getEnvVariableName(), this.gitRefName));
+                            VcsProperties.GIT_REF_NAME.getEnvVariableName(), this.gitRefName));
                     }
                 }
             } else {

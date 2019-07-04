@@ -3,7 +3,6 @@ package top.infra.maven.extension.gitflow;
 import static top.infra.maven.Constants.BRANCH_PREFIX_FEATURE;
 import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
 import static top.infra.maven.Constants.PUBLISH_CHANNEL_SNAPSHOT;
-import static top.infra.maven.extension.MavenBuildExtensionOption.GIT_REF_NAME;
 import static top.infra.maven.utils.SupportFunction.isEmpty;
 import static top.infra.maven.utils.SupportFunction.isSemanticSnapshotVersion;
 import static top.infra.maven.utils.SupportFunction.newTuple;
@@ -19,12 +18,12 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
 import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.extension.MavenBuildExtensionOption;
 import top.infra.maven.extension.MavenBuildPomOption;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.MavenProjectInfo;
 import top.infra.maven.extension.MavenProjectInfoEventAware;
 import top.infra.maven.extension.Orders;
+import top.infra.maven.extension.VcsProperties;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 
@@ -69,7 +68,7 @@ public class GitflowSemanticVersionChecker implements MavenEventAware {
             logger.info("<<<<<<<<<< ---------- resolve project version ---------- <<<<<<<<<<");
         }
 
-        final String gitRefName = GIT_REF_NAME.getValue(ciOptContext).orElse("");
+        final String gitRefName = VcsProperties.GIT_REF_NAME.getValue(ciOptContext).orElse("");
         final Entry<Boolean, RuntimeException> checkResult = checkProjectVersion(ciOptContext, mavenProjectInfo.getVersion());
         final boolean valid = checkResult.getKey();
         if (logger.isInfoEnabled()) {
@@ -96,7 +95,7 @@ public class GitflowSemanticVersionChecker implements MavenEventAware {
         final CiOptionContext ciOptContext,
         final String projectVersion
     ) {
-        final String gitRefName = MavenBuildExtensionOption.GIT_REF_NAME.getValue(ciOptContext).orElse("");
+        final String gitRefName = VcsProperties.GIT_REF_NAME.getValue(ciOptContext).orElse("");
         final String msgInvalidVersion = String.format("Invalid version [%s] for ref [%s]", projectVersion, gitRefName);
         final boolean semanticSnapshotVersion = isSemanticSnapshotVersion(projectVersion); // no feature name in version
         final boolean snapshotChannel = PUBLISH_CHANNEL_SNAPSHOT.equals(

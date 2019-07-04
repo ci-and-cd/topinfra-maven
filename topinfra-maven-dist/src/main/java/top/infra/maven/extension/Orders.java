@@ -12,7 +12,8 @@ public abstract class Orders {
 
     public static final int ORDER_INFO_PRINTER = Ordered.HIGHEST_PRECEDENCE;
     public static final int ORDER_SYSTEM_TO_USER_PROPERTIES = ORDER_INFO_PRINTER + 1;
-    public static final int ORDER_OPTIONS_FACTORY = ORDER_SYSTEM_TO_USER_PROPERTIES + 1;
+    public static final int ORDER_GIT_PROPERTIES = ORDER_SYSTEM_TO_USER_PROPERTIES + 1;
+    public static final int ORDER_OPTIONS_FACTORY = ORDER_GIT_PROPERTIES + 1;
     public static final int ORDER_OPTION_FILE_LOADER = ORDER_OPTIONS_FACTORY + 1; //
 
     public static final int EVENT_AWARE_ORDER_CI_OPTION = ORDER_OPTION_FILE_LOADER + 1;

@@ -22,6 +22,8 @@ import org.apache.maven.model.building.ModelProblemCollectorRequest;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.profile.ProfileActivationContext;
 
+import top.infra.maven.core.CiOptionContext;
+
 public abstract class MavenUtils {
 
     public static Optional<String> cmdArgFile(final CliRequest cliRequest) {
@@ -134,8 +136,11 @@ public abstract class MavenUtils {
 
     public static final String PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY = "maven.multiModuleProjectDirectory";
 
-    public static Path executionRootPath(final CliRequest cliRequest) {
-        return mavenMultiModuleProjectDirectory(cliRequest.getSystemProperties())
+    public static Path executionRootPath(
+        final CliRequest cliRequest,
+        final CiOptionContext ciOptionContext
+    ) {
+        return mavenMultiModuleProjectDirectory(ciOptionContext.getSystemProperties())
             .orElseGet(() -> {
                 final Optional<Path> argFile = cmdArgFile(cliRequest).map(Paths::get).filter(path -> path.toFile().exists());
                 final Path result;
