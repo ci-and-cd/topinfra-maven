@@ -4,7 +4,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static top.infra.maven.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
-import static top.infra.maven.extension.MavenBuildExtensionOption.ORIGIN_REPO;
 import static top.infra.maven.extension.MavenOption.GENERATEREPORTS;
 import static top.infra.maven.extension.VcsProperties.GIT_REF_NAME;
 import static top.infra.maven.extension.gitflow.GitFlowSemanticVersionChecker.checkProjectVersion;
@@ -47,7 +46,6 @@ public class ProjectVersionTest {
     public void testVersionsOnDevelopBranch() {
         final Properties systemProperties = new Properties();
         systemProperties.setProperty(GIT_REF_NAME.getSystemPropertyName(), GIT_REF_NAME_DEVELOP);
-        systemProperties.setProperty(ORIGIN_REPO.getSystemPropertyName(), BOOL_STRING_TRUE);
 
         final Properties userProperties = new Properties();
         userProperties.setProperty(GENERATEREPORTS.getPropertyName(), BOOL_STRING_TRUE);
@@ -77,7 +75,6 @@ public class ProjectVersionTest {
     public void testVersionsOnFeatureBranch() {
         final Properties systemProperties = new Properties();
         systemProperties.setProperty(GIT_REF_NAME.getSystemPropertyName(), "feature/feature1");
-        systemProperties.setProperty(ORIGIN_REPO.getSystemPropertyName(), BOOL_STRING_TRUE);
 
         final Properties userProperties = new Properties();
         userProperties.setProperty(GENERATEREPORTS.getPropertyName(), BOOL_STRING_TRUE);

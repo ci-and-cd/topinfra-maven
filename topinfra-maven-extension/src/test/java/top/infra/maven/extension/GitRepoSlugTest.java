@@ -2,8 +2,8 @@ package top.infra.maven.extension;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static top.infra.maven.extension.MavenBuildExtensionOption.PATTERN_GIT_REPO_SLUG;
-import static top.infra.maven.extension.MavenBuildExtensionOption.gitRepoSlugFromUrl;
+import static top.infra.maven.extension.VcsProperties.PATTERN_GIT_REPO_SLUG;
+import static top.infra.maven.extension.VcsProperties.gitRepoSlugFromUrl;
 
 import org.junit.Test;
 import org.slf4j.Logger;

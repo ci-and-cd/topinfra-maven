@@ -22,4 +22,9 @@ public class FastOptionFactoryBean implements CiOptionFactoryBean {
     public int getOrder() {
         return Orders.CI_OPTION_FAST;
     }
+
+    @Override
+    public Class<?> getType() {
+        return FastOption.class;
+    }
 }

@@ -4,8 +4,8 @@ import static java.lang.Boolean.FALSE;
 import static org.junit.Assert.assertTrue;
 import static top.infra.maven.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
-import static top.infra.maven.extension.MavenBuildExtensionOption.ORIGIN_REPO;
-import static top.infra.maven.extension.MavenBuildExtensionOption.PUBLISH_TO_REPO;
+import static top.infra.maven.extension.main.MavenBuildExtensionOption.ORIGIN_REPO;
+import static top.infra.maven.extension.main.MavenBuildExtensionOption.PUBLISH_TO_REPO;
 import static top.infra.maven.extension.MavenOption.GENERATEREPORTS;
 import static top.infra.maven.extension.VcsProperties.GIT_REF_NAME;
 

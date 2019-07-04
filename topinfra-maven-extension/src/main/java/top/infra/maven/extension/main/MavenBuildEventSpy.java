@@ -135,32 +135,6 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         super.onEvent(event);
     }
 
-    public void onInit(final Context context) {
-        if (logger.isInfoEnabled()) {
-            logger.info(String.format("init with context [%s]", context));
-
-            final Map<String, Object> contextData = context.getData();
-            contextData.keySet().stream().sorted().forEach(k -> {
-                final Object v = contextData.get(k);
-                if (v instanceof Properties) {
-                    logger.info(String.format("contextData found properties %s => ", k));
-                    logger.info(PropertiesUtils.toString((Properties) v, null));
-                } else {
-                    logger.info(String.format("contextData found property   %s => %s", k, v));
-                }
-            });
-        }
-
-        // print info
-        assert Orders.ORDER_INFO_PRINTER < Orders.ORDER_SYSTEM_TO_USER_PROPERTIES;
-        // ciOptionContext
-        assert Orders.ORDER_SYSTEM_TO_USER_PROPERTIES < Orders.ORDER_OPTIONS_FACTORY;
-
-        this.eventAwares.forEach(it -> it.onInit(context));
-
-        this.ciOptContext = this.ciOptContextFactory.getCiOpts();
-    }
-
     public void afterInit(
         final CliRequest cliRequest,
         final CiOptionContext ciOptionContext
@@ -319,5 +293,31 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         // prepare docker
 
         this.eventAwares.forEach(it -> it.onProjectBuildingRequest(cliRequest, mavenExecution, projectBuilding, ciOptionContext));
+    }
+
+    public void onInit(final Context context) {
+        if (logger.isInfoEnabled()) {
+            logger.info(String.format("init with context [%s]", context));
+
+            final Map<String, Object> contextData = context.getData();
+            contextData.keySet().stream().sorted().forEach(k -> {
+                final Object v = contextData.get(k);
+                if (v instanceof Properties) {
+                    logger.info(String.format("contextData found properties %s => ", k));
+                    logger.info(PropertiesUtils.toString((Properties) v, null));
+                } else {
+                    logger.info(String.format("contextData found property   %s => %s", k, v));
+                }
+            });
+        }
+
+        // print info
+        assert Orders.ORDER_INFO_PRINTER < Orders.ORDER_SYSTEM_TO_USER_PROPERTIES;
+        // ciOptionContext
+        assert Orders.ORDER_SYSTEM_TO_USER_PROPERTIES < Orders.ORDER_OPTIONS_FACTORY;
+
+        this.eventAwares.forEach(it -> it.onInit(context));
+
+        this.ciOptContext = this.ciOptContextFactory.getCiOpts();
     }
 }

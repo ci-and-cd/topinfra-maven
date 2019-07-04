@@ -23,7 +23,6 @@ import java.util.Properties;
 import top.infra.maven.core.CiOption;
 import top.infra.maven.core.CiOptionContext;
 import top.infra.maven.core.CiOptionNames;
-import top.infra.maven.extension.MavenBuildExtensionOption;
 import top.infra.maven.extension.MavenOption;
 import top.infra.maven.extension.VcsProperties;
 
@@ -66,7 +65,7 @@ public enum MavenBuildPomOption implements CiOption {
                 .map(Boolean::parseBoolean).orElse(FALSE);
 
             return generateReports
-                ? MavenBuildExtensionOption.gitRepoSlug(context)
+                ? VcsProperties.gitRepoSlug(context)
                 .map(slug -> slug.split("/")[0])
                 : Optional.empty();
         }
@@ -154,7 +153,7 @@ public enum MavenBuildPomOption implements CiOption {
 
             final Optional<String> result;
             if (generateReports) {
-                final Optional<String> gitRepoSlug = MavenBuildExtensionOption.gitRepoSlug(context);
+                final Optional<String> gitRepoSlug = VcsProperties.gitRepoSlug(context);
                 result = gitRepoSlug.map(slug -> slug.split("/")[0]);
             } else {
                 result = Optional.empty();
@@ -168,31 +167,18 @@ public enum MavenBuildPomOption implements CiOption {
         public Optional<String> calculateValue(final CiOptionContext context) {
             // TODO System.setProperty("wagon.merge-maven-repos.artifactDir", "${project.groupId}".replace('.', '/') + "/${project.artifactId}")
             // TODO Extract all options that depend on project properties to ProjectOption class.
-            final boolean segregation = MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION.getValue(
-                context)
-                .map(Boolean::parseBoolean).orElse(FALSE);
-            return Optional.ofNullable(segregation ? "${project.groupId}/${project.artifactId}" : null);
+            return Optional.of("${project.groupId}/${project.artifactId}");
         }
     },
     WAGON_MERGEMAVENREPOS_SOURCE("wagon.merge-maven-repos.source") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            final boolean segregation = MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION.getValue(
-                context)
-                .map(Boolean::parseBoolean).orElse(FALSE);
-
-            final Optional<String> result;
-            if (segregation) {
-                final String commitId = VcsProperties.GIT_COMMIT_ID.getValue(context)
-                    .map(value -> value.substring(0, 8))
-                    .orElse("unknown-commit");
-                // final String prefix = Paths.get(systemUserHome(), ".ci-and-cd", "local-deploy").toString();
-                final String prefix = Paths.get(systemUserDir(), ".mvn", "wagonRepository").toString();
-                result = Optional.of(Paths.get(prefix, commitId).toString());
-            } else {
-                result = Optional.empty();
-            }
-            return result;
+            final String commitId = VcsProperties.GIT_COMMIT_ID.getValue(context)
+                .map(value -> value.substring(0, 8))
+                .orElse("unknown-commit");
+            // final String prefix = Paths.get(systemUserHome(), ".ci-and-cd", "local-deploy").toString();
+            final String prefix = Paths.get(systemUserDir(), ".mvn", "wagonRepository").toString();
+            return Optional.of(Paths.get(prefix, commitId).toString());
         }
 
         @Override
@@ -207,57 +193,38 @@ public enum MavenBuildPomOption implements CiOption {
     WAGON_MERGEMAVENREPOS_TARGET("wagon.merge-maven-repos.target") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            final boolean segregation = MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION.
-                getValue(context)
+            final Optional<String> infrastructure = INFRASTRUCTURE.getValue(context);
+            final Optional<String> nexus2 = NEXUS2.getValue(context);
+
+            final boolean nexus2Staging = NEXUS2_STAGING.getValue(context)
                 .map(Boolean::parseBoolean).orElse(FALSE);
+            final Optional<String> publishChannel = PUBLISH_CHANNEL.getValue(context);
+            final boolean publishRelease = publishChannel.map(PUBLISH_CHANNEL_RELEASE::equals).orElse(FALSE);
 
-            final Optional<String> result;
-            if (segregation) {
-                final Optional<String> infrastructure = INFRASTRUCTURE.getValue(context);
-                final Optional<String> nexus2 = NEXUS2.getValue(context);
-
-                final boolean nexus2Staging = NEXUS2_STAGING.getValue(context)
-                    .map(Boolean::parseBoolean).orElse(FALSE);
-                final Optional<String> publishChannel = PUBLISH_CHANNEL.getValue(context);
-                final boolean publishRelease = publishChannel.map(PUBLISH_CHANNEL_RELEASE::equals).orElse(FALSE);
-
-                final String prefix = infrastructure.map(infra -> String.format("%s", infra)).orElse("");
-                final String value;
-                if (nexus2.isPresent()) {
-                    if (publishRelease) {
-                        value = nexus2Staging
-                            ? String.format("${%snexus2}service/local/staging/deploy/maven2/", prefix)
-                            : String.format("${%snexus2}content/repositories/releases/", prefix);
-                    } else {
-                        value = String.format("${%snexus2}content/repositories/snapshots/", prefix);
-                    }
+            final String prefix = infrastructure.map(infra -> String.format("%s", infra)).orElse("");
+            final String value;
+            if (nexus2.isPresent()) {
+                if (publishRelease) {
+                    value = nexus2Staging
+                        ? String.format("${%snexus2}service/local/staging/deploy/maven2/", prefix)
+                        : String.format("${%snexus2}content/repositories/releases/", prefix);
                 } else {
-                    value = String.format("${%snexus3}repository/maven-${publish.channel}s", prefix);
+                    value = String.format("${%snexus2}content/repositories/snapshots/", prefix);
                 }
-                result = Optional.ofNullable(value);
             } else {
-                result = Optional.empty();
+                value = String.format("${%snexus3}repository/maven-${publish.channel}s", prefix);
             }
-            return result;
+            return Optional.ofNullable(value);
         }
     },
     WAGON_MERGEMAVENREPOS_TARGETID("wagon.merge-maven-repos.targetId") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            final boolean segregation = MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION.getValue(
-                context)
-                .map(Boolean::parseBoolean).orElse(FALSE);
-
             final Optional<String> result;
-            if (segregation) {
-                final Optional<String> infrastructure = INFRASTRUCTURE.getValue(context);
-                result = Optional.of(infrastructure
-                    .map(infra -> String.format("%s-${publish.channel}s", infra))
-                    .orElse("${publish.channel}s"));
-            } else {
-                result = Optional.empty();
-            }
-            return result;
+            final Optional<String> infrastructure = INFRASTRUCTURE.getValue(context);
+            return Optional.of(infrastructure
+                .map(infra -> String.format("%s-${publish.channel}s", infra))
+                .orElse("${publish.channel}s"));
         }
     },
     ;

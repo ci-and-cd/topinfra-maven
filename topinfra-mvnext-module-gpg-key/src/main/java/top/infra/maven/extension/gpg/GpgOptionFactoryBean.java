@@ -23,4 +23,9 @@ public class GpgOptionFactoryBean implements CiOptionFactoryBean {
     public int getOrder() {
         return Orders.CI_OPTION_GPG;
     }
+
+    @Override
+    public Class<?> getType() {
+        return GpgOption.class;
+    }
 }

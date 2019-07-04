@@ -1,5 +1,6 @@
 package top.infra.maven.core;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -28,7 +29,7 @@ public class CiOptionContext {
     }
 
     public Properties setCiOptPropertiesInto(
-        final List<List<CiOption>> optionCollections,
+        final Collection<List<CiOption>> optionCollections,
         final Properties... targetProperties
     ) {
         final Properties properties = new Properties();

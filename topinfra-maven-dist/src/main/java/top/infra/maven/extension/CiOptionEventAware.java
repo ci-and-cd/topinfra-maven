@@ -1,10 +1,14 @@
 package top.infra.maven.extension;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static top.infra.maven.core.CiOptionNames.PATTERN_VARS_ENV_DOT_CI;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.IntStream;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -25,7 +29,7 @@ public class CiOptionEventAware implements MavenEventAware {
 
     private final Logger logger;
 
-    private List<List<CiOption>> optionCollections;
+    private Map<Class<?>, List<CiOption>> optionCollections;
 
     @Inject
     public CiOptionEventAware(
@@ -33,7 +37,15 @@ public class CiOptionEventAware implements MavenEventAware {
         final List<CiOptionFactoryBean> optionFactoryBeans
     ) {
         this.logger = new LoggerPlexusImpl(logger);
-        this.optionCollections = optionFactoryBeans.stream().map(CiOptionFactoryBean::getOptions).collect(toList());
+        this.optionCollections = optionFactoryBeans
+            .stream()
+            .sorted()
+            .collect(toMap(
+                CiOptionFactoryBean::getType,
+                CiOptionFactoryBean::getOptions,
+                (e1, e2) -> e1,
+                LinkedHashMap::new
+            ));
     }
 
     @Override
@@ -48,17 +60,29 @@ public class CiOptionEventAware implements MavenEventAware {
     ) {
         final Properties userProperties = ciOptContext.getUserProperties();
         // write all ciOpt properties into userProperties
-        final Properties ciOptProperties = ciOptContext.setCiOptPropertiesInto(this.optionCollections, userProperties);
+        final Properties ciOptProperties = ciOptContext.setCiOptPropertiesInto(this.optionCollections.values(), userProperties);
 
         if (logger.isInfoEnabled()) {
             logger.info(">>>>>>>>>> ---------- set options (update userProperties) ---------- >>>>>>>>>>");
-            this.optionCollections
-                .stream()
-                .flatMap(collection -> collection.stream().sorted())
-                .forEach(ciOption -> { // TODO better toString methods
-                    final String displayName = ciOption.getEnvVariableName();
-                    final String displayValue = ciOptProperties.getProperty(ciOption.getPropertyName(), "");
-                    logger.info(PropertiesUtils.maskSecrets(String.format("setOption %s=%s", displayName, displayValue)));
+            logger.info(String.format("There are [%s] groups of options.", this.optionCollections.size()));
+            final List<Class<?>> types = new ArrayList<>(this.optionCollections.keySet());
+            final List<List<CiOption>> groups = new ArrayList<>(this.optionCollections.values());
+            IntStream
+                .range(0, this.optionCollections.size())
+                .forEach(idx -> {
+                    final List<CiOption> group = groups.get(idx);
+                    logger.info(String.format(
+                        "option group index: [%s], name: [%s], size: [%s]",
+                        String.format("%02d ", idx),
+                        types.get(idx).getSimpleName(),
+                        String.format("%03d ", group.size())
+                    ));
+
+                    group.stream().sorted().forEach(ciOption -> { // TODO better toString methods
+                        final String displayName = ciOption.getEnvVariableName();
+                        final String displayValue = ciOptProperties.getProperty(ciOption.getPropertyName(), "");
+                        logger.info(PropertiesUtils.maskSecrets(String.format("setOption %s=%s", displayName, displayValue)));
+                    });
                 });
             logger.info("<<<<<<<<<< ---------- set options (update userProperties) ---------- <<<<<<<<<<");
 

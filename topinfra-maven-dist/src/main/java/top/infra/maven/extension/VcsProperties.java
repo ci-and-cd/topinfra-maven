@@ -1,6 +1,9 @@
 package top.infra.maven.extension;
 
 import java.util.Optional;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import top.infra.maven.cienv.AppveyorVariables;
 import top.infra.maven.cienv.GitlabCiVariables;
@@ -54,6 +57,7 @@ public enum VcsProperties implements CiOption {
     GIT_REMOTE_ORIGIN_URL("git.remote.origin.url"),
     ;
 
+    static final Pattern PATTERN_GIT_REPO_SLUG = Pattern.compile(".*[:/]([^/]+(/[^/.]+))(\\.git)?");
     private final String defaultValue;
     private final String envVariableName;
     private final String propertyName;
@@ -72,6 +76,58 @@ public enum VcsProperties implements CiOption {
         this.envVariableName = CiOptionNames.envVariableName(propertyName);
         this.propertyName = propertyName;
         this.systemPropertyName = CiOptionNames.systemPropertyName(propertyName);
+    }
+
+    /**
+     * Get slug info of current repository (directory).
+     *
+     * @param ciOptionContext ciOptionContext
+     * @return 'group/project' or 'owner/project'
+     */
+    public static Optional<String> gitRepoSlug(
+        final CiOptionContext ciOptionContext
+    ) {
+        final Properties systemProperties = ciOptionContext.getSystemProperties();
+        final Optional<String> appveyorRepoSlug = new AppveyorVariables(systemProperties).repoSlug();
+        final Optional<String> gitlabCiRepoSlug = new GitlabCiVariables(systemProperties).repoSlug();
+        final Optional<String> travisRepoSlug = new TravisCiVariables(systemProperties).repoSlug();
+
+        final Optional<String> result;
+        if (appveyorRepoSlug.isPresent()) {
+            result = appveyorRepoSlug;
+        } else if (gitlabCiRepoSlug.isPresent()) {
+            result = gitlabCiRepoSlug;
+        } else if (travisRepoSlug.isPresent()) {
+            result = travisRepoSlug;
+        } else {
+            final Optional<String> gitRemoteOriginUrl = GIT_REMOTE_ORIGIN_URL.getValue(ciOptionContext);
+            if (gitRemoteOriginUrl.isPresent()) {
+                result = gitRepoSlugFromUrl(gitRemoteOriginUrl.get());
+            } else {
+                result = Optional.empty();
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Gitlab's sub group is not supported intentionally.
+     *
+     * @param url git remote origin url
+     * @return repo slug
+     */
+    static Optional<String> gitRepoSlugFromUrl(final String url) {
+        final Optional<String> result;
+
+        final Matcher matcher = PATTERN_GIT_REPO_SLUG.matcher(url);
+        if (matcher.matches()) {
+            result = Optional.ofNullable(matcher.group(1));
+        } else {
+            result = Optional.empty();
+        }
+
+        return result;
     }
 
     public Optional<String> getDefaultValue() {

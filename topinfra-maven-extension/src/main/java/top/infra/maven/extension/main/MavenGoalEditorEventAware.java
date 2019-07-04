@@ -20,7 +20,6 @@ import top.infra.maven.cienv.AppveyorVariables;
 import top.infra.maven.cienv.GitlabCiVariables;
 import top.infra.maven.cienv.TravisCiVariables;
 import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.extension.MavenBuildExtensionOption;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.MavenOption;
 import top.infra.maven.extension.Orders;

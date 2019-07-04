@@ -23,4 +23,9 @@ public class DockerOptionFactoryBean implements CiOptionFactoryBean {
     public int getOrder() {
         return Orders.CI_OPTION_DOCKER;
     }
+
+    @Override
+    public Class<?> getType() {
+        return DockerOption.class;
+    }
 }

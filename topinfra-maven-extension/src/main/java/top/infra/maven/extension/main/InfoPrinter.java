@@ -27,10 +27,9 @@ import top.infra.maven.utils.PropertiesUtils;
 @Singleton
 public class InfoPrinter implements MavenEventAware {
 
-    private Logger logger;
-
     // @org.codehaus.plexus.component.annotations.Requirement
     private final RuntimeInformation runtime;
+    private Logger logger;
 
     @Inject
     public InfoPrinter(

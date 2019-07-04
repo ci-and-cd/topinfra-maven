@@ -59,23 +59,6 @@ public class MavenBuildProfileSelector extends DefaultProfileSelector {
     //     this.customActivators = customActivators;
     // }
 
-    private void info() {
-        if (!this.printed) {
-            this.printed = true;
-            logger.info(String.format("MavenBuildProfileSelector [%s]", this));
-            IntStream
-                .range(0, this.customActivators.size())
-                .forEach(idx -> {
-                    final CustomActivator it = this.customActivators.get(idx);
-                    logger.info(String.format(
-                        "activator index: [%s], name: [%s]",
-                        String.format("%02d ", idx),
-                        it.getClass().getSimpleName()
-                    ));
-                });
-        }
-    }
-
     /**
      * Profiles activated by custom and default activators.
      */
@@ -143,6 +126,23 @@ public class MavenBuildProfileSelector extends DefaultProfileSelector {
         }
 
         return new ArrayList<>(profilesActivated);
+    }
+
+    private void info() {
+        if (!this.printed) {
+            this.printed = true;
+            logger.info(String.format("MavenBuildProfileSelector [%s]", this));
+            IntStream
+                .range(0, this.customActivators.size())
+                .forEach(idx -> {
+                    final CustomActivator it = this.customActivators.get(idx);
+                    logger.info(String.format(
+                        "activator index: [%s], name: [%s]",
+                        String.format("%02d ", idx),
+                        it.getClass().getSimpleName()
+                    ));
+                });
+        }
     }
 
     static boolean noAnyCondition(final Profile profile) {

@@ -22,4 +22,9 @@ public class InfraOptionFactoryBean implements CiOptionFactoryBean {
     public int getOrder() {
         return Orders.CI_OPTION_INFRA;
     }
+
+    @Override
+    public Class<?> getType() {
+        return InfraOption.class;
+    }
 }

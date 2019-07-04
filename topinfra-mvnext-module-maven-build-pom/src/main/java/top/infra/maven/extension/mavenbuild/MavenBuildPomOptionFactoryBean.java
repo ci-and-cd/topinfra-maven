@@ -23,4 +23,9 @@ public class MavenBuildPomOptionFactoryBean implements CiOptionFactoryBean {
     public int getOrder() {
         return Orders.CI_OPTION_MAVEN_BUILD_POM;
     }
+
+    @Override
+    public Class<?> getType() {
+        return MavenBuildPomOption.class;
+    }
 }

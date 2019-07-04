@@ -1,27 +1,24 @@
-package top.infra.maven.extension;
+package top.infra.maven.extension.main;
 
 import static java.lang.Boolean.FALSE;
 import static top.infra.maven.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
 import static top.infra.maven.Constants.GIT_REF_PREFIX_FEATURE;
 import static top.infra.maven.Constants.GIT_REF_PREFIX_HOTFIX;
 import static top.infra.maven.Constants.GIT_REF_PREFIX_RELEASE;
 import static top.infra.maven.Constants.GIT_REF_PREFIX_SUPPORT;
-import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
 import static top.infra.maven.utils.SystemUtils.systemUserHome;
 
 import java.nio.file.Paths;
 import java.util.Optional;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import top.infra.maven.cienv.AppveyorVariables;
-import top.infra.maven.cienv.GitlabCiVariables;
 import top.infra.maven.cienv.TravisCiVariables;
 import top.infra.maven.core.CiOption;
 import top.infra.maven.core.CiOptionContext;
 import top.infra.maven.core.CiOptionNames;
+import top.infra.maven.extension.VcsProperties;
 import top.infra.maven.utils.FileUtils;
 import top.infra.maven.utils.SupportFunction;
 
@@ -52,7 +49,7 @@ public enum MavenBuildExtensionOption implements CiOption {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             final AppveyorVariables appveyor = new AppveyorVariables(context.getSystemProperties());
-            final Optional<String> gitRepoSlug = gitRepoSlug(context);
+            final Optional<String> gitRepoSlug = VcsProperties.gitRepoSlug(context);
             final Optional<String> originRepoSlug = ORIGIN_REPO_SLUG.getValue(context);
             final TravisCiVariables travisCi = new TravisCiVariables(context.getSystemProperties());
 
@@ -131,57 +128,4 @@ public enum MavenBuildExtensionOption implements CiOption {
         return this.systemPropertyName;
     }
 
-    /**
-     * Get slug info of current repository (directory).
-     *
-     * @param ciOptionContext ciOptionContext
-     * @return 'group/project' or 'owner/project'
-     */
-    public static Optional<String> gitRepoSlug(
-        final CiOptionContext ciOptionContext
-    ) {
-        final Properties systemProperties = ciOptionContext.getSystemProperties();
-        final Optional<String> appveyorRepoSlug = new AppveyorVariables(systemProperties).repoSlug();
-        final Optional<String> gitlabCiRepoSlug = new GitlabCiVariables(systemProperties).repoSlug();
-        final Optional<String> travisRepoSlug = new TravisCiVariables(systemProperties).repoSlug();
-
-        final Optional<String> result;
-        if (appveyorRepoSlug.isPresent()) {
-            result = appveyorRepoSlug;
-        } else if (gitlabCiRepoSlug.isPresent()) {
-            result = gitlabCiRepoSlug;
-        } else if (travisRepoSlug.isPresent()) {
-            result = travisRepoSlug;
-        } else {
-            final Optional<String> gitRemoteOriginUrl = VcsProperties.GIT_REMOTE_ORIGIN_URL.getValue(ciOptionContext);
-            if (gitRemoteOriginUrl.isPresent()) {
-                result = gitRepoSlugFromUrl(gitRemoteOriginUrl.get());
-            } else {
-                result = Optional.empty();
-            }
-        }
-
-        return result;
-    }
-
-    static final Pattern PATTERN_GIT_REPO_SLUG = Pattern.compile(".*[:/]([^/]+(/[^/.]+))(\\.git)?");
-
-    /**
-     * Gitlab's sub group is not supported intentionally.
-     *
-     * @param url git remote origin url
-     * @return repo slug
-     */
-    static Optional<String> gitRepoSlugFromUrl(final String url) {
-        final Optional<String> result;
-
-        final Matcher matcher = PATTERN_GIT_REPO_SLUG.matcher(url);
-        if (matcher.matches()) {
-            result = Optional.ofNullable(matcher.group(1));
-        } else {
-            result = Optional.empty();
-        }
-
-        return result;
-    }
 }

@@ -23,7 +23,6 @@ import java.util.function.Function;
 
 import top.infra.maven.Constants;
 import top.infra.maven.MavenPhase;
-import top.infra.maven.extension.MavenBuildExtensionOption;
 import top.infra.maven.extension.MavenOption;
 import top.infra.maven.extension.VcsProperties;
 import top.infra.maven.logging.Logger;
@@ -34,7 +33,10 @@ public class MavenGoalEditor {
     private static final String PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY = "mvn.deploy.publish.segregation.goal.deploy";
     private static final String PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_INSTALL = "mvn.deploy.publish.segregation.goal.install";
     private static final String PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_PACKAGE = "mvn.deploy.publish.segregation.goal.package";
-
+    private static final Map<String, MavenPhase> phaseMap = Collections.unmodifiableMap(
+        Arrays.stream(MavenPhase.values())
+            .collect(toMap(MavenPhase::getPhase, Function.identity()))
+    );
     private final Logger logger;
     private final Boolean generateReports;
     private final String gitRefName;
@@ -69,6 +71,33 @@ public class MavenGoalEditor {
 
     private static boolean isInstallGoal(final String goal) {
         return isNotEmpty(goal) && !isDeployGoal(goal) && !isSiteGoal(goal) && goal.endsWith(Constants.PHASE_INSTALL);
+    }
+
+    private static Collection<String> pluginExecution(final Collection<String> in) {
+        // things like
+        // 'org.apache.maven.plugins:maven-antrun-plugin:run@wagon-repository-clean',
+        // 'org.codehaus.mojo:wagon-maven-plugin:merge-maven-repos@merge-maven-repos-deploy'
+        return in.stream().filter(it -> it.contains("@")).collect(toCollection(LinkedHashSet::new));
+    }
+
+    private static Collection<String> pluginGoal(final Collection<String> in) { // things like 'clean:clean', 'compiler:compile', 'jar:jar'
+        return in.stream().filter(it -> it.contains(":") && !it.contains("@")).collect(toCollection(LinkedHashSet::new));
+    }
+
+    private static Collection<MavenPhase> phases(final Collection<String> in) { // things like 'clean', 'compile', 'package'.
+        return in.stream()
+            .filter(it -> !it.contains(":"))
+            .map(phaseMap::get)
+            .filter(Objects::nonNull)
+            .collect(toCollection(LinkedHashSet::new));
+    }
+
+    private static boolean notIncludes(final Collection<MavenPhase> phases, final MavenPhase phase) {
+        return !includes(phases, phase);
+    }
+
+    private static boolean includes(final Collection<MavenPhase> phases, final MavenPhase phase) {
+        return phases.stream().anyMatch(it -> it.ordinal() >= phase.ordinal());
     }
 
     public Entry<List<String>, Properties> goalsAndUserProperties(final List<String> requestedGoals) {
@@ -180,37 +209,5 @@ public class MavenGoalEditor {
             }
         }
         return properties;
-    }
-
-    private static final Map<String, MavenPhase> phaseMap = Collections.unmodifiableMap(
-        Arrays.stream(MavenPhase.values())
-            .collect(toMap(MavenPhase::getPhase, Function.identity()))
-    );
-
-    private static Collection<String> pluginExecution(final Collection<String> in) {
-        // things like
-        // 'org.apache.maven.plugins:maven-antrun-plugin:run@wagon-repository-clean',
-        // 'org.codehaus.mojo:wagon-maven-plugin:merge-maven-repos@merge-maven-repos-deploy'
-        return in.stream().filter(it -> it.contains("@")).collect(toCollection(LinkedHashSet::new));
-    }
-
-    private static Collection<String> pluginGoal(final Collection<String> in) { // things like 'clean:clean', 'compiler:compile', 'jar:jar'
-        return in.stream().filter(it -> it.contains(":") && !it.contains("@")).collect(toCollection(LinkedHashSet::new));
-    }
-
-    private static Collection<MavenPhase> phases(final Collection<String> in) { // things like 'clean', 'compile', 'package'.
-        return in.stream()
-            .filter(it -> !it.contains(":"))
-            .map(phaseMap::get)
-            .filter(Objects::nonNull)
-            .collect(toCollection(LinkedHashSet::new));
-    }
-
-    private static boolean notIncludes(final Collection<MavenPhase> phases, final MavenPhase phase) {
-        return !includes(phases, phase);
-    }
-
-    private static boolean includes(final Collection<MavenPhase> phases, final MavenPhase phase) {
-        return phases.stream().anyMatch(it -> it.ordinal() >= phase.ordinal());
     }
 }

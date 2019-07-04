@@ -22,4 +22,9 @@ public class MavenOptionFactoryBean implements CiOptionFactoryBean {
     public int getOrder() {
         return Orders.CI_OPTION_MAVEN;
     }
+
+    @Override
+    public Class<?> getType() {
+        return MavenOption.class;
+    }
 }
