@@ -112,6 +112,11 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         return Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SERVERS;
     }
 
+    @Override
+    public boolean onSettingsBuildingRequest() {
+        return true;
+    }
+
     /**
      * Method of {@link MavenEventAware}.
      *
@@ -137,6 +142,11 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
                     }
                 });
             });
+    }
+
+    @Override
+    public boolean onMavenExecutionRequest() {
+        return true;
     }
 
     /**

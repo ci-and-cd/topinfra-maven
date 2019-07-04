@@ -49,8 +49,8 @@ public class CiOptionEventAware implements MavenEventAware {
     }
 
     @Override
-    public int getOrder() {
-        return Orders.EVENT_AWARE_ORDER_CI_OPTION;
+    public boolean afterInit() {
+        return true;
     }
 
     @Override
@@ -90,5 +90,10 @@ public class CiOptionEventAware implements MavenEventAware {
             logger.info(PropertiesUtils.toString(systemProperties, PATTERN_VARS_ENV_DOT_CI));
             logger.info(PropertiesUtils.toString(userProperties, null));
         }
+    }
+
+    @Override
+    public int getOrder() {
+        return Orders.EVENT_AWARE_ORDER_CI_OPTION;
     }
 }

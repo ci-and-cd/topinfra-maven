@@ -69,6 +69,11 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
     }
 
     @Override
+    public boolean onSettingsBuildingRequest() {
+        return true;
+    }
+
+    @Override
     public void onSettingsBuildingRequest(
         final CliRequest cliRequest,
         final SettingsBuildingRequest request,
@@ -107,6 +112,11 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
             request.setUserSettingsFile(this.settingsXml.toFile());
         }
+    }
+
+    @Override
+    public boolean onToolchainsBuildingRequest() {
+        return true;
     }
 
     @Override

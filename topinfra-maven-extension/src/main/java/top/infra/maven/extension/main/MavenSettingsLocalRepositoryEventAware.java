@@ -48,6 +48,11 @@ public class MavenSettingsLocalRepositoryEventAware implements MavenEventAware {
     }
 
     @Override
+    public boolean afterInit() {
+        return true;
+    }
+
+    @Override
     public void afterInit(
         final CliRequest cliRequest,
         final CiOptionContext ciOptContext
@@ -61,12 +66,22 @@ public class MavenSettingsLocalRepositoryEventAware implements MavenEventAware {
     }
 
     @Override
+    public boolean onSettingsBuildingRequest() {
+        return true;
+    }
+
+    @Override
     public void onSettingsBuildingRequest(
         final CliRequest cliRequest,
         final SettingsBuildingRequest request,
         final CiOptionContext ciOptContext
     ) {
         // no-op
+    }
+
+    @Override
+    public boolean onSettingsBuildingResult() {
+        return true;
     }
 
     @Override
@@ -85,6 +100,11 @@ public class MavenSettingsLocalRepositoryEventAware implements MavenEventAware {
             }
             result.getEffectiveSettings().setLocalRepository(this.settingsLocalRepository);
         }
+    }
+
+    @Override
+    public boolean onMavenExecutionRequest() {
+        return true;
     }
 
     @Override

@@ -27,6 +27,15 @@ public class CiOptionContextBeanFactory implements MavenEventAware {
         this.logger = new LoggerPlexusImpl(logger);
     }
 
+    public CiOptionContext getCiOpts() {
+        return this.ciOptContext;
+    }
+
+    @Override
+    public boolean onInit() {
+        return true;
+    }
+
     @Override
     public void onInit(final Context context) {
         this.ciOptContext = new CiOptionContext(
@@ -38,9 +47,5 @@ public class CiOptionContextBeanFactory implements MavenEventAware {
     @Override
     public int getOrder() {
         return Orders.ORDER_OPTIONS_FACTORY;
-    }
-
-    public CiOptionContext getCiOpts() {
-        return this.ciOptContext;
     }
 }

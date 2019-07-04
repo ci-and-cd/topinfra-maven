@@ -11,7 +11,6 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.Profile;
 import org.apache.maven.model.building.ModelProblemCollector;
 import org.apache.maven.model.profile.ProfileActivationContext;
-import org.codehaus.plexus.logging.Logger;
 
 import top.infra.maven.extension.MavenProjectInfo;
 import top.infra.maven.extension.MavenProjectInfoEventAware;
@@ -27,7 +26,7 @@ public class MultiModuleRootActivator extends AbstractCustomActivator {
 
     @Inject
     public MultiModuleRootActivator(
-        final Logger logger,
+        final org.codehaus.plexus.logging.Logger logger,
         final ProjectBuilderActivatorModelResolver resolver,
         final MavenProjectInfoEventAware projectInfoBean
     ) {

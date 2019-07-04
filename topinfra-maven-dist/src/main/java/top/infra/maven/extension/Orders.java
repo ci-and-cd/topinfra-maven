@@ -2,7 +2,7 @@ package top.infra.maven.extension;
 
 public abstract class Orders {
 
-    public static final int CI_OPTION_FAST = Ordered.HIGHEST_PRECEDENCE;
+    public static final int CI_OPTION_FAST = 1;
     public static final int CI_OPTION_INFRA = CI_OPTION_FAST + 1;
     public static final int CI_OPTION_MAVEN_BUILD_EXTENSION = CI_OPTION_INFRA + 1;
     public static final int CI_OPTION_MAVEN = CI_OPTION_MAVEN_BUILD_EXTENSION + 1;
@@ -10,7 +10,7 @@ public abstract class Orders {
     public static final int CI_OPTION_GPG = CI_OPTION_DOCKER + 1;
     public static final int CI_OPTION_MAVEN_BUILD_POM = CI_OPTION_GPG + 1;
 
-    public static final int ORDER_INFO_PRINTER = Ordered.HIGHEST_PRECEDENCE;
+    public static final int ORDER_INFO_PRINTER = 1;
     public static final int ORDER_SYSTEM_TO_USER_PROPERTIES = ORDER_INFO_PRINTER + 1;
     public static final int ORDER_GIT_PROPERTIES = ORDER_SYSTEM_TO_USER_PROPERTIES + 1;
     public static final int ORDER_OPTIONS_FACTORY = ORDER_GIT_PROPERTIES + 1;

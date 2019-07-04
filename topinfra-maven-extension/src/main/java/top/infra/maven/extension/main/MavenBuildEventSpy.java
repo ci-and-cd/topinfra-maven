@@ -1,16 +1,21 @@
 package top.infra.maven.extension.main;
 
+import static java.util.stream.Collectors.toList;
 import static top.infra.maven.core.CiOptionNames.PATTERN_VARS_ENV_DOT_CI;
 import static top.infra.maven.extension.VcsProperties.GIT_REF_NAME;
 import static top.infra.maven.utils.SupportFunction.isEmpty;
+import static top.infra.maven.utils.SupportFunction.newTuple;
 
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -27,7 +32,6 @@ import org.apache.maven.toolchain.building.ToolchainsBuildingResult;
 
 import top.infra.maven.core.CiOptionContext;
 import top.infra.maven.core.CiOptionContextBeanFactory;
-import top.infra.maven.extension.MavenBuildConfigurationProcessor;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.Orders;
 import top.infra.maven.logging.Logger;
@@ -51,7 +55,7 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
     private final CiOptionContextBeanFactory ciOptContextFactory;
     private final MavenBuildConfigurationProcessor cliRequestFactory;
 
-    private final List<MavenEventAware> eventAwares;
+    private final Map<String, List<MavenEventAware>> eventAwares;
 
     private CiOptionContext ciOptContext;
 
@@ -72,22 +76,63 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         this.logger = new LoggerPlexusImpl(logger);
         this.ciOptContextFactory = ciOptContextFactory;
         this.cliRequestFactory = cliRequestFactory;
-        this.eventAwares = eventAwares.stream().sorted().collect(Collectors.toList());
 
         this.ciOptContext = null;
 
+        final List<MavenEventAware> list = eventAwares.stream().sorted().collect(toList());
         logger.info(String.format("MavenBuildEventSpy [%s]", this));
         IntStream
-            .range(0, this.eventAwares.size())
+            .range(0, list.size())
             .forEach(idx -> {
-                final MavenEventAware it = this.eventAwares.get(idx);
+                final MavenEventAware it = list.get(idx);
                 logger.info(String.format(
                     "eventAware index: [%s], order: [%s], name: [%s]",
                     String.format("%02d ", idx),
                     String.format("%011d ", it.getOrder()),
                     it.getClass().getSimpleName()
                 ));
+                logger.info(String.format("    handles: %s", handles(it)));
             });
+
+        final Map<String, List<MavenEventAware>> map = new LinkedHashMap<>();
+        predicates()
+            .forEach(tuple -> map.put(tuple.getKey(), handlers(list, tuple.getValue())));
+        this.eventAwares = map;
+
+        this.eventAwares.forEach((k, v) -> {
+            logger.info(String.format("[%s]", k));
+            v.forEach(it -> {
+                logger.info(String.format("    [%s] (order [%s])", it.getClass().getSimpleName(), it.getOrder()));
+            });
+        });
+    }
+
+    private static List<String> handles(final MavenEventAware eventAware) {
+        return predicates()
+            .stream()
+            .filter(tuple -> tuple.getValue().test(eventAware))
+            .map(tuple -> tuple.getKey())
+            .collect(toList());
+    }
+
+    private static List<MavenEventAware> handlers(
+        final List<MavenEventAware> eventAwares,
+        final Predicate<MavenEventAware> predicate
+    ) {
+        return eventAwares.stream().filter(predicate).sorted().collect(toList());
+    }
+
+    private static List<Entry<String, Predicate<MavenEventAware>>> predicates() {
+        return Stream.<Entry<String, Predicate<MavenEventAware>>>of(
+            newTuple("onInit", MavenEventAware::onInit),
+            newTuple("afterInit", MavenEventAware::afterInit),
+            newTuple("onSettingsBuildingRequest", MavenEventAware::onSettingsBuildingRequest),
+            newTuple("onSettingsBuildingResult", MavenEventAware::onSettingsBuildingResult),
+            newTuple("onToolchainsBuildingRequest", MavenEventAware::onToolchainsBuildingRequest),
+            newTuple("onToolchainsBuildingResult", MavenEventAware::onToolchainsBuildingResult),
+            newTuple("onMavenExecutionRequest", MavenEventAware::onMavenExecutionRequest),
+            newTuple("onProjectBuildingRequest", MavenEventAware::onProjectBuildingRequest)
+        ).collect(toList());
     }
 
     @Override
@@ -149,7 +194,8 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         // try to read settings.localRepository from request.userProperties
         assert Orders.EVENT_AWARE_ORDER_CI_OPTION < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
 
-        this.eventAwares.forEach(it -> it.afterInit(cliRequest, ciOptionContext));
+        this.eventAwares.get("afterInit")
+            .forEach(it -> it.afterInit(cliRequest, ciOptionContext));
 
         final Optional<String> gitRefName = GIT_REF_NAME.getValue(ciOptionContext);
         if ((!gitRefName.isPresent() || isEmpty(gitRefName.get())) && logger.isWarnEnabled()) {
@@ -187,7 +233,8 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         // warn about absent env.VARIABLEs in settings.xml's server tags
         assert Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SERVERS;
 
-        this.eventAwares.forEach(it -> it.onSettingsBuildingRequest(cliRequest, request, ciOptionContext));
+        this.eventAwares.get("onSettingsBuildingRequest")
+            .forEach(it -> it.onSettingsBuildingRequest(cliRequest, request, ciOptionContext));
     }
 
     public void onSettingsBuildingResult(
@@ -202,7 +249,8 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         // set settings.localRepository (if present) into effectiveSettings
         assert Orders.EVENT_AWARE_ORDER_CI_OPTION < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
 
-        this.eventAwares.forEach(it -> it.onSettingsBuildingResult(cliRequest, result, ciOptionContext));
+        this.eventAwares.get("onSettingsBuildingResult")
+            .forEach(it -> it.onSettingsBuildingResult(cliRequest, result, ciOptionContext));
     }
 
     public void onToolchainsBuildingRequest(
@@ -214,7 +262,8 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
             logger.info(String.format("onEvent ToolchainsBuildingRequest %s", request));
         }
 
-        this.eventAwares.forEach(it -> it.onToolchainsBuildingRequest(cliRequest, request, ciOptionContext));
+        this.eventAwares.get("onToolchainsBuildingRequest")
+            .forEach(it -> it.onToolchainsBuildingRequest(cliRequest, request, ciOptionContext));
     }
 
     public void onToolchainsBuildingResult(
@@ -226,7 +275,8 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
             logger.info(String.format("onEvent ToolchainsBuildingResult %s", result));
         }
 
-        this.eventAwares.forEach(it -> it.onToolchainsBuildingResult(cliRequest, result, ciOptionContext));
+        this.eventAwares.get("onToolchainsBuildingResult")
+            .forEach(it -> it.onToolchainsBuildingResult(cliRequest, result, ciOptionContext));
     }
 
     public void onMavenExecutionRequest(
@@ -242,7 +292,8 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         assert Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_LOCALREPOSITORY < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SERVERS;
         // check empty or blank property values in settings.servers
 
-        this.eventAwares.forEach(it -> it.onMavenExecutionRequest(cliRequest, request, ciOptionContext));
+        this.eventAwares.get("onMavenExecutionRequest")
+            .forEach(it -> it.onMavenExecutionRequest(cliRequest, request, ciOptionContext));
 
 
         final ProjectBuildingRequest projectBuildingRequest = request.getProjectBuildingRequest();
@@ -292,7 +343,8 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         assert Orders.EVENT_AWARE_ORDER_GOAL_EDITOR < Orders.EVENT_AWARE_ORDER_DOCKER;
         // prepare docker
 
-        this.eventAwares.forEach(it -> it.onProjectBuildingRequest(cliRequest, mavenExecution, projectBuilding, ciOptionContext));
+        this.eventAwares.get("onProjectBuildingRequest")
+            .forEach(it -> it.onProjectBuildingRequest(cliRequest, mavenExecution, projectBuilding, ciOptionContext));
     }
 
     public void onInit(final Context context) {
@@ -316,7 +368,8 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         // ciOptionContext
         assert Orders.ORDER_SYSTEM_TO_USER_PROPERTIES < Orders.ORDER_OPTIONS_FACTORY;
 
-        this.eventAwares.forEach(it -> it.onInit(context));
+        this.eventAwares.get("onInit")
+            .forEach(it -> it.onInit(context));
 
         this.ciOptContext = this.ciOptContextFactory.getCiOpts();
     }

@@ -13,8 +13,16 @@ import top.infra.maven.core.CiOptionContext;
 
 public interface MavenEventAware extends Ordered {
 
+    default boolean onInit() {
+        return false;
+    }
+
     default void onInit(final Context context) {
         // no-op
+    }
+
+    default boolean afterInit() {
+        return false;
     }
 
     default void afterInit(
@@ -22,6 +30,10 @@ public interface MavenEventAware extends Ordered {
         final CiOptionContext ciOptContext
     ) {
         // no-op
+    }
+
+    default boolean onSettingsBuildingRequest() {
+        return false;
     }
 
     /**
@@ -39,12 +51,20 @@ public interface MavenEventAware extends Ordered {
         // no-op
     }
 
+    default boolean onSettingsBuildingResult() {
+        return false;
+    }
+
     default void onSettingsBuildingResult(
         final CliRequest cliRequest,
         final SettingsBuildingResult result,
         final CiOptionContext ciOptContext
     ) {
         // no-op
+    }
+
+    default boolean onToolchainsBuildingRequest() {
+        return false;
     }
 
     /**
@@ -62,12 +82,20 @@ public interface MavenEventAware extends Ordered {
         // no-op
     }
 
+    default boolean onToolchainsBuildingResult() {
+        return false;
+    }
+
     default void onToolchainsBuildingResult(
         final CliRequest cliRequest,
         final ToolchainsBuildingResult result,
         final CiOptionContext ciOptContext
     ) {
         // no-op
+    }
+
+    default boolean onMavenExecutionRequest() {
+        return false;
     }
 
     /**
@@ -83,6 +111,10 @@ public interface MavenEventAware extends Ordered {
         final CiOptionContext ciOptContext
     ) {
         // no-op
+    }
+
+    default boolean onProjectBuildingRequest() {
+        return false;
     }
 
     /**

@@ -124,6 +124,11 @@ public class MavenProjectInfoEventAware implements MavenEventAware {
     }
 
     @Override
+    public boolean onProjectBuildingRequest() {
+        return true;
+    }
+
+    @Override
     public void onProjectBuildingRequest(
         final CliRequest cliRequest,
         final MavenExecutionRequest mavenExecution,

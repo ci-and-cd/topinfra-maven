@@ -42,8 +42,8 @@ public class InfoPrinter implements MavenEventAware {
     }
 
     @Override
-    public int getOrder() {
-        return Orders.ORDER_INFO_PRINTER;
+    public boolean onInit() {
+        return true;
     }
 
     @Override
@@ -53,6 +53,11 @@ public class InfoPrinter implements MavenEventAware {
             MavenUtils.systemProperties(context),
             MavenUtils.userProperties(context)
         );
+    }
+
+    @Override
+    public int getOrder() {
+        return Orders.ORDER_INFO_PRINTER;
     }
 
     private void printInfo(

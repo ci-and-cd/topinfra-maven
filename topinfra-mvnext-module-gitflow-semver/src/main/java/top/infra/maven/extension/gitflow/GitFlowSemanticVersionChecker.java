@@ -47,8 +47,8 @@ public class GitFlowSemanticVersionChecker implements MavenEventAware {
     }
 
     @Override
-    public int getOrder() {
-        return Orders.ORDER_GITFLOW_SEMANTIC_VERSION;
+    public boolean onProjectBuildingRequest() {
+        return true;
     }
 
     @Override
@@ -59,6 +59,11 @@ public class GitFlowSemanticVersionChecker implements MavenEventAware {
         final CiOptionContext ciOptContext
     ) {
         this.check(ciOptContext);
+    }
+
+    @Override
+    public int getOrder() {
+        return Orders.ORDER_GITFLOW_SEMANTIC_VERSION;
     }
 
     private void check(final CiOptionContext ciOptContext) {

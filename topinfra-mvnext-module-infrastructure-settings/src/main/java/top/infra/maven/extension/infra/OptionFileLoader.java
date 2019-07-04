@@ -43,8 +43,8 @@ public class OptionFileLoader implements MavenEventAware {
     }
 
     @Override
-    public int getOrder() {
-        return Orders.ORDER_OPTION_FILE_LOADER;
+    public boolean afterInit() {
+        return true;
     }
 
     @Override
@@ -53,6 +53,11 @@ public class OptionFileLoader implements MavenEventAware {
         final CiOptionContext ciOptionContext
     ) {
         this.load(cliRequest, ciOptionContext);
+    }
+
+    @Override
+    public int getOrder() {
+        return Orders.ORDER_OPTION_FILE_LOADER;
     }
 
     public void load(

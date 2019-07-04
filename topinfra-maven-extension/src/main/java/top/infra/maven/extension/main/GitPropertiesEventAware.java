@@ -64,17 +64,9 @@ public class GitPropertiesEventAware implements MavenEventAware {
         this.logger = logger;
     }
 
-    private static String nullToEmpty(final String str) {
-        return (str == null ? "" : str);
-    }
-
-    private static String getFormattedDate() {
-        return LocalDateTime.now().format(DATE_TIME_FORMATTER);
-    }
-
     @Override
-    public int getOrder() {
-        return Orders.ORDER_GIT_PROPERTIES;
+    public boolean afterInit() {
+        return true;
     }
 
     @Override
@@ -96,6 +88,11 @@ public class GitPropertiesEventAware implements MavenEventAware {
             PropertiesUtils.merge(copied, ciOptContext.getSystemProperties());
             PropertiesUtils.merge(copied, ciOptContext.getUserProperties());
         });
+    }
+
+    @Override
+    public int getOrder() {
+        return Orders.ORDER_GIT_PROPERTIES;
     }
 
     private static Optional<Properties> newJgitProperties(final Logger logger) {
@@ -218,5 +215,13 @@ public class GitPropertiesEventAware implements MavenEventAware {
             result = Optional.empty();
         }
         return result;
+    }
+
+    private static String nullToEmpty(final String str) {
+        return (str == null ? "" : str);
+    }
+
+    private static String getFormattedDate() {
+        return LocalDateTime.now().format(DATE_TIME_FORMATTER);
     }
 }

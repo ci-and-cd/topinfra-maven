@@ -36,8 +36,8 @@ public class GpgEventAware implements MavenEventAware {
     }
 
     @Override
-    public int getOrder() {
-        return Orders.EVENT_AWARE_ORDER_GPG;
+    public boolean onProjectBuildingRequest() {
+        return true;
     }
 
     @Override
@@ -67,5 +67,10 @@ public class GpgEventAware implements MavenEventAware {
             logger.warn("Both gpg and gpg2 are not found.");
         }
         logger.info("    <<<<<<<<<< ---------- decrypt files and handle keys ---------- <<<<<<<<<<");
+    }
+    
+    @Override
+    public int getOrder() {
+        return Orders.EVENT_AWARE_ORDER_GPG;
     }
 }

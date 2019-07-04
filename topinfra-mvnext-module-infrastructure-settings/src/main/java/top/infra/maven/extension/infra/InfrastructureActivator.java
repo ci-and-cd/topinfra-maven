@@ -18,7 +18,6 @@ import org.apache.maven.model.Profile;
 import org.apache.maven.model.building.ModelProblemCollector;
 import org.apache.maven.model.profile.ProfileActivationContext;
 import org.apache.maven.model.profile.activation.ProfileActivator;
-import org.codehaus.plexus.logging.Logger;
 
 import top.infra.maven.core.CiOptionContext;
 import top.infra.maven.core.CiOptionContextBeanFactory;
@@ -41,7 +40,7 @@ public class InfrastructureActivator extends AbstractCustomActivator implements 
 
     @Inject
     public InfrastructureActivator(
-        final Logger logger,
+        final org.codehaus.plexus.logging.Logger logger,
         final ProjectBuilderActivatorModelResolver resolver,
         final CiOptionContextBeanFactory ciOptContextFactory
     ) {
@@ -141,14 +140,9 @@ public class InfrastructureActivator extends AbstractCustomActivator implements 
         return result;
     }
 
-    /**
-     * A {@link MavenEventAware} method.
-     *
-     * @return order of this {@link MavenEventAware} instance.
-     */
     @Override
-    public int getOrder() {
-        return Integer.MAX_VALUE; // make sure instance of InfrastructureActivator runs after bean factory of ciOptContext
+    public boolean onInit() {
+        return true;
     }
 
     /**
@@ -159,5 +153,14 @@ public class InfrastructureActivator extends AbstractCustomActivator implements 
     @Override
     public void onInit(final Context context) {
         this.ciOptContext = this.ciOptContextFactory.getCiOpts();
+    }
+    /**
+     * A {@link MavenEventAware} method.
+     *
+     * @return order of this {@link MavenEventAware} instance.
+     */
+    @Override
+    public int getOrder() {
+        return Integer.MAX_VALUE; // make sure instance of InfrastructureActivator runs after bean factory of ciOptContext
     }
 }

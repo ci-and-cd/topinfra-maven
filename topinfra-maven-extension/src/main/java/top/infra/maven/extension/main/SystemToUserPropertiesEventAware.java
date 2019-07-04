@@ -42,8 +42,8 @@ public class SystemToUserPropertiesEventAware implements MavenEventAware {
     }
 
     @Override
-    public int getOrder() {
-        return Orders.ORDER_SYSTEM_TO_USER_PROPERTIES;
+    public boolean afterInit() {
+        return true;
     }
 
     @Override
@@ -55,6 +55,11 @@ public class SystemToUserPropertiesEventAware implements MavenEventAware {
             ciOptContext.getSystemProperties(),
             ciOptContext.getUserProperties()
         );
+    }
+
+    @Override
+    public int getOrder() {
+        return Orders.ORDER_SYSTEM_TO_USER_PROPERTIES;
     }
 
     private void systemToUserProperties(

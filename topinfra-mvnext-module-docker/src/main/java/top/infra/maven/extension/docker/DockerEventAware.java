@@ -43,8 +43,8 @@ public class DockerEventAware implements MavenEventAware {
     }
 
     @Override
-    public int getOrder() {
-        return Orders.EVENT_AWARE_ORDER_DOCKER;
+    public boolean onProjectBuildingRequest() {
+        return true;
     }
 
     @Override
@@ -89,6 +89,11 @@ public class DockerEventAware implements MavenEventAware {
                 this.pullBaseImages(docker);
             }
         }
+    }
+
+    @Override
+    public int getOrder() {
+        return Orders.EVENT_AWARE_ORDER_DOCKER;
     }
 
     private void cleanOldImages(final Docker docker) {

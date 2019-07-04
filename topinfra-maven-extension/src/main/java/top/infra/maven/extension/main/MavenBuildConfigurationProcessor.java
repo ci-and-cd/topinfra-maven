@@ -1,4 +1,4 @@
-package top.infra.maven.extension;
+package top.infra.maven.extension.main;
 
 import static java.util.stream.Collectors.toList;
 
@@ -14,6 +14,7 @@ import org.apache.maven.cli.configuration.ConfigurationProcessor;
 import org.apache.maven.cli.configuration.SettingsXmlConfigurationProcessor;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
 
+import top.infra.maven.extension.OrderedConfigurationProcessor;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 
