@@ -1,13 +1,17 @@
 package top.infra.maven.extension.gitflow;
 
-import static top.infra.maven.Constants.BRANCH_PREFIX_FEATURE;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
-import static top.infra.maven.Constants.PUBLISH_CHANNEL_SNAPSHOT;
-import static top.infra.maven.utils.SupportFunction.isEmpty;
-import static top.infra.maven.utils.SupportFunction.isSemanticSnapshotVersion;
+import static top.infra.maven.Constants.GIT_REF_PREFIX_FEATURE;
+import static top.infra.maven.Constants.GIT_REF_PREFIX_HOTFIX;
+import static top.infra.maven.Constants.GIT_REF_PREFIX_RELEASE;
+import static top.infra.maven.Constants.GIT_REF_PREFIX_SUPPORT;
+import static top.infra.maven.extension.VcsProperties.GIT_REF_NAME;
 import static top.infra.maven.utils.SupportFunction.newTuple;
 
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -18,25 +22,23 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
 import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.extension.MavenBuildPomOption;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.MavenProjectInfo;
 import top.infra.maven.extension.MavenProjectInfoEventAware;
 import top.infra.maven.extension.Orders;
-import top.infra.maven.extension.VcsProperties;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 
 @Named
 @Singleton
-public class GitflowSemanticVersionChecker implements MavenEventAware {
+public class GitFlowSemanticVersionChecker implements MavenEventAware {
 
     private final Logger logger;
 
     private final MavenProjectInfoEventAware projectInfoBean;
 
     @Inject
-    public GitflowSemanticVersionChecker(
+    public GitFlowSemanticVersionChecker(
         final org.codehaus.plexus.logging.Logger logger,
         final MavenProjectInfoEventAware projectInfoBean
     ) {
@@ -68,7 +70,7 @@ public class GitflowSemanticVersionChecker implements MavenEventAware {
             logger.info("<<<<<<<<<< ---------- resolve project version ---------- <<<<<<<<<<");
         }
 
-        final String gitRefName = VcsProperties.GIT_REF_NAME.getValue(ciOptContext).orElse("");
+        final String gitRefName = GIT_REF_NAME.getValue(ciOptContext).orElse("");
         final Entry<Boolean, RuntimeException> checkResult = checkProjectVersion(ciOptContext, mavenProjectInfo.getVersion());
         final boolean valid = checkResult.getKey();
         if (logger.isInfoEnabled()) {
@@ -95,33 +97,56 @@ public class GitflowSemanticVersionChecker implements MavenEventAware {
         final CiOptionContext ciOptContext,
         final String projectVersion
     ) {
-        final String gitRefName = VcsProperties.GIT_REF_NAME.getValue(ciOptContext).orElse("");
-        final String msgInvalidVersion = String.format("Invalid version [%s] for ref [%s]", projectVersion, gitRefName);
-        final boolean semanticSnapshotVersion = isSemanticSnapshotVersion(projectVersion); // no feature name in version
-        final boolean snapshotChannel = PUBLISH_CHANNEL_SNAPSHOT.equals(
-            MavenBuildPomOption.PUBLISH_CHANNEL.getValue(ciOptContext).orElse(null));
-        final boolean snapshotVersion = projectVersion != null && projectVersion.endsWith("-SNAPSHOT");
+        final Entry<Boolean, RuntimeException> result;
 
-        final boolean result;
-        final RuntimeException ex;
-        if (snapshotChannel) {
-            final boolean onDevelopBranch = GIT_REF_NAME_DEVELOP.equals(gitRefName);
-            final boolean onFeatureBranches = gitRefName.startsWith(BRANCH_PREFIX_FEATURE);
-            if (onFeatureBranches) {
-                result = snapshotVersion && !semanticSnapshotVersion;
-                ex = null;
-            } else if (isEmpty(gitRefName) || onDevelopBranch) {
-                result = snapshotVersion && semanticSnapshotVersion;
-                ex = null;
+        final String gitRef = GIT_REF_NAME.getValue(ciOptContext).orElse(null);
+
+        final Entry<Boolean, RuntimeException> ok = newTuple(TRUE, null);
+        final Entry<Boolean, RuntimeException> warn = newTuple(FALSE, null);
+        final String errMsg = String.format("Invalid version [%s] for ref [%s]", projectVersion, gitRef);
+        final Entry<Boolean, RuntimeException> err = newTuple(FALSE, new IllegalArgumentException(errMsg));
+
+        if (gitRef != null && !gitRef.isEmpty()) {
+            final boolean snapshotRef = GIT_REF_NAME_DEVELOP.equals(gitRef)
+                || gitRef.startsWith(GIT_REF_PREFIX_FEATURE);
+            final boolean releaseRef = gitRef.startsWith(GIT_REF_PREFIX_HOTFIX)
+                || gitRef.startsWith(GIT_REF_PREFIX_RELEASE)
+                || gitRef.startsWith(GIT_REF_PREFIX_SUPPORT);
+
+            if (snapshotRef) {
+                if (GIT_REF_NAME_DEVELOP.equals(gitRef)) { // develop branch
+                    // no feature name in version
+                    result = isSemSnapshot(projectVersion) ? ok : warn;
+                } else { // feature branches
+                    result = isSemFeature(projectVersion) ? ok : warn;
+                }
+            } else if (releaseRef) {
+                result = isSemRelease(projectVersion) ? ok : err;
             } else {
-                result = snapshotVersion;
-                ex = result ? null : new IllegalArgumentException(msgInvalidVersion);
+                result = ok;
             }
         } else {
-            result = !snapshotVersion;
-            ex = result ? null : new IllegalArgumentException(msgInvalidVersion);
+            result = ok;
         }
 
-        return newTuple(result, ex);
+        return result;
+    }
+
+    private static final Pattern PATTERN_SEMANTIC_VERSION_FEATURE = Pattern.compile("^([0-9]+\\.){0,2}[0-9]+-\\w+-SNAPSHOT$");
+
+    private static final Pattern PATTERN_SEMANTIC_VERSION_RELEASE = Pattern.compile("^([0-9]+\\.){0,2}[0-9]+$");
+
+    private static final Pattern PATTERN_SEMANTIC_VERSION_SNAPSHOT = Pattern.compile("^([0-9]+\\.){0,2}[0-9]+-SNAPSHOT$");
+
+    static boolean isSemFeature(final String version) {
+        return version != null && PATTERN_SEMANTIC_VERSION_FEATURE.matcher(version).matches();
+    }
+
+    static boolean isSemRelease(final String version) {
+        return version != null && PATTERN_SEMANTIC_VERSION_RELEASE.matcher(version).matches();
+    }
+
+    static boolean isSemSnapshot(final String version) {
+        return version != null && PATTERN_SEMANTIC_VERSION_SNAPSHOT.matcher(version).matches();
     }
 }

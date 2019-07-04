@@ -3,10 +3,10 @@ package top.infra.maven.extension;
 import static java.lang.Boolean.FALSE;
 import static top.infra.maven.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.Constants.BRANCH_PREFIX_FEATURE;
-import static top.infra.maven.Constants.BRANCH_PREFIX_HOTFIX;
-import static top.infra.maven.Constants.BRANCH_PREFIX_RELEASE;
-import static top.infra.maven.Constants.BRANCH_PREFIX_SUPPORT;
+import static top.infra.maven.Constants.GIT_REF_PREFIX_FEATURE;
+import static top.infra.maven.Constants.GIT_REF_PREFIX_HOTFIX;
+import static top.infra.maven.Constants.GIT_REF_PREFIX_RELEASE;
+import static top.infra.maven.Constants.GIT_REF_PREFIX_SUPPORT;
 import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
 import static top.infra.maven.Constants.PUBLISH_CHANNEL_RELEASE;
 import static top.infra.maven.Constants.PUBLISH_CHANNEL_SNAPSHOT;
@@ -127,13 +127,13 @@ public enum MavenBuildPomOption implements CiOption {
                 context).orElse("");
             if (GIT_REF_NAME_DEVELOP.equals(refName)) {
                 result = PUBLISH_CHANNEL_SNAPSHOT;
-            } else if (refName.startsWith(BRANCH_PREFIX_FEATURE)) {
+            } else if (refName.startsWith(GIT_REF_PREFIX_FEATURE)) {
                 result = PUBLISH_CHANNEL_SNAPSHOT;
-            } else if (refName.startsWith(BRANCH_PREFIX_HOTFIX)) {
+            } else if (refName.startsWith(GIT_REF_PREFIX_HOTFIX)) {
                 result = PUBLISH_CHANNEL_RELEASE;
-            } else if (refName.startsWith(BRANCH_PREFIX_RELEASE)) {
+            } else if (refName.startsWith(GIT_REF_PREFIX_RELEASE)) {
                 result = PUBLISH_CHANNEL_RELEASE;
-            } else if (refName.startsWith(BRANCH_PREFIX_SUPPORT)) {
+            } else if (refName.startsWith(GIT_REF_PREFIX_SUPPORT)) {
                 result = PUBLISH_CHANNEL_RELEASE;
             } else {
                 result = PUBLISH_CHANNEL_SNAPSHOT;

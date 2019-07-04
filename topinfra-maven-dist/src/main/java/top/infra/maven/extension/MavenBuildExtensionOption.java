@@ -3,10 +3,10 @@ package top.infra.maven.extension;
 import static java.lang.Boolean.FALSE;
 import static top.infra.maven.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.Constants.BRANCH_PREFIX_FEATURE;
-import static top.infra.maven.Constants.BRANCH_PREFIX_HOTFIX;
-import static top.infra.maven.Constants.BRANCH_PREFIX_RELEASE;
-import static top.infra.maven.Constants.BRANCH_PREFIX_SUPPORT;
+import static top.infra.maven.Constants.GIT_REF_PREFIX_FEATURE;
+import static top.infra.maven.Constants.GIT_REF_PREFIX_HOTFIX;
+import static top.infra.maven.Constants.GIT_REF_PREFIX_RELEASE;
+import static top.infra.maven.Constants.GIT_REF_PREFIX_SUPPORT;
 import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
 import static top.infra.maven.utils.SystemUtils.systemUserHome;
 
@@ -77,17 +77,17 @@ public enum MavenBuildExtensionOption implements CiOption {
 
             if (originRepo) {
                 if (GIT_REF_NAME_DEVELOP.equals(refName)
-                    || refName.startsWith(BRANCH_PREFIX_FEATURE)
-                    || refName.startsWith(BRANCH_PREFIX_HOTFIX)
-                    || refName.startsWith(BRANCH_PREFIX_RELEASE)
-                    || refName.startsWith(BRANCH_PREFIX_SUPPORT)
+                    || refName.startsWith(GIT_REF_PREFIX_FEATURE)
+                    || refName.startsWith(GIT_REF_PREFIX_HOTFIX)
+                    || refName.startsWith(GIT_REF_PREFIX_RELEASE)
+                    || refName.startsWith(GIT_REF_PREFIX_SUPPORT)
                 ) {
                     result = BOOL_STRING_TRUE;
                 } else {
                     result = BOOL_STRING_FALSE;
                 }
             } else {
-                result = refName.startsWith(BRANCH_PREFIX_FEATURE) ? BOOL_STRING_TRUE : BOOL_STRING_FALSE;
+                result = refName.startsWith(GIT_REF_PREFIX_FEATURE) ? BOOL_STRING_TRUE : BOOL_STRING_FALSE;
             }
 
             return Optional.of(result);

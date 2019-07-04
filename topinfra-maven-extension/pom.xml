@@ -25,21 +25,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- Invoke integration tests. -->
-            <plugin>
-                <artifactId>maven-invoker-plugin</artifactId>
-                <configuration>
-                    <!-- <debug>true</debug> -->
-                    <showErrors>true</showErrors>
-                    <streamLogs>true</streamLogs>
-                    <localRepositoryPath>${project.basedir}/../test-repo</localRepositoryPath>
-                    <mavenHome>../topinfra-maven-dist/target/apache-maven-${version.maven}/apache-maven-${version.maven}</mavenHome>
-                    <pomIncludes>
-                        <include>test-topinfra-maven-extension</include>
-                    </pomIncludes>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
@@ -68,6 +53,33 @@
         <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-maven-build-pom</artifactId><scope>test</scope></dependency>
         <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-settings-security</artifactId><scope>test</scope></dependency>
     </dependencies>
+    <!-- @formatter:on -->
+
+    <!-- @formatter:off -->
+    <profiles>
+        <profile>
+            <id>skip-invoker-when-fast-option-present</id>
+            <activation><property><name>!fast</name></property></activation>
+            <build>
+                <plugins>
+                    <!-- Invoke integration tests. -->
+                    <plugin>
+                        <artifactId>maven-invoker-plugin</artifactId>
+                        <configuration>
+                            <!-- <debug>true</debug> -->
+                            <showErrors>true</showErrors>
+                            <streamLogs>true</streamLogs>
+                            <localRepositoryPath>${project.basedir}/../test-repo</localRepositoryPath>
+                            <mavenHome>../topinfra-maven-dist/target/apache-maven-${version.maven}/apache-maven-${version.maven}</mavenHome>
+                            <pomIncludes>
+                                <include>test-topinfra-maven-extension</include>
+                            </pomIncludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <!-- @formatter:on -->
 
     <properties>

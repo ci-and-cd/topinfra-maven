@@ -7,8 +7,10 @@ import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
 import static top.infra.maven.extension.MavenBuildExtensionOption.ORIGIN_REPO;
 import static top.infra.maven.extension.MavenOption.GENERATEREPORTS;
 import static top.infra.maven.extension.VcsProperties.GIT_REF_NAME;
-import static top.infra.maven.extension.gitflow.GitflowSemanticVersionChecker.checkProjectVersion;
-import static top.infra.maven.utils.SupportFunction.isSemanticSnapshotVersion;
+import static top.infra.maven.extension.gitflow.GitFlowSemanticVersionChecker.checkProjectVersion;
+import static top.infra.maven.extension.gitflow.GitFlowSemanticVersionChecker.isSemFeature;
+import static top.infra.maven.extension.gitflow.GitFlowSemanticVersionChecker.isSemRelease;
+import static top.infra.maven.extension.gitflow.GitFlowSemanticVersionChecker.isSemSnapshot;
 
 import java.util.Map;
 import java.util.Properties;
@@ -25,13 +27,20 @@ public class ProjectVersionTest {
 
     @Test
     public void testSemanticSnapshotVersion() {
-        assertTrue(isSemanticSnapshotVersion("2.0.1-SNAPSHOT"));
-        assertTrue(isSemanticSnapshotVersion("1.0.0-SNAPSHOT"));
-        assertTrue(isSemanticSnapshotVersion("1.0-SNAPSHOT"));
-        assertTrue(isSemanticSnapshotVersion("1-SNAPSHOT"));
+        assertTrue(isSemSnapshot("2.0.1-SNAPSHOT"));
+        assertTrue(isSemSnapshot("1.0.0-SNAPSHOT"));
+        assertTrue(isSemSnapshot("1.0-SNAPSHOT"));
+        assertTrue(isSemSnapshot("1-SNAPSHOT"));
 
-        assertFalse(isSemanticSnapshotVersion("2.0.1-feature-SNAPSHOT"));
-        assertFalse(isSemanticSnapshotVersion("2.0.1"));
+        assertTrue(isSemFeature("2.0.1-feature_1-SNAPSHOT"));
+        assertTrue(isSemFeature("1.0.0-feature_1-SNAPSHOT"));
+        assertTrue(isSemFeature("1.0-feature_1-SNAPSHOT"));
+        assertTrue(isSemFeature("1-feature_1-SNAPSHOT"));
+
+        assertFalse(isSemSnapshot("2.0.1-feature-SNAPSHOT"));
+        assertTrue(isSemFeature("2.0.1-feature-SNAPSHOT"));
+        assertFalse(isSemSnapshot("2.0.1"));
+        assertTrue(isSemRelease("2.0.1"));
     }
 
     @Test

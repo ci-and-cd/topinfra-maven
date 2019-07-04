@@ -11,33 +11,6 @@
     <build>
         <!-- @formatter:off -->
         <plugins>
-            <plugin>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution><id>attach-sources</id><goals><goal>jar-no-fork</goal></goals><phase>prepare-package</phase></execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <executions>
-                    <execution><id>attach-javadocs</id><goals><goal>jar</goal></goals><phase>prepare-package</phase></execution>
-                    <execution><id>attach-test-javadocs</id><goals><goal>test-jar</goal></goals><phase>prepare-package</phase></execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <autoReleaseAfterClose>false</autoReleaseAfterClose>
-                    <detectBuildFailures>true</detectBuildFailures>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <serverId>ossrh-staging</serverId>
-                    <!--<sslAllowAll>true</sslAllowAll>-->
-                    <stagingProgressPauseDurationSeconds>30</stagingProgressPauseDurationSeconds>
-                    <stagingProgressTimeoutMinutes>60</stagingProgressTimeoutMinutes>
-                </configuration>
-            </plugin>
         </plugins>
         <!-- @formatter:on -->
 
@@ -57,115 +30,7 @@
                         </dependency>
                     </dependencies>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-invoker-plugin</artifactId>
-                    <version>3.2.0</version>
-                    <configuration>
-                        <cloneProjectsTo>${project.basedir}/target/it</cloneProjectsTo>
-                        <debug>false</debug>
-                        <goals>
-                            <!-- Goals for child maven. -->
-                            <goal>clean</goal>
-                            <goal>dependency:resolve</goal>
-                            <goal>install</goal>
-                        </goals>
-                        <ignoreFailures>false</ignoreFailures>
-                        <invokerPropertiesFile>invoker.properties</invokerPropertiesFile>
-                        <postBuildHookScript>verify</postBuildHookScript>
-                        <preBuildHookScript>setup</preBuildHookScript>
-                        <properties>
-                            <infrastructure>ossrh</infrastructure>
-                            <private.sonar.host.url>http://my-sonarqube:9000</private.sonar.host.url>
-                            <site>true</site>
-                        </properties>
-                        <projectsDirectory>${project.basedir}/src/it</projectsDirectory>
-                        <!--<settingsFile>src/it/settings.xml</settingsFile>-->
-                        <showErrors>false</showErrors>
-                        <streamLogs>false</streamLogs>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>integration-test</id>
-                            <goals>
-                                <!-- Goals for parent maven. -->
-                                <goal>install</goal>
-                                <goal>run</goal>
-                                <goal>verify</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-
-                <plugin><artifactId>maven-gpg-plugin</artifactId><version>${version.maven-gpg-plugin}</version></plugin>
-                <plugin>
-                    <artifactId>maven-javadoc-plugin</artifactId><version>${version.maven-javadoc-plugin}</version>
-                    <configuration>
-                        <additionalJOption>-J-Duser.language=en</additionalJOption>
-                        <!--<additionalOptions>-views -all</additionalOptions>-->
-                        <charset>${project.build.sourceEncoding}</charset>
-                        <!--<doclet>org.umlgraph.doclet.UmlGraphDoc</doclet>-->
-                        <!-- UML Graph needs to match HTML tag to insert images into javadoc -->
-                        <!--<docletArtifact><groupId>org.umlgraph</groupId><artifactId>umlgraph</artifactId><version>${umlgraph.version}</version></docletArtifact>-->
-                        <doclint>none</doclint>
-                        <encoding>${project.build.sourceEncoding}</encoding>
-                        <failOnError>${maven.javadoc.failsOnError}</failOnError>
-                        <notimestamp>true</notimestamp>
-                        <useStandardDocletOptions>true</useStandardDocletOptions>
-                    </configuration>
-                </plugin>
                 <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId><version>${version.maven-jar-plugin}</version></plugin>
-                <plugin><artifactId>maven-source-plugin</artifactId><version>${version.maven-source-plugin}</version></plugin>
-                <plugin><artifactId>nexus-staging-maven-plugin</artifactId><groupId>org.sonatype.plugins</groupId><version>${version.nexus-staging-maven-plugin}</version></plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${version.maven.testing}</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.junit.jupiter</groupId>
-                            <artifactId>junit-jupiter-engine</artifactId>
-                            <version>${version.junit.jupiter}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.junit.vintage</groupId>
-                            <artifactId>junit-vintage-engine</artifactId>
-                            <version>${version.junit.vintage}</version>
-                        </dependency>
-                    </dependencies>
-                    <configuration>
-                        <runOrder>alphabetical</runOrder>
-                        <includes>
-                            <include>**/*Test.class</include>
-                            <include>**/*Suite.class</include>
-                        </includes>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>${version.maven.testing}</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.junit.jupiter</groupId>
-                            <artifactId>junit-jupiter-engine</artifactId>
-                            <version>${version.junit.jupiter}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.junit.vintage</groupId>
-                            <artifactId>junit-vintage-engine</artifactId>
-                            <version>${version.junit.vintage}</version>
-                        </dependency>
-                    </dependencies>
-                    <configuration>
-                        <includes>
-                            <include>**/*IT.java</include>
-                            <include>**/*Verify.java</include>
-                        </includes>
-                    </configuration>
-                </plugin>
 
                 <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-shade-plugin</artifactId><version>3.2.1</version></plugin>
             </plugins>
@@ -281,6 +146,160 @@
                         </executions>
                     </plugin>
                 </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>skip-tests-when-fast-option-present</id>
+            <activation><property><name>fast</name></property></activation>
+            <properties>
+                <skipTests>true</skipTests>
+                <skipITs>true</skipITs>
+            </properties>
+        </profile>
+        <profile>
+            <id>skip-these-plugins-when-fast-option-present</id>
+            <activation><property><name>!fast</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution><id>attach-sources</id><goals><goal>jar-no-fork</goal></goals><phase>prepare-package</phase></execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution><id>attach-javadocs</id><goals><goal>jar</goal></goals><phase>prepare-package</phase></execution>
+                            <execution><id>attach-test-javadocs</id><goals><goal>test-jar</goal></goals><phase>prepare-package</phase></execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                            <detectBuildFailures>true</detectBuildFailures>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <serverId>ossrh-staging</serverId>
+                            <!--<sslAllowAll>true</sslAllowAll>-->
+                            <stagingProgressPauseDurationSeconds>30</stagingProgressPauseDurationSeconds>
+                            <stagingProgressTimeoutMinutes>60</stagingProgressTimeoutMinutes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-invoker-plugin</artifactId>
+                            <version>3.2.0</version>
+                            <configuration>
+                                <cloneProjectsTo>${project.basedir}/target/it</cloneProjectsTo>
+                                <debug>false</debug>
+                                <goals>
+                                    <!-- Goals for child maven. -->
+                                    <goal>clean</goal>
+                                    <goal>dependency:resolve</goal>
+                                    <goal>install</goal>
+                                </goals>
+                                <ignoreFailures>false</ignoreFailures>
+                                <invokerPropertiesFile>invoker.properties</invokerPropertiesFile>
+                                <postBuildHookScript>verify</postBuildHookScript>
+                                <preBuildHookScript>setup</preBuildHookScript>
+                                <properties>
+                                    <infrastructure>ossrh</infrastructure>
+                                    <sonar>true</sonar>
+                                    <private.sonar.host.url>http://my-sonarqube:9000</private.sonar.host.url>
+                                    <site>true</site>
+                                </properties>
+                                <projectsDirectory>${project.basedir}/src/it</projectsDirectory>
+                                <!--<settingsFile>src/it/settings.xml</settingsFile>-->
+                                <showErrors>false</showErrors>
+                                <streamLogs>false</streamLogs>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>integration-test</id>
+                                    <goals>
+                                        <!-- Goals for parent maven. -->
+                                        <goal>install</goal>
+                                        <goal>run</goal>
+                                        <goal>verify</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin><artifactId>maven-gpg-plugin</artifactId><version>${version.maven-gpg-plugin}</version></plugin>
+                        <plugin>
+                            <artifactId>maven-javadoc-plugin</artifactId><version>${version.maven-javadoc-plugin}</version>
+                            <configuration>
+                                <additionalJOption>-J-Duser.language=en</additionalJOption>
+                                <!--<additionalOptions>-views -all</additionalOptions>-->
+                                <charset>${project.build.sourceEncoding}</charset>
+                                <!--<doclet>org.umlgraph.doclet.UmlGraphDoc</doclet>-->
+                                <!-- UML Graph needs to match HTML tag to insert images into javadoc -->
+                                <!--<docletArtifact><groupId>org.umlgraph</groupId><artifactId>umlgraph</artifactId><version>${umlgraph.version}</version></docletArtifact>-->
+                                <doclint>none</doclint>
+                                <encoding>${project.build.sourceEncoding}</encoding>
+                                <failOnError>${maven.javadoc.failsOnError}</failOnError>
+                                <notimestamp>true</notimestamp>
+                                <useStandardDocletOptions>true</useStandardDocletOptions>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <version>${version.maven.testing}</version>
+                            <dependencies>
+                                <dependency>
+                                    <groupId>org.junit.jupiter</groupId>
+                                    <artifactId>junit-jupiter-engine</artifactId>
+                                    <version>${version.junit.jupiter}</version>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.junit.vintage</groupId>
+                                    <artifactId>junit-vintage-engine</artifactId>
+                                    <version>${version.junit.vintage}</version>
+                                </dependency>
+                            </dependencies>
+                            <configuration>
+                                <runOrder>alphabetical</runOrder>
+                                <includes>
+                                    <include>**/*Test.class</include>
+                                    <include>**/*Suite.class</include>
+                                </includes>
+                            </configuration>
+                        </plugin>
+
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-failsafe-plugin</artifactId>
+                            <version>${version.maven.testing}</version>
+                            <dependencies>
+                                <dependency>
+                                    <groupId>org.junit.jupiter</groupId>
+                                    <artifactId>junit-jupiter-engine</artifactId>
+                                    <version>${version.junit.jupiter}</version>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.junit.vintage</groupId>
+                                    <artifactId>junit-vintage-engine</artifactId>
+                                    <version>${version.junit.vintage}</version>
+                                </dependency>
+                            </dependencies>
+                            <configuration>
+                                <includes>
+                                    <include>**/*IT.java</include>
+                                    <include>**/*Verify.java</include>
+                                </includes>
+                            </configuration>
+                        </plugin>
+                        <plugin><artifactId>maven-source-plugin</artifactId><version>${version.maven-source-plugin}</version></plugin>
+                        <plugin><artifactId>nexus-staging-maven-plugin</artifactId><groupId>org.sonatype.plugins</groupId><version>${version.nexus-staging-maven-plugin}</version></plugin>
+                    </plugins>
+                </pluginManagement>
             </build>
         </profile>
     </profiles>

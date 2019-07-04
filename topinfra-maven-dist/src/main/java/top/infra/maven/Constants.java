@@ -5,13 +5,13 @@ public final class Constants {
     public static final String BOOL_STRING_FALSE = "false";
     public static final String BOOL_STRING_TRUE = "true";
 
-    public static final String BRANCH_PREFIX_FEATURE = "feature/";
-    public static final String BRANCH_PREFIX_HOTFIX = "hotfix/";
-    public static final String BRANCH_PREFIX_RELEASE = "release/";
-    public static final String BRANCH_PREFIX_SUPPORT = "support/";
-
     public static final String GIT_REF_NAME_DEVELOP = "develop";
     public static final String GIT_REF_NAME_MASTER = "master";
+
+    public static final String GIT_REF_PREFIX_FEATURE = "feature/";
+    public static final String GIT_REF_PREFIX_HOTFIX = "hotfix/";
+    public static final String GIT_REF_PREFIX_RELEASE = "release/";
+    public static final String GIT_REF_PREFIX_SUPPORT = "support/";
 
     public static final String PHASE_DEPLOY = "deploy";
     public static final String PHASE_INSTALL = "install";

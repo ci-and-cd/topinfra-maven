@@ -14,14 +14,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class SupportFunction {
 
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
-    private static final Pattern PATTERN_SEMANTIC_VERSION_SNAPSHOT = Pattern.compile("^([0-9]+\\.){0,2}[0-9]+-SNAPSHOT$");
 
     private SupportFunction() {
     }
@@ -41,10 +39,6 @@ public abstract class SupportFunction {
 
     public static boolean isEmpty(final String str) {
         return str == null || str.isEmpty();
-    }
-
-    public static boolean isSemanticSnapshotVersion(final String version) {
-        return version != null && PATTERN_SEMANTIC_VERSION_SNAPSHOT.matcher(version).matches();
     }
 
     public static List<String> lines(final String cmdOutput) {
