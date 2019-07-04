@@ -30,6 +30,45 @@
                 </executions>
             </plugin>
             <plugin>
+                <artifactId>maven-shade-plugin</artifactId>
+                <configuration>
+                    <artifactSet>
+                        <excludes>
+                            <exclude>org.jetbrains:annotations</exclude>
+                            <exclude>org.slf4j:*</exclude>
+                        </excludes>
+                    </artifactSet>
+                    <filters>
+                        <filter>
+                            <!-- Avoid 'Invalid signature file digest for Manifest main attributes' error -->
+                            <!-- see: https://maven.apache.org/plugins/maven-jarsigner-plugin/usage.html -->
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                    <minimizeJar>false</minimizeJar>
+                    <relocations>
+                        <relocation>
+                            <pattern>org.eclipse.jgit</pattern>
+                            <shadedPattern>shaded.org.eclipse.jgit</shadedPattern>
+                            <!--<excludes><exclude></exclude></excludes>-->
+                        </relocation>
+                    </relocations>
+                    <shadedArtifactAttached>true</shadedArtifactAttached>
+                    <shadedClassifierName>shaded</shadedClassifierName>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>com.googlecode.maven-download-plugin</groupId>
                 <artifactId>download-maven-plugin</artifactId>
                 <version>1.4.2</version>
@@ -81,9 +120,9 @@
                 <exclusion><artifactId>JavaEWAH</artifactId><groupId>com.googlecode.javaewah</groupId></exclusion>
                 <exclusion><artifactId>jsch</artifactId><groupId>com.jcraft</groupId></exclusion>
                 <exclusion><artifactId>jzlib</artifactId><groupId>com.jcraft</groupId></exclusion>
+                <exclusion><artifactId>slf4j-api</artifactId><groupId>org.slf4j</groupId></exclusion>
             </exclusions>
         </dependency>
-        <dependency><groupId>org.json</groupId><artifactId>json</artifactId></dependency>
     </dependencies>
     <!-- @formatter:on -->
 

@@ -166,6 +166,8 @@
                         </includes>
                     </configuration>
                 </plugin>
+
+                <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-shade-plugin</artifactId><version>3.2.1</version></plugin>
             </plugins>
             <!-- @formatter:on -->
         </pluginManagement>
@@ -185,6 +187,7 @@
         <dependencies>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><classifier>mvn${version.maven}</classifier><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><classifier>shaded</classifier><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-test</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-docker</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-gitflow-semver</artifactId><version>${project.version}</version></dependency>
