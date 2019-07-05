@@ -29,10 +29,10 @@ import org.apache.maven.settings.building.SettingsBuildingRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.unix4j.Unix4j;
 
-import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.extension.InfraOption;
+import top.infra.maven.CiOptionContext;
+import top.infra.maven.extension.shared.InfraOption;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.Orders;
+import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.SupportFunction;

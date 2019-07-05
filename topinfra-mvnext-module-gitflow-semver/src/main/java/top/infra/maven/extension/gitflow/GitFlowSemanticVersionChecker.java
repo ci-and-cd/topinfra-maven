@@ -2,12 +2,12 @@ package top.infra.maven.extension.gitflow;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
-import static top.infra.maven.Constants.GIT_REF_PREFIX_FEATURE;
-import static top.infra.maven.Constants.GIT_REF_PREFIX_HOTFIX;
-import static top.infra.maven.Constants.GIT_REF_PREFIX_RELEASE;
-import static top.infra.maven.Constants.GIT_REF_PREFIX_SUPPORT;
-import static top.infra.maven.extension.VcsProperties.GIT_REF_NAME;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_FEATURE;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_HOTFIX;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_RELEASE;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_SUPPORT;
+import static top.infra.maven.extension.shared.VcsProperties.GIT_REF_NAME;
 import static top.infra.maven.utils.SupportFunction.newTuple;
 
 import java.util.Map.Entry;
@@ -21,11 +21,11 @@ import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.MavenProjectInfo;
-import top.infra.maven.extension.MavenProjectInfoEventAware;
-import top.infra.maven.extension.Orders;
+import top.infra.maven.extension.shared.MavenProjectInfo;
+import top.infra.maven.extension.shared.MavenProjectInfoEventAware;
+import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 
@@ -63,7 +63,7 @@ public class GitFlowSemanticVersionChecker implements MavenEventAware {
 
     @Override
     public int getOrder() {
-        return Orders.ORDER_GITFLOW_SEMANTIC_VERSION;
+        return Orders.ORDER_GIT_FLOW_SEMANTIC_VERSION;
     }
 
     private void check(final CiOptionContext ciOptContext) {

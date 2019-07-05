@@ -1,4 +1,4 @@
-package top.infra.maven.extension;
+package top.infra.maven.extension.shared;
 
 import java.util.Arrays;
 import java.util.List;
@@ -6,17 +6,12 @@ import java.util.List;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import top.infra.maven.core.CiOption;
-import top.infra.maven.core.CiOptionFactoryBean;
+import top.infra.maven.CiOption;
+import top.infra.maven.extension.CiOptionFactoryBean;
 
 @Named
 @Singleton
 public class InfraOptionFactoryBean implements CiOptionFactoryBean {
-
-    @Override
-    public List<CiOption> getOptions() {
-        return Arrays.asList(InfraOption.values());
-    }
 
     @Override
     public int getOrder() {
@@ -26,5 +21,10 @@ public class InfraOptionFactoryBean implements CiOptionFactoryBean {
     @Override
     public Class<?> getType() {
         return InfraOption.class;
+    }
+
+    @Override
+    public List<CiOption> getOptions() {
+        return Arrays.asList(InfraOption.values());
     }
 }

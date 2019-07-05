@@ -16,9 +16,9 @@ import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.Orders;
+import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.MavenUtils;
@@ -26,12 +26,12 @@ import top.infra.maven.utils.SystemUtils;
 
 @Named
 @Singleton
-public class GpgEventAware implements MavenEventAware {
+public class GpgKeyEventAware implements MavenEventAware {
 
     private Logger logger;
 
     @Inject
-    public GpgEventAware(final org.codehaus.plexus.logging.Logger logger) {
+    public GpgKeyEventAware(final org.codehaus.plexus.logging.Logger logger) {
         this.logger = new LoggerPlexusImpl(logger);
     }
 
@@ -71,6 +71,6 @@ public class GpgEventAware implements MavenEventAware {
     
     @Override
     public int getOrder() {
-        return Orders.EVENT_AWARE_ORDER_GPG;
+        return Orders.EVENT_AWARE_ORDER_GPG_KEY;
     }
 }

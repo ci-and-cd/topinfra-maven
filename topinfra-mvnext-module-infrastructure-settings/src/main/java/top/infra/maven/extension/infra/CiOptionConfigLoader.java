@@ -1,9 +1,9 @@
 package top.infra.maven.extension.infra;
 
-import static top.infra.maven.Constants.SRC_CI_OPTS_PROPERTIES;
-import static top.infra.maven.extension.InfraOption.CACHE_SETTINGS_PATH;
-import static top.infra.maven.extension.InfraOption.GIT_AUTH_TOKEN;
-import static top.infra.maven.extension.VcsProperties.GIT_REMOTE_ORIGIN_URL;
+import static top.infra.maven.extension.shared.Constants.SRC_CI_OPTS_PROPERTIES;
+import static top.infra.maven.extension.shared.InfraOption.CACHE_SETTINGS_PATH;
+import static top.infra.maven.extension.shared.InfraOption.GIT_AUTH_TOKEN;
+import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 import static top.infra.maven.utils.SupportFunction.isEmpty;
 
 import java.io.FileInputStream;
@@ -18,11 +18,11 @@ import javax.inject.Singleton;
 
 import org.apache.maven.cli.CliRequest;
 
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.exception.RuntimeIOException;
-import top.infra.maven.extension.InfraOption;
+import top.infra.maven.extension.shared.InfraOption;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.Orders;
+import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.FileUtils;
@@ -31,12 +31,12 @@ import top.infra.maven.utils.PropertiesUtils;
 
 @Named
 @Singleton
-public class OptionFileLoader implements MavenEventAware {
+public class CiOptionConfigLoader implements MavenEventAware {
 
     private final Logger logger;
 
     @Inject
-    public OptionFileLoader(
+    public CiOptionConfigLoader(
         final org.codehaus.plexus.logging.Logger logger
     ) {
         this.logger = new LoggerPlexusImpl(logger);
@@ -57,7 +57,7 @@ public class OptionFileLoader implements MavenEventAware {
 
     @Override
     public int getOrder() {
-        return Orders.ORDER_OPTION_FILE_LOADER;
+        return Orders.ORDER_CI_OPTION_CONFIG_LOADER;
     }
 
     public void load(

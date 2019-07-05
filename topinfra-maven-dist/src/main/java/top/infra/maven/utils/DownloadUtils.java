@@ -22,21 +22,6 @@ import top.infra.maven.logging.Logger;
 
 public abstract class DownloadUtils {
 
-    public static class DownloadException extends RuntimeException {
-
-        public DownloadException(final String msg) {
-            super(msg);
-        }
-
-        public DownloadException(final String msg, final Exception cause) {
-            super(msg, cause);
-        }
-
-        public DownloadException(final Exception cause) {
-            super(cause);
-        }
-    }
-
     private DownloadUtils() {
     }
 
@@ -148,5 +133,20 @@ public abstract class DownloadUtils {
 
     public static boolean is5xxStatus(final Integer status) {
         return status != null && status >= 500 && status < 600;
+    }
+
+    public static class DownloadException extends RuntimeException {
+
+        public DownloadException(final String msg) {
+            super(msg);
+        }
+
+        public DownloadException(final String msg, final Exception cause) {
+            super(msg, cause);
+        }
+
+        public DownloadException(final Exception cause) {
+            super(cause);
+        }
     }
 }

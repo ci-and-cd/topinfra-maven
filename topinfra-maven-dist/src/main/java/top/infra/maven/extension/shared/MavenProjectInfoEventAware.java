@@ -1,9 +1,9 @@
-package top.infra.maven.extension;
+package top.infra.maven.extension.shared;
 
 import static java.lang.Boolean.FALSE;
-import static top.infra.maven.extension.FastOption.FAST;
-import static top.infra.maven.extension.MavenProjectInfo.newProjectInfoByBuildProject;
-import static top.infra.maven.extension.MavenProjectInfo.newProjectInfoByReadPom;
+import static top.infra.maven.extension.shared.FastOption.FAST;
+import static top.infra.maven.extension.shared.MavenProjectInfo.newProjectInfoByBuildProject;
+import static top.infra.maven.extension.shared.MavenProjectInfo.newProjectInfoByReadPom;
 
 import java.io.File;
 
@@ -19,7 +19,8 @@ import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.eclipse.aether.RepositorySystemSession;
 
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOptionContext;
+import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 
@@ -49,6 +50,31 @@ public class MavenProjectInfoEventAware implements MavenEventAware {
         this.logger = new LoggerPlexusImpl(logger);
         this.projectBuilder = projectBuilder;
         this.repositorySessionFactory = repositorySessionFactory;
+    }
+
+    @Override
+    public int getOrder() {
+        return Orders.EVENT_AWARE_ORDER_MAVEN_PROJECT_INFO;
+    }
+
+    public MavenProjectInfo getProjectInfo() {
+        if (this.projectInfo == null && this.ciOptContext != null && this.mavenExecutionCopied != null) { // Lazy init
+            this.projectInfo = this.resolve(this.ciOptContext, this.mavenExecutionCopied);
+        }
+
+        return this.projectInfo;
+    }
+
+    private MavenProjectInfo resolve(final CiOptionContext ciOptContext, final MavenExecutionRequest mavenExecution) {
+        final MavenProjectInfo mavenProjectInfo = this.getMavenProjectInfo(mavenExecution);
+
+        if (logger.isInfoEnabled()) {
+            logger.info(">>>>>>>>>> ---------- resolve project version ---------- >>>>>>>>>>");
+            logger.info(mavenProjectInfo.toString());
+            logger.info("<<<<<<<<<< ---------- resolve project version ---------- <<<<<<<<<<");
+        }
+
+        return mavenProjectInfo;
     }
 
     public MavenProjectInfo getMavenProjectInfo(final MavenExecutionRequest request) {
@@ -111,19 +137,6 @@ public class MavenProjectInfoEventAware implements MavenEventAware {
     }
 
     @Override
-    public int getOrder() {
-        return Orders.EVENT_AWARE_ORDER_MAVEN_PROJECT_INFO;
-    }
-
-    public MavenProjectInfo getProjectInfo() {
-        if (this.projectInfo == null && this.ciOptContext != null && this.mavenExecutionCopied != null) { // Lazy init
-            this.projectInfo = this.resolve(this.ciOptContext, this.mavenExecutionCopied);
-        }
-
-        return this.projectInfo;
-    }
-
-    @Override
     public boolean onProjectBuildingRequest() {
         return true;
     }
@@ -144,17 +157,5 @@ public class MavenProjectInfoEventAware implements MavenEventAware {
 
             logger.info("Skip resolving and checking project version under fast mode.");
         }
-    }
-
-    private MavenProjectInfo resolve(final CiOptionContext ciOptContext, final MavenExecutionRequest mavenExecution) {
-        final MavenProjectInfo mavenProjectInfo = this.getMavenProjectInfo(mavenExecution);
-
-        if (logger.isInfoEnabled()) {
-            logger.info(">>>>>>>>>> ---------- resolve project version ---------- >>>>>>>>>>");
-            logger.info(mavenProjectInfo.toString());
-            logger.info("<<<<<<<<<< ---------- resolve project version ---------- <<<<<<<<<<");
-        }
-
-        return mavenProjectInfo;
     }
 }

@@ -1,9 +1,10 @@
-package top.infra.maven.core;
+package top.infra.maven;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import top.infra.maven.extension.shared.CiOptionNames;
 import top.infra.maven.utils.PropertiesUtils;
 
 public class CiOptionContext {

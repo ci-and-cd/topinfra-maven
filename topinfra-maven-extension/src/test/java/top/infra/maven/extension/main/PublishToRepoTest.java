@@ -2,12 +2,12 @@ package top.infra.maven.extension.main;
 
 import static java.lang.Boolean.FALSE;
 import static org.junit.Assert.assertTrue;
-import static top.infra.maven.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
 import static top.infra.maven.extension.main.MavenBuildExtensionOption.ORIGIN_REPO;
 import static top.infra.maven.extension.main.MavenBuildExtensionOption.PUBLISH_TO_REPO;
-import static top.infra.maven.extension.MavenOption.GENERATEREPORTS;
-import static top.infra.maven.extension.VcsProperties.GIT_REF_NAME;
+import static top.infra.maven.extension.shared.MavenOption.GENERATEREPORTS;
+import static top.infra.maven.extension.shared.VcsProperties.GIT_REF_NAME;
 
 import java.util.Optional;
 import java.util.Properties;
@@ -15,7 +15,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.OptionCollections;
 
 public class PublishToRepoTest {

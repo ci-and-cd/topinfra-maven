@@ -1,9 +1,11 @@
-package top.infra.maven.core;
+package top.infra.maven;
 
 import static java.lang.Boolean.FALSE;
 
 import java.util.Optional;
 import java.util.Properties;
+
+import top.infra.maven.extension.shared.CiOptionNames;
 
 public interface CiOption {
 

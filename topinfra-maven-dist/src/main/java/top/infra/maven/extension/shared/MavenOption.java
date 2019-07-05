@@ -1,17 +1,17 @@
-package top.infra.maven.extension;
+package top.infra.maven.extension.shared;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static top.infra.maven.Constants.BOOL_STRING_FALSE;
-import static top.infra.maven.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.extension.FastOption.FAST;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.extension.shared.FastOption.FAST;
 import static top.infra.maven.utils.SystemUtils.systemJavaVersion;
 
 import java.util.Optional;
 
-import top.infra.maven.core.CiOption;
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOption;
+import top.infra.maven.CiOptionContext;
 
 /**
  * Maven official (include official plugin) options.

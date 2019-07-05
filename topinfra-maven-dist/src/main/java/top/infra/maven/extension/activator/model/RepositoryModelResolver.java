@@ -108,14 +108,14 @@ public class RepositoryModelResolver implements ModelResolver {
         }
     }
 
-    @Override
+    public void setLocalRepository(final String localRepository) {
+        this.localRepository = new File(localRepository);
+    }    @Override
     public void addRepository(Repository repository) throws InvalidRepositoryException {
         this.addRepository(repository, false);
     }
 
-    public void setLocalRepository(final String localRepository) {
-        this.localRepository = new File(localRepository);
-    }
+
 
     @Override
     public void addRepository(final Repository repository, boolean replace) throws InvalidRepositoryException {

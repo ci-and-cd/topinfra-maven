@@ -1,13 +1,13 @@
 package top.infra.maven.extension.infra;
 
 import static java.lang.Boolean.FALSE;
-import static top.infra.maven.Constants.SETTINGS_SECURITY_XML;
-import static top.infra.maven.core.CiOptionNames.systemPropertyName;
-import static top.infra.maven.extension.InfraOption.CACHE_SETTINGS_PATH;
-import static top.infra.maven.extension.InfraOption.SETTINGS;
-import static top.infra.maven.extension.InfraOption.SETTINGS_SECURITY;
-import static top.infra.maven.extension.InfraOption.TOOLCHAINS;
-import static top.infra.maven.extension.VcsProperties.GIT_REMOTE_ORIGIN_URL;
+import static top.infra.maven.extension.shared.CiOptionNames.systemPropertyName;
+import static top.infra.maven.extension.shared.Constants.SETTINGS_SECURITY_XML;
+import static top.infra.maven.extension.shared.InfraOption.CACHE_SETTINGS_PATH;
+import static top.infra.maven.extension.shared.InfraOption.SETTINGS;
+import static top.infra.maven.extension.shared.InfraOption.SETTINGS_SECURITY;
+import static top.infra.maven.extension.shared.InfraOption.TOOLCHAINS;
+import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 import static top.infra.maven.utils.SystemUtils.os;
 
 import java.nio.file.Path;
@@ -28,10 +28,10 @@ import org.apache.maven.cli.CliRequest;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
 import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
 
-import top.infra.maven.core.CiOption;
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOption;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.Orders;
+import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.FileUtils;

@@ -19,13 +19,14 @@ import org.apache.maven.model.building.ModelProblemCollector;
 import org.apache.maven.model.profile.ProfileActivationContext;
 import org.apache.maven.model.profile.activation.ProfileActivator;
 
-import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.core.CiOptionContextBeanFactory;
-import top.infra.maven.extension.InfraOption;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.activator.AbstractCustomActivator;
 import top.infra.maven.extension.activator.CustomActivator;
 import top.infra.maven.extension.activator.model.ProjectBuilderActivatorModelResolver;
+import top.infra.maven.extension.shared.CiOptionContextBeanFactory;
+import top.infra.maven.extension.shared.InfraOption;
+import top.infra.maven.extension.shared.Orders;
 
 // @Component(role = CustomActivator.class, hint = "InfrastructureActivator") // This instance has multiple roles
 @Named
@@ -154,6 +155,7 @@ public class InfrastructureActivator extends AbstractCustomActivator implements 
     public void onInit(final Context context) {
         this.ciOptContext = this.ciOptContextFactory.getCiOpts();
     }
+
     /**
      * A {@link MavenEventAware} method.
      *
@@ -161,6 +163,6 @@ public class InfrastructureActivator extends AbstractCustomActivator implements 
      */
     @Override
     public int getOrder() {
-        return Integer.MAX_VALUE; // make sure instance of InfrastructureActivator runs after bean factory of ciOptContext
+        return Orders.ORDER_INFRASTRUCTURE_ACTIVATOR;
     }
 }

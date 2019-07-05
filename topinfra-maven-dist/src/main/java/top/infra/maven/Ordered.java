@@ -1,4 +1,4 @@
-package top.infra.maven.extension;
+package top.infra.maven;
 
 import java.util.Comparator;
 
@@ -6,6 +6,18 @@ import org.jetbrains.annotations.NotNull;
 
 public interface Ordered extends Comparable<Ordered> {
 
+    /**
+     * Useful constant for the highest precedence value.
+     *
+     * @see java.lang.Integer#MIN_VALUE
+     */
+    int HIGHEST_PRECEDENCE = Integer.MIN_VALUE;
+    /**
+     * Useful constant for the lowest precedence value.
+     *
+     * @see java.lang.Integer#MAX_VALUE
+     */
+    int LOWEST_PRECEDENCE = Integer.MAX_VALUE;
     Comparator<Ordered> ORDERED_COMPARATOR = (o1, o2) -> {
         final int result;
         if (o1 != null && o2 != null) {
@@ -24,20 +36,6 @@ public interface Ordered extends Comparable<Ordered> {
     default int compareTo(@NotNull final Ordered o2) {
         return ORDERED_COMPARATOR.compare(this, o2);
     }
-
-    /**
-     * Useful constant for the highest precedence value.
-     *
-     * @see java.lang.Integer#MIN_VALUE
-     */
-    int HIGHEST_PRECEDENCE = Integer.MIN_VALUE;
-
-    /**
-     * Useful constant for the lowest precedence value.
-     *
-     * @see java.lang.Integer#MAX_VALUE
-     */
-    int LOWEST_PRECEDENCE = Integer.MAX_VALUE;
 
     /**
      * Get the order value of this object.

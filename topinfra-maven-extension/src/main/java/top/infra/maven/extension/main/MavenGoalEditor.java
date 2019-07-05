@@ -2,9 +2,9 @@ package top.infra.maven.extension.main;
 
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toMap;
-import static top.infra.maven.Constants.BOOL_STRING_FALSE;
-import static top.infra.maven.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
 import static top.infra.maven.utils.SupportFunction.isNotEmpty;
 import static top.infra.maven.utils.SupportFunction.newTuple;
 
@@ -21,10 +21,10 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 
-import top.infra.maven.Constants;
+import top.infra.maven.extension.shared.Constants;
 import top.infra.maven.MavenPhase;
-import top.infra.maven.extension.MavenOption;
-import top.infra.maven.extension.VcsProperties;
+import top.infra.maven.extension.shared.MavenOption;
+import top.infra.maven.extension.shared.VcsProperties;
 import top.infra.maven.logging.Logger;
 
 public class MavenGoalEditor {

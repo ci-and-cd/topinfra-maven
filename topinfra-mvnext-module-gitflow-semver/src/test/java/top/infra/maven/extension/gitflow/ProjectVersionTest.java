@@ -2,10 +2,10 @@ package top.infra.maven.extension.gitflow;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static top.infra.maven.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
-import static top.infra.maven.extension.MavenOption.GENERATEREPORTS;
-import static top.infra.maven.extension.VcsProperties.GIT_REF_NAME;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.extension.shared.MavenOption.GENERATEREPORTS;
+import static top.infra.maven.extension.shared.VcsProperties.GIT_REF_NAME;
 import static top.infra.maven.extension.gitflow.GitFlowSemanticVersionChecker.checkProjectVersion;
 import static top.infra.maven.extension.gitflow.GitFlowSemanticVersionChecker.isSemFeature;
 import static top.infra.maven.extension.gitflow.GitFlowSemanticVersionChecker.isSemRelease;
@@ -17,7 +17,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.OptionCollections;
 
 public class ProjectVersionTest {

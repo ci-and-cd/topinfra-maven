@@ -2,18 +2,18 @@ package top.infra.maven.extension.infra;
 
 import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.assertEquals;
-import static top.infra.maven.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.extension.InfraOption.SONAR_HOST_URL;
-import static top.infra.maven.extension.InfraOption.SONAR_ORGANIZATION;
-import static top.infra.maven.extension.MavenOption.GENERATEREPORTS;
-import static top.infra.maven.extension.VcsProperties.GIT_REMOTE_ORIGIN_URL;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.extension.shared.InfraOption.SONAR_HOST_URL;
+import static top.infra.maven.extension.shared.InfraOption.SONAR_ORGANIZATION;
+import static top.infra.maven.extension.shared.MavenOption.GENERATEREPORTS;
+import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 
 import java.util.Properties;
 
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.OptionCollections;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerSlf4jImpl;
@@ -40,7 +40,7 @@ public class CiOptionTests {
         assertEquals(TRUE.toString(), GENERATEREPORTS.getValue(ciOptContext).orElse(null));
 
         final String remoteOriginUrl = GIT_REMOTE_ORIGIN_URL.getValue(ciOptContext).orElse(null);
-        OptionFileLoader.ciOptContextFromFile(ciOptContext, logger(), remoteOriginUrl, false, true)
+        CiOptionConfigLoader.ciOptContextFromFile(ciOptContext, logger(), remoteOriginUrl, false, true)
             .ifPresent(ciOptContext::updateSystemProperties);
 
         slf4jLogger.info("generateReports {}", GENERATEREPORTS.getValue(ciOptContext).orElse(null));

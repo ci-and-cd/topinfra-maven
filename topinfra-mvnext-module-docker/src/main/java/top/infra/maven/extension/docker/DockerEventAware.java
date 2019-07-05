@@ -19,11 +19,11 @@ import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
-import top.infra.maven.Constants;
-import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.extension.FastOption;
+import top.infra.maven.extension.shared.Constants;
+import top.infra.maven.CiOptionContext;
+import top.infra.maven.extension.shared.FastOption;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.Orders;
+import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.SupportFunction;

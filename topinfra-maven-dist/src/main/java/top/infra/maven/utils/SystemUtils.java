@@ -93,6 +93,15 @@ public abstract class SystemUtils {
         return result;
     }
 
+    public static String systemJavaIoTmp() {
+        return System.getProperty("java.io.tmpdir");
+    }
+
+    public static Optional<Integer> systemJavaVersion() {
+        final String systemJavaVersion = System.getProperty("java.version");
+        return parseJavaVersion(systemJavaVersion);
+    }
+
     public static Optional<Integer> parseJavaVersion(final String javaVersion) {
         final Optional<Integer> result;
 
@@ -107,20 +116,11 @@ public abstract class SystemUtils {
         return result;
     }
 
-    public static String systemJavaIoTmp() {
-        return System.getProperty("java.io.tmpdir");
-    }
-
-    public static Optional<Integer> systemJavaVersion() {
-        final String systemJavaVersion = System.getProperty("java.version");
-        return parseJavaVersion(systemJavaVersion);
+    public static String systemUserHome() {
+        return System.getProperty("user.home", systemUserDir());
     }
 
     public static String systemUserDir() {
         return System.getProperty("user.dir", Paths.get(".").normalize().toString());
-    }
-
-    public static String systemUserHome() {
-        return System.getProperty("user.home", systemUserDir());
     }
 }

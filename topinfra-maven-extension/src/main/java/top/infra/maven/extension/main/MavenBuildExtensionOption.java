@@ -1,13 +1,13 @@
 package top.infra.maven.extension.main;
 
 import static java.lang.Boolean.FALSE;
-import static top.infra.maven.Constants.BOOL_STRING_FALSE;
-import static top.infra.maven.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
-import static top.infra.maven.Constants.GIT_REF_PREFIX_FEATURE;
-import static top.infra.maven.Constants.GIT_REF_PREFIX_HOTFIX;
-import static top.infra.maven.Constants.GIT_REF_PREFIX_RELEASE;
-import static top.infra.maven.Constants.GIT_REF_PREFIX_SUPPORT;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_FEATURE;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_HOTFIX;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_RELEASE;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_SUPPORT;
 import static top.infra.maven.utils.SystemUtils.systemUserHome;
 
 import java.nio.file.Paths;
@@ -15,9 +15,9 @@ import java.util.Optional;
 
 import top.infra.maven.cienv.AppveyorVariables;
 import top.infra.maven.cienv.TravisCiVariables;
-import top.infra.maven.core.CiOption;
-import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.extension.VcsProperties;
+import top.infra.maven.CiOption;
+import top.infra.maven.CiOptionContext;
+import top.infra.maven.extension.shared.VcsProperties;
 import top.infra.maven.utils.FileUtils;
 import top.infra.maven.utils.SupportFunction;
 

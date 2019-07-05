@@ -1,9 +1,9 @@
 package top.infra.maven.extension.main;
 
 import static org.eclipse.jgit.lib.Repository.shortenRefName;
-import static top.infra.maven.extension.VcsProperties.GIT_COMMIT_ID;
-import static top.infra.maven.extension.VcsProperties.GIT_REF_NAME;
-import static top.infra.maven.extension.VcsProperties.GIT_REMOTE_ORIGIN_URL;
+import static top.infra.maven.extension.shared.VcsProperties.GIT_COMMIT_ID;
+import static top.infra.maven.extension.shared.VcsProperties.GIT_REF_NAME;
+import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,10 +29,10 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryBuilder;
 
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.Orders;
-import top.infra.maven.extension.VcsProperties;
+import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.extension.shared.VcsProperties;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.PropertiesUtils;

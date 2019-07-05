@@ -6,9 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import top.infra.maven.CiOption;
 import top.infra.maven.MavenPhase;
-import top.infra.maven.core.CiOption;
-import top.infra.maven.core.CiOptionFactoryBean;
 import top.infra.maven.utils.ClassPathUtils;
 
 public abstract class OptionCollections {

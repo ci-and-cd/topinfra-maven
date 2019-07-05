@@ -6,10 +6,10 @@ import java.util.regex.Pattern;
 
 public abstract class UrlUtils {
 
+    private static final Pattern PATTERN_URL = Pattern.compile("^(.+://|git@)([^/\\:]+(:\\d+)?).*$");
+
     private UrlUtils() {
     }
-
-    private static final Pattern PATTERN_URL = Pattern.compile("^(.+://|git@)([^/\\:]+(:\\d+)?).*$");
 
     public static Optional<String> domainOrHostFromUrl(final String url) {
         final Optional<String> result;

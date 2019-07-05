@@ -22,20 +22,11 @@ import org.apache.maven.model.building.ModelProblemCollectorRequest;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.profile.ProfileActivationContext;
 
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOptionContext;
 
 public abstract class MavenUtils {
 
-    public static Optional<String> cmdArgFile(final CliRequest cliRequest) {
-        final Optional<String> result;
-        final CommandLine commandLine = cliRequest.getCommandLine();
-        if (commandLine.hasOption(CLIManager.ALTERNATE_POM_FILE)) {
-            result = Optional.ofNullable(commandLine.getOptionValue(CLIManager.ALTERNATE_POM_FILE));
-        } else {
-            result = Optional.empty();
-        }
-        return result;
-    }
+    public static final String PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY = "maven.multiModuleProjectDirectory";
 
     public static Boolean cmdArgOffline(final CliRequest cliRequest) {
         return cliRequest.getCommandLine().hasOption(CLIManager.OFFLINE);
@@ -134,8 +125,6 @@ public abstract class MavenUtils {
         return profile.getActivation().getProperty().getValue();
     }
 
-    public static final String PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY = "maven.multiModuleProjectDirectory";
-
     public static Path executionRootPath(
         final CliRequest cliRequest,
         final CiOptionContext ciOptionContext
@@ -151,6 +140,17 @@ public abstract class MavenUtils {
                 }
                 return result;
             });
+    }
+
+    public static Optional<String> cmdArgFile(final CliRequest cliRequest) {
+        final Optional<String> result;
+        final CommandLine commandLine = cliRequest.getCommandLine();
+        if (commandLine.hasOption(CLIManager.ALTERNATE_POM_FILE)) {
+            result = Optional.ofNullable(commandLine.getOptionValue(CLIManager.ALTERNATE_POM_FILE));
+        } else {
+            result = Optional.empty();
+        }
+        return result;
     }
 
     private static Optional<Path> mavenMultiModuleProjectDirectory(final Properties systemProperties) {

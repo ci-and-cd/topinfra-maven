@@ -15,9 +15,9 @@ import javax.inject.Singleton;
 import org.apache.maven.eventspy.EventSpy.Context;
 import org.apache.maven.rtinfo.RuntimeInformation;
 
-import top.infra.maven.core.CiOptionNames;
+import top.infra.maven.extension.shared.CiOptionNames;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.Orders;
+import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.MavenUtils;

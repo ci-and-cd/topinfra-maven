@@ -1,29 +1,29 @@
 package top.infra.maven.extension.mavenbuild;
 
 import static java.lang.Boolean.FALSE;
-import static top.infra.maven.Constants.BOOL_STRING_FALSE;
-import static top.infra.maven.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.Constants.GIT_REF_NAME_DEVELOP;
-import static top.infra.maven.Constants.GIT_REF_PREFIX_FEATURE;
-import static top.infra.maven.Constants.GIT_REF_PREFIX_HOTFIX;
-import static top.infra.maven.Constants.GIT_REF_PREFIX_RELEASE;
-import static top.infra.maven.Constants.GIT_REF_PREFIX_SUPPORT;
-import static top.infra.maven.Constants.PUBLISH_CHANNEL_RELEASE;
-import static top.infra.maven.Constants.PUBLISH_CHANNEL_SNAPSHOT;
-import static top.infra.maven.extension.FastOption.FAST;
-import static top.infra.maven.extension.InfraOption.GIT_AUTH_TOKEN;
-import static top.infra.maven.extension.InfraOption.INFRASTRUCTURE;
-import static top.infra.maven.extension.InfraOption.NEXUS2;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_FEATURE;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_HOTFIX;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_RELEASE;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_SUPPORT;
+import static top.infra.maven.extension.shared.Constants.PUBLISH_CHANNEL_RELEASE;
+import static top.infra.maven.extension.shared.Constants.PUBLISH_CHANNEL_SNAPSHOT;
+import static top.infra.maven.extension.shared.FastOption.FAST;
+import static top.infra.maven.extension.shared.InfraOption.GIT_AUTH_TOKEN;
+import static top.infra.maven.extension.shared.InfraOption.INFRASTRUCTURE;
+import static top.infra.maven.extension.shared.InfraOption.NEXUS2;
 import static top.infra.maven.utils.SystemUtils.systemUserDir;
 
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
-import top.infra.maven.core.CiOption;
-import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.extension.MavenOption;
-import top.infra.maven.extension.VcsProperties;
+import top.infra.maven.CiOption;
+import top.infra.maven.CiOptionContext;
+import top.infra.maven.extension.shared.MavenOption;
+import top.infra.maven.extension.shared.VcsProperties;
 
 public enum MavenBuildPomOption implements CiOption {
     CHECKSTYLE_CONFIG_LOCATION("checkstyle.config.location",

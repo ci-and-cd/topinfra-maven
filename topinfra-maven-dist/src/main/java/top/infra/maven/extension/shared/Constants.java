@@ -1,4 +1,4 @@
-package top.infra.maven;
+package top.infra.maven.extension.shared;
 
 public final class Constants {
 

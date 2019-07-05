@@ -1,8 +1,8 @@
-package top.infra.maven.extension;
+package top.infra.maven.extension.shared;
 
 import java.util.Optional;
 
-import top.infra.maven.core.CiOption;
+import top.infra.maven.CiOption;
 
 public enum FastOption implements CiOption {
 

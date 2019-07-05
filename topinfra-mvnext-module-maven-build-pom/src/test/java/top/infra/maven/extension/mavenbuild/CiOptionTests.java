@@ -1,16 +1,16 @@
 package top.infra.maven.extension.mavenbuild;
 
 import static org.junit.Assert.assertEquals;
-import static top.infra.maven.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.extension.mavenbuild.MavenBuildPomOption.GITHUB_GLOBAL_REPOSITORYOWNER;
-import static top.infra.maven.extension.MavenOption.GENERATEREPORTS;
+import static top.infra.maven.extension.shared.MavenOption.GENERATEREPORTS;
 
 import java.util.Properties;
 
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOptionContext;
 
 public class CiOptionTests {
 

@@ -9,12 +9,11 @@ import javax.inject.Singleton;
 
 import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.settings.building.SettingsBuildingRequest;
 import org.apache.maven.settings.building.SettingsBuildingResult;
 
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.Orders;
+import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 
@@ -44,7 +43,7 @@ public class MavenSettingsLocalRepositoryEventAware implements MavenEventAware {
 
     @Override
     public int getOrder() {
-        return Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
+        return Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
     }
 
     @Override
@@ -63,20 +62,6 @@ public class MavenSettingsLocalRepositoryEventAware implements MavenEventAware {
             USER_PROPERTY_SETTINGS_LOCALREPOSITORY,
             null
         );
-    }
-
-    @Override
-    public boolean onSettingsBuildingRequest() {
-        return true;
-    }
-
-    @Override
-    public void onSettingsBuildingRequest(
-        final CliRequest cliRequest,
-        final SettingsBuildingRequest request,
-        final CiOptionContext ciOptContext
-    ) {
-        // no-op
     }
 
     @Override

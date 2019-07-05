@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import top.infra.maven.Constants;
-import top.infra.maven.core.CiOption;
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.extension.shared.Constants;
+import top.infra.maven.CiOption;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.utils.SystemUtils;
 
 public enum GpgOption implements CiOption {

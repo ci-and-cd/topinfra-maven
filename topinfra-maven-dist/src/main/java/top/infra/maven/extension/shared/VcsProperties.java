@@ -1,4 +1,4 @@
-package top.infra.maven.extension;
+package top.infra.maven.extension.shared;
 
 import java.util.Optional;
 import java.util.Properties;
@@ -8,8 +8,8 @@ import java.util.regex.Pattern;
 import top.infra.maven.cienv.AppveyorVariables;
 import top.infra.maven.cienv.GitlabCiVariables;
 import top.infra.maven.cienv.TravisCiVariables;
-import top.infra.maven.core.CiOption;
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOption;
+import top.infra.maven.CiOptionContext;
 
 public enum VcsProperties implements CiOption {
 

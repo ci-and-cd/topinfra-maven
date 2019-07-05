@@ -9,7 +9,8 @@ import org.apache.maven.settings.building.SettingsBuildingResult;
 import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
 import org.apache.maven.toolchain.building.ToolchainsBuildingResult;
 
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOptionContext;
+import top.infra.maven.Ordered;
 
 public interface MavenEventAware extends Ordered {
 

@@ -1,4 +1,4 @@
-package top.infra.maven.core;
+package top.infra.maven.extension.shared;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -6,8 +6,8 @@ import javax.inject.Singleton;
 
 import org.apache.maven.eventspy.EventSpy.Context;
 
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.MavenUtils;
@@ -46,6 +46,6 @@ public class CiOptionContextBeanFactory implements MavenEventAware {
 
     @Override
     public int getOrder() {
-        return Orders.ORDER_OPTIONS_FACTORY;
+        return Orders.ORDER_CI_OPTION_CONTEXT_FACTORY;
     }
 }

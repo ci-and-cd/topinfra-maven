@@ -1,7 +1,7 @@
-package top.infra.maven.extension;
+package top.infra.maven.extension.shared;
 
 import static java.util.stream.Collectors.toMap;
-import static top.infra.maven.core.CiOptionNames.PATTERN_VARS_ENV_DOT_CI;
+import static top.infra.maven.extension.shared.CiOptionNames.PATTERN_VARS_ENV_DOT_CI;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -16,23 +16,24 @@ import javax.inject.Singleton;
 
 import org.apache.maven.cli.CliRequest;
 
-import top.infra.maven.core.CiOption;
-import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.core.CiOptionFactoryBean;
+import top.infra.maven.CiOption;
+import top.infra.maven.CiOptionContext;
+import top.infra.maven.extension.CiOptionFactoryBean;
+import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.PropertiesUtils;
 
 @Named
 @Singleton
-public class CiOptionEventAware implements MavenEventAware {
+public class CiOptionInitEventAware implements MavenEventAware {
 
     private final Logger logger;
 
     private Map<Class<?>, List<CiOption>> optionCollections;
 
     @Inject
-    public CiOptionEventAware(
+    public CiOptionInitEventAware(
         final org.codehaus.plexus.logging.Logger logger,
         final List<CiOptionFactoryBean> optionFactoryBeans
     ) {
@@ -94,6 +95,6 @@ public class CiOptionEventAware implements MavenEventAware {
 
     @Override
     public int getOrder() {
-        return Orders.EVENT_AWARE_ORDER_CI_OPTION;
+        return Orders.ORDER_CI_OPTION_INIT;
     }
 }

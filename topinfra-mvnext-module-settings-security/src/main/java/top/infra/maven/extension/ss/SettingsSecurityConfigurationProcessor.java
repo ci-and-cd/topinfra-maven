@@ -1,6 +1,6 @@
 package top.infra.maven.extension.ss;
 
-import static top.infra.maven.Constants.SETTINGS_SECURITY_XML;
+import static top.infra.maven.extension.shared.Constants.SETTINGS_SECURITY_XML;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,9 +14,9 @@ import org.apache.maven.cli.CliRequest;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
-import top.infra.maven.extension.InfraOption;
+import top.infra.maven.extension.shared.InfraOption;
 import top.infra.maven.extension.OrderedConfigurationProcessor;
-import top.infra.maven.extension.Orders;
+import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 

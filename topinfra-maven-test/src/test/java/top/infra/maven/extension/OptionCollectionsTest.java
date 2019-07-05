@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.junit.Test;
 
-import top.infra.maven.core.CiOption;
+import top.infra.maven.CiOption;
 
 @Slf4j
 public class OptionCollectionsTest {

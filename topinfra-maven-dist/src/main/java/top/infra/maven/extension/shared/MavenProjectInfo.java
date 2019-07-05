@@ -1,4 +1,4 @@
-package top.infra.maven.extension;
+package top.infra.maven.extension.shared;
 
 import static java.util.Collections.singletonList;
 import static top.infra.maven.utils.FileUtils.pathname;
@@ -39,54 +39,6 @@ public class MavenProjectInfo {
         this.groupId = groupId;
         this.packaging = packaging;
         this.version = version;
-    }
-
-    /**
-     * Same as {@link Model#getId()}.
-     *
-     * @return id
-     */
-    public String getId() {
-        final StringBuilder id = new StringBuilder(64);
-
-        id.append((getGroupId() == null) ? "[inherited]" : getGroupId());
-        id.append(":");
-        id.append(getArtifactId());
-        id.append(":");
-        id.append(getPackaging());
-        id.append(":");
-        id.append((getVersion() == null) ? "[inherited]" : getVersion());
-
-        return id.toString();
-    }
-
-    public boolean idEquals(final Model model) {
-        return model != null && this.getId().equals(model.getId());
-    }
-
-    public boolean idEqualsExceptInheritedGroupId(final Model model) {
-        // e.g. [[inherited]:artifact-id:pom:0.0.1-SNAPSHOT], model: [id.group:artifact-id:jar:0.0.1-SNAPSHOT]
-
-        final String id = this.getId();
-
-        final boolean result;
-        if (id.startsWith("[inherited]:") && model != null) {
-            final String modelId = model.getId();
-            result = id.substring(id.indexOf(':')).equals(modelId.substring(modelId.indexOf(':')));
-        } else {
-            result = false;
-        }
-        return result;
-    }
-
-    /**
-     * Same as {@link Model#toString()}.
-     *
-     * @return id
-     */
-    @Override
-    public String toString() {
-        return this.getId();
     }
 
     public static Optional<MavenProjectInfo> newProjectInfoByReadPom(
@@ -151,6 +103,29 @@ public class MavenProjectInfo {
         return result;
     }
 
+    public boolean idEquals(final Model model) {
+        return model != null && this.getId().equals(model.getId());
+    }
+
+    /**
+     * Same as {@link Model#getId()}.
+     *
+     * @return id
+     */
+    public String getId() {
+        final StringBuilder id = new StringBuilder(64);
+
+        id.append((getGroupId() == null) ? "[inherited]" : getGroupId());
+        id.append(":");
+        id.append(getArtifactId());
+        id.append(":");
+        id.append(getPackaging());
+        id.append(":");
+        id.append((getVersion() == null) ? "[inherited]" : getVersion());
+
+        return id.toString();
+    }
+
     public String getArtifactId() {
         return this.artifactId;
     }
@@ -165,5 +140,30 @@ public class MavenProjectInfo {
 
     public String getVersion() {
         return this.version;
+    }
+
+    public boolean idEqualsExceptInheritedGroupId(final Model model) {
+        // e.g. [[inherited]:artifact-id:pom:0.0.1-SNAPSHOT], model: [id.group:artifact-id:jar:0.0.1-SNAPSHOT]
+
+        final String id = this.getId();
+
+        final boolean result;
+        if (id.startsWith("[inherited]:") && model != null) {
+            final String modelId = model.getId();
+            result = id.substring(id.indexOf(':')).equals(modelId.substring(modelId.indexOf(':')));
+        } else {
+            result = false;
+        }
+        return result;
+    }
+
+    /**
+     * Same as {@link Model#toString()}.
+     *
+     * @return id
+     */
+    @Override
+    public String toString() {
+        return this.getId();
     }
 }

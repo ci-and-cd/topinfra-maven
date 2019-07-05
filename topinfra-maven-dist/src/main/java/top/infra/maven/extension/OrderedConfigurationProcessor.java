@@ -3,6 +3,8 @@ package top.infra.maven.extension;
 import org.apache.maven.cli.CliRequest;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
 
+import top.infra.maven.Ordered;
+
 /**
  * Run before {@link SettingsBuildingRequest}.
  */

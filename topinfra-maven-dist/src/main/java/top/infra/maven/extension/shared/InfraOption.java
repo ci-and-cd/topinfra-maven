@@ -1,8 +1,8 @@
-package top.infra.maven.extension;
+package top.infra.maven.extension.shared;
 
 import static org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher.SYSTEM_PROPERTY_SEC_LOCATION;
-import static top.infra.maven.Constants.GIT_REF_NAME_MASTER;
-import static top.infra.maven.Constants.SRC_CI_OPTS_PROPERTIES;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_MASTER;
+import static top.infra.maven.extension.shared.Constants.SRC_CI_OPTS_PROPERTIES;
 import static top.infra.maven.utils.SystemUtils.systemJavaIoTmp;
 import static top.infra.maven.utils.SystemUtils.systemUserHome;
 
@@ -11,9 +11,8 @@ import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
-import top.infra.maven.core.CiOption;
-import top.infra.maven.core.CiOptionContext;
-import top.infra.maven.core.CiOptionNames;
+import top.infra.maven.CiOption;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.utils.MavenUtils;
 
 public enum InfraOption implements CiOption {
@@ -203,16 +202,6 @@ public enum InfraOption implements CiOption {
         this.propertyName = propertyName;
     }
 
-    @Override
-    public Optional<String> getDefaultValue() {
-        return Optional.ofNullable(this.defaultValue);
-    }
-
-    @Override
-    public String getPropertyName() {
-        return this.propertyName;
-    }
-
     public static Optional<String> getInfrastructureSpecificValue(
         final CiOption ciOption,
         final CiOptionContext context
@@ -224,5 +213,15 @@ public enum InfraOption implements CiOption {
                 return Optional.ofNullable(context.getUserProperties().getProperty(propName))
                     .orElseGet(() -> context.getSystemProperties().getProperty(systemPropName));
             });
+    }
+
+    @Override
+    public Optional<String> getDefaultValue() {
+        return Optional.ofNullable(this.defaultValue);
+    }
+
+    @Override
+    public String getPropertyName() {
+        return this.propertyName;
     }
 }

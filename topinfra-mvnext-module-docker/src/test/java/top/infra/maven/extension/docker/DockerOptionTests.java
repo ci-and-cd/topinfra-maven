@@ -3,8 +3,8 @@ package top.infra.maven.extension.docker;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static top.infra.maven.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.extension.MavenOption.GENERATEREPORTS;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.extension.shared.MavenOption.GENERATEREPORTS;
 import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY;
 import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY_URL;
 
@@ -13,7 +13,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import top.infra.maven.core.CiOptionContext;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.OptionCollections;
 
 

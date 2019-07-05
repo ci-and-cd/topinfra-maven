@@ -6,9 +6,9 @@ import java.util.List;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import top.infra.maven.core.CiOption;
-import top.infra.maven.core.CiOptionFactoryBean;
-import top.infra.maven.extension.Orders;
+import top.infra.maven.CiOption;
+import top.infra.maven.extension.CiOptionFactoryBean;
+import top.infra.maven.extension.shared.Orders;
 
 @Named
 @Singleton
