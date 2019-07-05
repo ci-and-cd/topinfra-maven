@@ -26,8 +26,7 @@ import top.infra.maven.extension.shared.MavenOption;
 import top.infra.maven.extension.shared.VcsProperties;
 
 public enum MavenBuildPomOption implements CiOption {
-    CHECKSTYLE_CONFIG_LOCATION("checkstyle.config.location",
-        "https://raw.githubusercontent.com/ci-and-cd/maven-build/master/src/main/checkstyle/google_checks_8.10.xml"),
+    CHECKSTYLE_CONFIG_LOCATION("checkstyle.config.location"),
     // @Deprecated
     // CI_SCRIPT("ci.script"),
     DEPENDENCYCHECK("dependency-check") {
@@ -40,10 +39,8 @@ public enum MavenBuildPomOption implements CiOption {
                 .orElse(BOOL_STRING_FALSE));
         }
     },
-    // https://npm.taobao.org/mirrors/node/
-    FRONTEND_NODEDOWNLOADROOT("frontend.nodeDownloadRoot", "https://nodejs.org/dist/"),
-    // http://registry.npm.taobao.org/npm/-/
-    FRONTEND_NPMDOWNLOADROOT("frontend.npmDownloadRoot", "https://registry.npmjs.org/npm/-/"),
+    FRONTEND_NODEDOWNLOADROOT("frontend.nodeDownloadRoot"),
+    FRONTEND_NPMDOWNLOADROOT("frontend.npmDownloadRoot"),
     GIT_COMMIT_ID_SKIP("git.commit.id.skip", BOOL_STRING_FALSE),
     GITHUB_GLOBAL_OAUTH2TOKEN("github.global.oauth2Token") {
         @Override
@@ -57,7 +54,7 @@ public enum MavenBuildPomOption implements CiOption {
             return SITE_PATH_PREFIX.getValue(context);
         }
     },
-    GITHUB_GLOBAL_REPOSITORYOWNER("github.global.repositoryOwner", "unknown-owner") {
+    GITHUB_GLOBAL_REPOSITORYOWNER("github.global.repositoryOwner") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             final boolean generateReports = MavenOption.GENERATEREPORTS.getValue(context)

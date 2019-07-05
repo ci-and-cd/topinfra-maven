@@ -339,6 +339,17 @@
     <properties>
         <git-commit-id-plugin.version>2.2.6</git-commit-id-plugin.version>
 
+        <!-- maven-build properties -->
+        <checkstyle.config.location>https://raw.githubusercontent.com/ci-and-cd/maven-build/master/src/main/checkstyle/google_checks_8.10.xml</checkstyle.config.location>
+        <!-- https://npm.taobao.org/mirrors/node/ -->
+        <frontend.nodeDownloadRoot>https://nodejs.org/dist/</frontend.nodeDownloadRoot>
+        <!-- http://registry.npm.taobao.org/npm/-/ -->
+        <frontend.npmDownloadRoot>https://registry.npmjs.org/npm/-/</frontend.npmDownloadRoot>
+        <git.commit.id.skip>true</git.commit.id.skip>
+        <github.global.oauth2Token></github.global.oauth2Token>
+        <github.global.repositoryName></github.global.repositoryName>
+        <github.global.repositoryOwner>unknown-owner</github.global.repositoryOwner>
+
         <private.nexus3>http://my-nexus3:28081/nexus/</private.nexus3>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

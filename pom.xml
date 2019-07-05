@@ -219,6 +219,7 @@
                                 <postBuildHookScript>verify</postBuildHookScript>
                                 <preBuildHookScript>setup</preBuildHookScript>
                                 <properties>
+                                    <git.commit.id.skip>false</git.commit.id.skip>
                                     <infrastructure>ossrh</infrastructure>
                                     <sonar>true</sonar>
                                     <private.sonar.host.url>http://my-sonarqube:9000</private.sonar.host.url>
