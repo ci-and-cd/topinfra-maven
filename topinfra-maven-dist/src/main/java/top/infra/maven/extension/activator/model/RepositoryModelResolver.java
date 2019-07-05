@@ -80,7 +80,7 @@ public class RepositoryModelResolver implements ModelResolver {
     public void addRepositories(final List<ArtifactRepository> artifactRepositories) throws InvalidRepositoryException {
         for (final ArtifactRepository artifactRepository : artifactRepositories) {
             if (logger.isInfoEnabled()) {
-                logger.info(String.format("artifactRepository %s %s",
+                logger.info(String.format("    artifactRepository %s %s",
                     artifactRepository.getId(), artifactRepository.getUrl()));
             }
 
@@ -122,14 +122,14 @@ public class RepositoryModelResolver implements ModelResolver {
         for (final Repository existingRepository : this.repositories) {
             if (existingRepository.getId().equals(repository.getId()) && !replace) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("addRepository [%s] skip [%s]", this, repository));
+                    logger.debug(String.format("    addRepository [%s] skip [%s]", this, repository));
                 }
                 return;
             }
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info(String.format("addRepository [%s] add [%s]", this, repository));
+            logger.info(String.format("    addRepository [%s] add [%s]", this, repository));
         }
         this.repositories.add(repository);
     }
@@ -211,7 +211,7 @@ public class RepositoryModelResolver implements ModelResolver {
     //         final URL source = new URL(sourceUrl);
     //         final File target = new File(targetLocalFile);
     //
-    //         logger.debug("Downloading " + source);
+    //         logger.debug("    Downloading " + source);
     //
     //         final okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
     //         final okhttp3.Request request = new okhttp3.Request.Builder()

@@ -75,7 +75,7 @@ public class CiOptionConfigLoader implements MavenEventAware {
             .orElse(null);
         final Optional<Properties> loadedProperties = ciOptContextFromFile(ciOptionContext, logger, remoteOriginUrl, offline, update);
 
-        loadedProperties.ifPresent(props -> logProperties(logger, "ci_opts.properties", props, null));
+        loadedProperties.ifPresent(props -> logProperties(logger, "    ci_opts.properties", props, null));
 
         ciOptionContext.updateSystemProperties(loadedProperties.orElse(null));
     }
@@ -84,7 +84,7 @@ public class CiOptionConfigLoader implements MavenEventAware {
         if (isEmpty(GIT_AUTH_TOKEN.getValue(ciOptContext).orElse(null))) {
             // if (!originRepo) { // For PR build on travis-ci or appveyor }
             if (logger.isWarnEnabled()) {
-                logger.warn(String.format("%s not set.", GIT_AUTH_TOKEN.getEnvVariableName()));
+                logger.warn(String.format("    %s not set.", GIT_AUTH_TOKEN.getEnvVariableName()));
             }
         }
     }
@@ -107,7 +107,7 @@ public class CiOptionConfigLoader implements MavenEventAware {
                 try {
                     properties.load(new FileInputStream(optsFile));
                 } catch (final IOException ex) {
-                    final String errorMsg = String.format("Can not load ci options file %s", ex.getMessage());
+                    final String errorMsg = String.format("    Can not load ci options file %s", ex.getMessage());
                     throw new RuntimeIOException(errorMsg, ex);
                 }
             });

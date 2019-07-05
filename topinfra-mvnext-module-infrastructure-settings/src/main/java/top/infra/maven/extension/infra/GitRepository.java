@@ -113,12 +113,11 @@ public class GitRepository {
             this.download(sourceFile, targetFile, reThrowException);
         } else {
             if (targetFileExists) {
-                logger.info(String.format("Local target file [%s] already exists, skip download unless option '-U' is used.", targetFile));
+                logger.info(String.format(
+                    "    Local target file [%s] already exists, skip download unless option '-U' is used.", targetFile));
             } else {
                 final String errorMsg = String.format(
-                    "Local target file [%s] does not exists and option '-o' (offline mode) is used.",
-                    targetFile
-                );
+                    "    Local target file [%s] does not exists and option '-o' (offline mode) is used.", targetFile);
                 logger.error(errorMsg);
                 throw new IllegalStateException(errorMsg);
             }
@@ -139,7 +138,7 @@ public class GitRepository {
         final boolean reThrowException
     ) {
         if (logger.isInfoEnabled()) {
-            logger.info(String.format("Download from [%s] to [%s]", sourceFile, targetFile));
+            logger.info(String.format("    Download from [%s] to [%s]", sourceFile, targetFile));
         }
 
         final Entry<Optional<String>, Entry<Optional<Integer>, Optional<Exception>>> result = this.downloadAndDecode(
@@ -153,7 +152,7 @@ public class GitRepository {
         if (error.isPresent() || !is2xxStatus) {
             if (!is404Status) {
                 final String errorMsg = String.format(
-                    "Download error. From [%s], to [%s], error [%s].",
+                    "    Download error. From [%s], to [%s], error [%s].",
                     result.getKey().orElse(null),
                     targetFile,
                     error.map(Throwable::getMessage).orElseGet(() -> status.map(Object::toString).orElse(null))
@@ -165,7 +164,7 @@ public class GitRepository {
                     logger.warn(errorMsg);
                 }
             } else {
-                logger.warn(String.format("Resource [%s] not found.", result.getKey().orElse(null)));
+                logger.warn(String.format("    Resource [%s] not found.", result.getKey().orElse(null)));
             }
         }
     }
@@ -204,7 +203,7 @@ public class GitRepository {
                 final boolean is2xxStatus = status.map(DownloadUtils::is2xxStatus).orElse(FALSE);
                 if (is2xxStatus) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug(String.format("decode [%s]", saveToFile));
+                        logger.debug(String.format("    decode [%s]", saveToFile));
                     }
                     // cat "${target_file}.json" | jq -r ".content" | base64 --decode | tee "${target_file}"
                     final JSONObject jsonFile = new JSONObject(readFile(saveToFile, UTF_8).orElse("{\"content\": \"\"}"));
@@ -212,12 +211,12 @@ public class GitRepository {
                     if (!isEmpty(content)) {
                         final byte[] bytes = Base64.getDecoder().decode(content);
                         if (logger.isDebugEnabled()) {
-                            logger.debug(String.format("Write content into targetFile [%s] (%s bytes)", targetFile, bytes.length));
+                            logger.debug(String.format("    Write content into targetFile [%s] (%s bytes)", targetFile, bytes.length));
                         }
                         writeFile(targetFile, bytes, CREATE, SYNC, TRUNCATE_EXISTING);
                     } else {
                         if (logger.isDebugEnabled()) {
-                            logger.debug(String.format("Content is empty. Skip write content into targetFile [%s]", targetFile));
+                            logger.debug(String.format("    Content is empty. Skip write content into targetFile [%s]", targetFile));
                         }
                     }
                 }
@@ -231,12 +230,12 @@ public class GitRepository {
             final boolean hasError = statusOrException.getValue().isPresent();
             if (hasError) {
                 if (status.isPresent()) {
-                    logger.warn(String.format("Error download %s.", targetFile), statusOrException.getValue().orElse(null));
+                    logger.warn(String.format("    Error download %s.", targetFile), statusOrException.getValue().orElse(null));
                 } else {
                     if (logger.isWarnEnabled()) {
-                        logger.warn(String.format("Can not download %s.", targetFile));
+                        logger.warn(String.format("    Can not download %s.", targetFile));
                         logger.warn(String.format(
-                            "Please make sure: 1. Resource exists 2. You have permission to access resources and %s is set.",
+                            "    Please make sure: 1. Resource exists 2. You have permission to access resources and %s is set.",
                             InfraOption.GIT_AUTH_TOKEN.getEnvVariableName())
                         );
                     }

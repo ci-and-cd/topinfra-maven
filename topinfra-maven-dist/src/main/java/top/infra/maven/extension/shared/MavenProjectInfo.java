@@ -51,7 +51,7 @@ public class MavenProjectInfo {
             return Optional.of(new MavenProjectInfo(model.getArtifactId(), model.getGroupId(), model.getPackaging(), model.getVersion()));
         } catch (final IllegalArgumentException | IOException | XmlPullParserException ex) {
             if (logger.isWarnEnabled()) {
-                logger.warn(String.format("Failed to read project info from pomFile [%s] (by MavenXpp3Reader)",
+                logger.warn(String.format("    Failed to read project info from pomFile [%s] (by MavenXpp3Reader)",
                     pathname(pomFile)),
                     ex);
             }
@@ -95,7 +95,7 @@ public class MavenProjectInfo {
             result = Optional.of(buildingResults.get(0).getProject());
         } catch (final Exception ex) {
             if (logger.isWarnEnabled()) {
-                logger.warn(String.format("Error get project from pom %s. message: %s, stackTrace: %s",
+                logger.warn(String.format("    Error get project from pom %s. message: %s, stackTrace: %s",
                     pomFile.getPath(), ex.getMessage(), stackTrace(ex)));
             }
             result = Optional.empty();

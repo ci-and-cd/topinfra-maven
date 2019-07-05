@@ -66,7 +66,7 @@ public class Gpg {
 
         this.cmd = "gpg2".equals(executable) ? new String[]{"gpg2", "--use-agent"} : new String[]{"gpg"};
         if (logger.isInfoEnabled()) {
-            logger.info(String.format("Using %s", Arrays.toString(this.cmd)));
+            logger.info(String.format("    Using %s", Arrays.toString(this.cmd)));
         }
 
         final Map<String, String> env = new LinkedHashMap<>();
@@ -74,7 +74,7 @@ public class Gpg {
         final Entry<Integer, String> tty = SystemUtils.exec("tty");
         if (tty.getKey() == 0) {
             if (logger.isInfoEnabled()) {
-                logger.info(String.format("GPG_TTY=%s", tty.getValue()));
+                logger.info(String.format("    GPG_TTY=%s", tty.getValue()));
             }
             env.put("GPG_TTY", tty.getValue());
         }
@@ -132,24 +132,24 @@ public class Gpg {
         final Path dotGnupg = this.homeDir.resolve(DOT_GNUPG);
         final Path dotGnupgGpgConf = dotGnupg.resolve("gpg.conf");
         if (gpgVersionGreater(resultGpgVersion.getValue(), "2.1")) {
-            logger.info("gpg version greater than 2.1");
+            logger.info("    gpg version greater than 2.1");
             try {
                 Files.createDirectories(dotGnupg);
             } catch (final FileAlreadyExistsException ex) {
                 // ignored
             } catch (final IOException ex) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn(String.format("%s%n%s", ex.getMessage(), SupportFunction.stackTrace(ex)));
+                    logger.warn(String.format("    %s%n%s", ex.getMessage(), SupportFunction.stackTrace(ex)));
                 }
             }
             try {
                 Files.setPosixFilePermissions(dotGnupg, PosixFilePermissions.fromString("rwx------"));
             } catch (final IOException ex) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn(String.format("%s%n%s", ex.getMessage(), SupportFunction.stackTrace(ex)));
+                    logger.warn(String.format("    %s%n%s", ex.getMessage(), SupportFunction.stackTrace(ex)));
                 }
             }
-            logger.info("add 'use-agent' to '~/.gnupg/gpg.conf'");
+            logger.info("    add 'use-agent' to '~/.gnupg/gpg.conf'");
             FileUtils.writeFile(dotGnupgGpgConf, "use-agent\n".getBytes(UTF_8),
                 StandardOpenOption.CREATE, StandardOpenOption.SYNC, StandardOpenOption.TRUNCATE_EXISTING);
             if (logger.isInfoEnabled()) {
@@ -158,7 +158,7 @@ public class Gpg {
 
             if (gpgVersionGreater(resultGpgVersion.getValue(), "2.2")) {
                 // on gpg-2.1.11 'pinentry-mode loopback' is invalid option
-                logger.info("add 'pinentry-mode loopback' to '~/.gnupg/gpg.conf'");
+                logger.info("    add 'pinentry-mode loopback' to '~/.gnupg/gpg.conf'");
                 FileUtils.writeFile(dotGnupgGpgConf, "pinentry-mode loopback\n".getBytes(UTF_8),
                     StandardOpenOption.APPEND, StandardOpenOption.SYNC);
                 if (logger.isInfoEnabled()) {
@@ -169,7 +169,7 @@ public class Gpg {
             // export GPG_OPTS='--pinentry-mode loopback'
             // echo GPG_OPTS: ${GPG_OPTS}
 
-            logger.info("add 'allow-loopback-pinentry' to '~/.gnupg/gpg-agent.conf'");
+            logger.info("    add 'allow-loopback-pinentry' to '~/.gnupg/gpg-agent.conf'");
             final Path dotGnupgGpgAgentConf = dotGnupg.resolve("gpg-agent.conf");
             FileUtils.writeFile(dotGnupgGpgAgentConf, "allow-loopback-pinentry\n".getBytes(UTF_8),
                 StandardOpenOption.CREATE, StandardOpenOption.SYNC, StandardOpenOption.TRUNCATE_EXISTING);
@@ -177,7 +177,7 @@ public class Gpg {
                 logger.info(FileUtils.readFile(dotGnupgGpgAgentConf, UTF_8).orElse(""));
             }
 
-            logger.info("restart the agent");
+            logger.info("    restart the agent");
             this.exec("RELOADAGENT", singletonList("gpg-connect-agent"));
         }
     }
@@ -198,7 +198,7 @@ public class Gpg {
 
     public void importPrivateKeys() {
         if (this.isFilePresent(CODESIGNING_ASC)) {
-            logger.info("import private keys");
+            logger.info("    import private keys");
             // some versions only can import public key from a keypair file, some can import key pair
             if (this.isFilePresent(CODESIGNING_PUB)) {
                 this.gpgImport(CODESIGNING_ASC, false);
@@ -228,7 +228,7 @@ public class Gpg {
                 this.gpgSetDefaultKey(this.keyName);
 
                 if (!SupportFunction.isEmpty(this.keyId)) {
-                    logger.info("export secret key for gradle build");
+                    logger.info("    export secret key for gradle build");
                     // ${gpg_cmd_batch} --keyring secring.gpg --export-secret-key ${CI_OPT_GPG_KEYID} > secring.gpg;
                     final List<String> exportKey = this.cmdGpgBatch("--keyring", "secring.gpg", "--export-secret-key", this.keyId);
                     final Entry<Integer, String> resultExportKey = this.exec("", exportKey);
@@ -251,7 +251,7 @@ public class Gpg {
 
     private void decryptByGpg(final String in, final String out, final String passphrase) {
         if (!SupportFunction.isEmpty(this.passphrase) && this.isFilePresent(in)) {
-            logger.info("decrypt private key");
+            logger.info("    decrypt private key");
             // LC_CTYPE="UTF-8" echo ${CI_OPT_GPG_PASSPHRASE}
             //   | ${gpg_cmd_batch_yes} --passphrase-fd 0 --cipher-algo AES256 -o codesigning.asc codesigning.asc.gpg
             final List<String> gpgDecrypt = this.cmdGpgBatchYes(
@@ -266,7 +266,7 @@ public class Gpg {
 
     private void decryptByOpenSSL(final String in, final String out, final String passphrase) {
         if (!SupportFunction.isEmpty(this.passphrase) && this.isFilePresent(in)) {
-            logger.info("decrypt private key by openssl");
+            logger.info("    decrypt private key by openssl");
 
             final Entry<Integer, String> opensslVersion = this.exec(Arrays.asList("openssl", "version", "-a"));
             logger.info(opensslVersion.getValue());
@@ -307,7 +307,7 @@ public class Gpg {
             found = !secretKeyFound.isEmpty();
             if (logger.isInfoEnabled()) {
                 logger.info(String.format(
-                    "gpg%s found '%s' in '%s'. result: [%s]",
+                    "    gpg%s found '%s' in '%s'. result: [%s]",
                     found ? "" : " not",
                     keyName,
                     resultListSecKeys.getValue(),
@@ -322,7 +322,7 @@ public class Gpg {
 
     private Entry<Integer, String> gpgImport(final String keyFile, final boolean fastimport) {
         final String importOption = fastimport ? "--fast-import" : "--import";
-        logger.info(String.format("gpg %s %s", importOption, keyFile));
+        logger.info(String.format("    gpg %s %s", importOption, keyFile));
         // e.g.
         // ${gpg_cmd_batch_yes} --import codesigning.pub
         // ${gpg_cmd_batch_yes} --import codesigning.asc
@@ -334,7 +334,7 @@ public class Gpg {
 
     private Entry<Integer, String> gpgListKeys(final boolean privateKey) {
         final String listOption = privateKey ? "--list-secret-keys" : "--list-keys";
-        logger.info(String.format("gpg %s", listOption));
+        logger.info(String.format("    gpg %s", listOption));
         // ${gpg_cmd_batch} --list-keys
         // ${gpg_cmd_batch} --list-secret-keys
         final Entry<Integer, String> result = this.exec(null, this.cmdGpgBatch(listOption));
@@ -344,7 +344,7 @@ public class Gpg {
 
     private void gpgSetDefaultKey(final String keyName) {
         if (!SupportFunction.isEmpty(keyName)) {
-            logger.info(String.format("gpg set default key to %s", keyName));
+            logger.info(String.format("    gpg set default key to %s", keyName));
             // echo -e "trust\n5\ny\n" | gpg --cmd-fd 0 --batch=true --edit-key ${CI_OPT_GPG_KEYNAME}
             final List<String> setDefaultKey = this.cmdGpgBatch("--cmd-fd", "0", "--edit-key", keyName);
             final Entry<Integer, String> resultSetDefaultKey = this.exec("", setDefaultKey);

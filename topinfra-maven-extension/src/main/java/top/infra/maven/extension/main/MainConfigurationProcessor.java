@@ -56,7 +56,7 @@ public class MainConfigurationProcessor implements ConfigurationProcessor {
             .forEach(idx -> {
                 final OrderedConfigurationProcessor it = this.processors.get(idx);
                 logger.info(String.format(
-                    "processor index: [%s], order: [%s], name: [%s]",
+                    "    processor index: [%s], order: [%s], name: [%s]",
                     String.format("%02d ", idx),
                     String.format("%011d ", it.getOrder()),
                     it.getClass().getSimpleName()

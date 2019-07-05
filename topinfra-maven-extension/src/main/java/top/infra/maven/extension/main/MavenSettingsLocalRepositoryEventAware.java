@@ -81,7 +81,7 @@ public class MavenSettingsLocalRepositoryEventAware implements MavenEventAware {
             final String currentValue = result.getEffectiveSettings().getLocalRepository();
             if (logger.isInfoEnabled()) {
                 logger.info(String.format(
-                    "Override localRepository [%s] to [%s]", currentValue, this.settingsLocalRepository));
+                    "    Override localRepository [%s] to [%s]", currentValue, this.settingsLocalRepository));
             }
             result.getEffectiveSettings().setLocalRepository(this.settingsLocalRepository);
         }
@@ -101,7 +101,7 @@ public class MavenSettingsLocalRepositoryEventAware implements MavenEventAware {
         if (isEmpty(this.settingsLocalRepository)) {
             this.settingsLocalRepository = request.getLocalRepository().getBasedir();
             if (logger.isInfoEnabled()) {
-                logger.info(String.format("Current localRepository [%s]", this.settingsLocalRepository));
+                logger.info(String.format("    Current localRepository [%s]", this.settingsLocalRepository));
             }
             request.getUserProperties().setProperty(USER_PROPERTY_SETTINGS_LOCALREPOSITORY, this.settingsLocalRepository);
         }

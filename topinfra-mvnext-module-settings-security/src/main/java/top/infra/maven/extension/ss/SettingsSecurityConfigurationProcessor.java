@@ -51,7 +51,7 @@ public class SettingsSecurityConfigurationProcessor implements OrderedConfigurat
             .map(Paths::get);
 
         if (logger.isInfoEnabled()) {
-            logger.info(String.format("Setting file [%s], using [%s].",
+            logger.info(String.format("    Setting file [%s], using [%s].",
                 SETTINGS_SECURITY_XML,
                 settingsSecurity.map(Path::toString).orElse("not found")));
         }

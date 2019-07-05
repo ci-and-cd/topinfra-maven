@@ -83,7 +83,7 @@ public class MavenProjectInfoEventAware implements MavenEventAware {
         try {
             final File pomFile = request.getPom();
             if (logger.isDebugEnabled()) {
-                logger.debug(String.format("getMavenProjectInfo pomFile: [%s]", pomFile));
+                logger.debug(String.format("    getMavenProjectInfo pomFile: [%s]", pomFile));
             }
             return newProjectInfoByReadPom(logger, pomFile)
                 .orElseGet(() -> newProjectInfoByBuildProject(logger, this.projectBuilder, pomFile, projectBuildingRequest));
@@ -124,7 +124,7 @@ public class MavenProjectInfoEventAware implements MavenEventAware {
             repositorySystemSessionNull = projectBuildingRequest.getRepositorySession() == null;
             if (repositorySystemSessionNull) {
                 if (logger.isInfoEnabled()) {
-                    logger.info(String.format("repositorySystemSession not found in %s", projectBuildingRequest));
+                    logger.info(String.format("    repositorySystemSession not found in %s", projectBuildingRequest));
                 }
                 final RepositorySystemSession repositorySystemSession = this.repositorySessionFactory.newRepositorySession(request);
                 projectBuildingRequest.setRepositorySession(repositorySystemSession);
@@ -154,7 +154,7 @@ public class MavenProjectInfoEventAware implements MavenEventAware {
             this.ciOptContext = ciOptContext;
             this.mavenExecutionCopied = DefaultMavenExecutionRequest.copy(mavenExecution);
 
-            logger.info("Skip resolving and checking project version under fast mode.");
+            logger.info("    Skip resolving and checking project version under fast mode.");
         }
     }
 }

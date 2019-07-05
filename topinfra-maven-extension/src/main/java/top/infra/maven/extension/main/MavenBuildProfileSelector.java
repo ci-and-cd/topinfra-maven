@@ -125,12 +125,12 @@ public class MavenBuildProfileSelector extends DefaultProfileSelector {
             );
 
             if (logger.isDebugEnabled() && !customActivated.isEmpty()) {
-                logger.debug(String.format("custom activated profiles: %s", customActivated));
+                logger.debug(String.format("    custom activated profiles: %s", customActivated));
             }
         }
 
         if (logger.isDebugEnabled() && !profilesActivated.isEmpty()) {
-            logger.debug(String.format("profiles activated: %s", profilesActivated));
+            logger.debug(String.format("    profiles activated: %s", profilesActivated));
         }
 
         // logger.info(logEnd(this, "getActiveProfiles", profilesActivated));
@@ -145,7 +145,7 @@ public class MavenBuildProfileSelector extends DefaultProfileSelector {
                 .forEach(idx -> {
                     final CustomActivator it = this.customActivators.get(idx);
                     logger.info(String.format(
-                        "activator index: [%s], name: [%s]",
+                        "    activator index: [%s], name: [%s]",
                         String.format("%02d ", idx),
                         it.getClass().getSimpleName()
                     ));

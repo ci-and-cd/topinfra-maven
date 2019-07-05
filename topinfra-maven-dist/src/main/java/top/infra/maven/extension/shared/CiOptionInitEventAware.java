@@ -78,7 +78,7 @@ public class CiOptionInitEventAware implements MavenEventAware {
         final Properties ciOptProperties = ciOptContext.setCiOptPropertiesInto(this.optionCollections.values(), userProperties);
 
         if (logger.isInfoEnabled()) {
-            logger.info(String.format("There are [%s] groups of options.", this.optionCollections.size()));
+            logger.info(String.format("    There are [%s] groups of options.", this.optionCollections.size()));
             final List<Class<?>> types = new ArrayList<>(this.optionCollections.keySet());
             final List<List<CiOption>> groups = new ArrayList<>(this.optionCollections.values());
             IntStream
@@ -86,7 +86,7 @@ public class CiOptionInitEventAware implements MavenEventAware {
                 .forEach(idx -> {
                     final List<CiOption> group = groups.get(idx);
                     logger.info(String.format(
-                        "option group index: [%s], name: [%s], size: [%s]",
+                        "    option group index: [%s], name: [%s], size: [%s]",
                         String.format("%02d ", idx),
                         types.get(idx).getSimpleName(),
                         String.format("%03d ", group.size())
@@ -95,13 +95,13 @@ public class CiOptionInitEventAware implements MavenEventAware {
                     group.stream().sorted().forEach(ciOption -> { // TODO better toString methods
                         final String displayName = ciOption.getEnvVariableName();
                         final String displayValue = ciOptProperties.getProperty(ciOption.getPropertyName(), "");
-                        logger.info(PropertiesUtils.maskSecrets(String.format("    %s=%s", displayName, displayValue)));
+                        logger.info(PropertiesUtils.maskSecrets(String.format("        %s=%s", displayName, displayValue)));
                     });
                 });
 
             final Properties systemProperties = ciOptContext.getSystemProperties();
-            logProperties(logger, "ciOptionContext.systemProperties", systemProperties, PATTERN_VARS_ENV_DOT_CI);
-            logProperties(logger, "ciOptionContext.userProperties", userProperties, null);
+            logProperties(logger, "    ciOptionContext.systemProperties", systemProperties, PATTERN_VARS_ENV_DOT_CI);
+            logProperties(logger, "    ciOptionContext.userProperties", userProperties, null);
         }
 
         logger.info(logEnd(this, "initCiOptions", Void.TYPE));

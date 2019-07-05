@@ -74,7 +74,7 @@ public class GpgKeyEventAware implements MavenEventAware {
             );
             gpg.decryptAndImportKeys();
         } else {
-            logger.warn("Both gpg and gpg2 are not found.");
+            logger.warn("    Both gpg and gpg2 are not found.");
         }
 
         logger.info(logEnd(this, "decryptAndImportKeys", Void.TYPE));

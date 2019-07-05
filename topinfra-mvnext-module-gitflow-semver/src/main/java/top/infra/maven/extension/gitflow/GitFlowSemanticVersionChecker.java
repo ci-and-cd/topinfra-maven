@@ -80,13 +80,13 @@ public class GitFlowSemanticVersionChecker implements MavenEventAware {
         final Entry<Boolean, RuntimeException> checkResult = checkProjectVersion(ciOptContext, mavenProjectInfo.getVersion());
         final boolean result = checkResult.getKey();
         final String valid = result ? "Valid" : "Invalid";
-        logger.info(String.format("%s version [%s] for ref [%s].", valid, mavenProjectInfo.getVersion(), gitRefName));
+        logger.info(String.format("    %s version [%s] for ref [%s].", valid, mavenProjectInfo.getVersion(), gitRefName));
 
         if (!result) {
-            logger.warn("You should use versions with '-SNAPSHOT' suffix on develop branch or feature branches");
-            logger.warn("You should use versions like 1.0.0-SNAPSHOT develop branch");
-            logger.warn("You should use versions like 1.0.0-feature-SNAPSHOT or 1.0.0-branch-SNAPSHOT on feature branches");
-            logger.warn("You should use versions like 1.0.0 without '-SNAPSHOT' suffix on releases");
+            logger.warn("    You should use versions with '-SNAPSHOT' suffix on develop branch or feature branches");
+            logger.warn("    You should use versions like 1.0.0-SNAPSHOT develop branch");
+            logger.warn("    You should use versions like 1.0.0-feature-SNAPSHOT or 1.0.0-branch-SNAPSHOT on feature branches");
+            logger.warn("    You should use versions like 1.0.0 without '-SNAPSHOT' suffix on releases");
             final RuntimeException ex = checkResult.getValue();
             if (ex != null) {
                 logger.error(ex.getMessage());

@@ -86,13 +86,13 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
                     if (blankString.isPresent()) {
                         envVars.forEach(envVar -> {
                             logger.info(String.format(
-                                "Write blank value for env variable [%s] (in settings.xml), to avoid passphrase decrypt error.",
+                                "    Write blank value for env variable [%s] (in settings.xml), to avoid passphrase decrypt error.",
                                 envVar));
                             session.getSystemProperties().setProperty(envVar, blankString.get());
                         });
                     } else {
                         logger.info(String.format(
-                            "Skip writting blank value for env variables [%s] (in settings.xml), settings-security.xml not found.",
+                            "    Skip writting blank value for env variables [%s] (in settings.xml), settings-security.xml not found.",
                             envVars));
                     }
                 }
@@ -138,7 +138,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
                 envVars.forEach(envVar -> {
                     if (!systemProperties.containsKey(envVar)) {
                         logger.warn(String.format(
-                            "Please set a value for env variable [%s] (in settings.xml), to avoid passphrase decrypt error.", envVar));
+                            "    Please set a value for env variable [%s] (in settings.xml), to avoid passphrase decrypt error.", envVar));
                     }
                 });
             });
@@ -230,7 +230,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
     private void serverPassphrase(final Server server) {
         final String passphrase = this.replaceEmptyValue(server.getPassphrase());
         if (passphrase != null && !passphrase.equals(server.getPassphrase())) {
-            logger.warn(String.format("server [%s] has a empty passphrase [%s]", server.getId(), server.getPassphrase()));
+            logger.warn(String.format("    server [%s] has a empty passphrase [%s]", server.getId(), server.getPassphrase()));
             server.setPassphrase(passphrase);
         }
     }
@@ -238,7 +238,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
     private void serverPassword(final Server server) {
         final String password = this.replaceEmptyValue(server.getPassword());
         if (password != null && !password.equals(server.getPassword())) {
-            logger.warn(String.format("server [%s] has a empty password [%s]", server.getId(), server.getPassword()));
+            logger.warn(String.format("    server [%s] has a empty password [%s]", server.getId(), server.getPassword()));
             server.setPassword(password);
         }
     }
@@ -246,7 +246,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
     private void serverUsername(final Server server) {
         final String username = this.replaceEmptyValue(server.getUsername());
         if (username != null && !username.equals(server.getUsername())) {
-            logger.warn(String.format("server [%s] has a empty username [%s]", server.getId(), server.getUsername()));
+            logger.warn(String.format("    server [%s] has a empty username [%s]", server.getId(), server.getUsername()));
             server.setUsername(username);
         }
     }

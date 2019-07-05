@@ -51,7 +51,7 @@ public abstract class DownloadUtils {
                 urlConnection.setReadTimeout((int) TimeUnit.SECONDS.toMillis(20L));
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("HttpURLConnection header names: %s", headers != null ? headers.keySet() : null));
+                    logger.debug(String.format("    HttpURLConnection header names: %s", headers != null ? headers.keySet() : null));
                 }
                 if (headers != null && headers.size() > 0) {
                     headers.forEach(urlConnection::setRequestProperty);
@@ -69,23 +69,23 @@ public abstract class DownloadUtils {
 
                 if (redirect) {
                     newUrl = urlConnection.getHeaderField("Location");
-                    logger.info(String.format("Download redirect ('%s' to '%s'). %s", fromUrl, newUrl, status));
+                    logger.info(String.format("    Download redirect ('%s' to '%s'). %s", fromUrl, newUrl, status));
                 } else {
                     newUrl = null;
-                    logger.info(String.format("Download result ('%s' to '%s'). %s", fromUrl, saveToFile, status));
+                    logger.info(String.format("    Download result ('%s' to '%s'). %s", fromUrl, saveToFile, status));
                 }
             } catch (final java.io.FileNotFoundException ex) {
-                logger.warn(String.format("Download error ('%s' to '%s'). %s", fromUrl, saveToFile, "Not found"));
+                logger.warn(String.format("    Download error ('%s' to '%s'). %s", fromUrl, saveToFile, "Not found"));
 
                 lastException = null;
                 lastStatus = 404;
             } catch (final java.net.SocketTimeoutException ex) {
-                logger.warn(String.format("Download timeout ('%s' to '%s'). %s", fromUrl, saveToFile, ex.getMessage()));
+                logger.warn(String.format("    Download timeout ('%s' to '%s'). %s", fromUrl, saveToFile, ex.getMessage()));
 
                 lastException = ex;
                 lastStatus = null;
             } catch (final Exception ex) {
-                logger.warn(String.format("Download error ('%s' to '%s'). %s", fromUrl, saveToFile, ex.getMessage()), ex);
+                logger.warn(String.format("    Download error ('%s' to '%s'). %s", fromUrl, saveToFile, ex.getMessage()), ex);
 
                 lastException = ex;
                 lastStatus = null;

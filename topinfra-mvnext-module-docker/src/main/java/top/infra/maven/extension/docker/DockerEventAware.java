@@ -101,13 +101,13 @@ public class DockerEventAware implements MavenEventAware {
     private void cleanOldImages(final Docker docker) {
         final List<String> imageIds = docker.imageIdsToClean();
         if (logger.isInfoEnabled()) {
-            logger.info(String.format("Found imageIdsToClean %s", imageIds));
+            logger.info(String.format("    Found imageIdsToClean %s", imageIds));
         }
         docker.deleteImages(imageIds).forEach((id, retCode) -> {
             if (retCode == 0) {
-                logger.info(String.format("Image [%s] deleted.", id));
+                logger.info(String.format("    Image [%s] deleted.", id));
             } else {
-                logger.warn(String.format("Failed to delete image [%s].", id));
+                logger.warn(String.format("    Failed to delete image [%s].", id));
             }
         });
     }
@@ -115,16 +115,16 @@ public class DockerEventAware implements MavenEventAware {
     private void login(final Docker docker) {
         final String target = docker.getLoginTarget();
         if (SupportFunction.isNotEmpty(target) && target.startsWith("https://")) {
-            logger.info(String.format("docker logging into secure registry %s", target));
+            logger.info(String.format("    docker logging into secure registry %s", target));
         } else {
-            logger.info(String.format("docker logging into insecure registry %s", target));
+            logger.info(String.format("    docker logging into insecure registry %s", target));
         }
 
         final Optional<Integer> result = docker.login(target);
         if (result.isPresent()) {
-            logger.info(String.format("docker login [%s] result [%s]", target, result.orElse(null)));
+            logger.info(String.format("    docker login [%s] result [%s]", target, result.orElse(null)));
         } else {
-            logger.info(String.format("docker login [%s] skipped", target));
+            logger.info(String.format("    docker login [%s] skipped", target));
         }
     }
 
@@ -133,11 +133,11 @@ public class DockerEventAware implements MavenEventAware {
 
         final List<String> dockerfiles = Docker.dockerfiles();
         if (logger.isInfoEnabled()) {
-            logger.info(String.format("Found dockerfiles %s", dockerfiles));
+            logger.info(String.format("    Found dockerfiles %s", dockerfiles));
         }
         final List<String> baseImages = docker.pullBaseImages(dockerfiles);
         if (logger.isInfoEnabled()) {
-            logger.info(String.format("Found baseImages %s", baseImages));
+            logger.info(String.format("    Found baseImages %s", baseImages));
         }
 
         logger.info(logEnd(this, "pullBaseImages", Void.TYPE));

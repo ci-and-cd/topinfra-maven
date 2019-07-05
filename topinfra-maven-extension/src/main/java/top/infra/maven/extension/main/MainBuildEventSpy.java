@@ -96,19 +96,19 @@ public class MainBuildEventSpy extends AbstractEventSpy {
             .forEach(idx -> {
                 final MavenEventAware it = list.get(idx);
                 logger.info(String.format(
-                    "eventAware index: [%s], order: [%s], name: [%s], from module: [%s]",
+                    "    eventAware index: [%s], order: [%s], name: [%s], from module: [%s]",
                     String.format("%02d ", idx),
                     String.format("%011d ", it.getOrder()),
                     it.getClass().getSimpleName(),
                     SupportFunction.module(it)
                 ));
-                logger.info(String.format("    handles: %s", handles(it)));
+                logger.info(String.format("        handles: %s", handles(it)));
             });
 
         this.eventAwares.forEach((k, v) -> {
-            logger.info(String.format("event [%s]", k));
+            logger.info(String.format("    event [%s]", k));
             v.forEach(it ->
-                logger.info(String.format("    order: [%s], name: [%s], from module: [%s]",
+                logger.info(String.format("        order: [%s], name: [%s], from module: [%s]",
                     it.getOrder(), it.getClass().getSimpleName(), SupportFunction.module(it)))
             );
         });
@@ -149,7 +149,7 @@ public class MainBuildEventSpy extends AbstractEventSpy {
         try {
             this.onInit(context);
         } catch (final Exception ex) {
-            logger.error("Exception on init.", ex);
+            logger.error("    Exception on init.", ex);
             System.exit(1);
         }
         logger.info(logEnd(this, "init", Void.TYPE, context));
@@ -192,11 +192,11 @@ public class MainBuildEventSpy extends AbstractEventSpy {
                 logger.info(logEnd(this, "onMavenExecutionRequest", Void.TYPE, request));
             } else {
                 if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("onEvent %s", event));
+                    logger.debug(String.format("    onEvent %s", event));
                 }
             }
         } catch (final Exception ex) {
-            logger.error(String.format("Exception on handling event [%s].", event), ex);
+            logger.error(String.format("    Exception on handling event [%s].", event), ex);
             System.exit(1);
         }
 
@@ -208,7 +208,7 @@ public class MainBuildEventSpy extends AbstractEventSpy {
         final CiOptionContext ciOptionContext
     ) {
         final Path rootProjectPath = MavenUtils.executionRootPath(cliRequest, ciOptionContext).toAbsolutePath();
-        logger.info(String.format("executionRootPath [%s]", rootProjectPath));
+        logger.info(String.format("    executionRootPath [%s]", rootProjectPath));
 
         assert Orders.ORDER_SYSTEM_TO_USER_PROPERTIES < Orders.ORDER_GIT_PROPERTIES;
         assert Orders.ORDER_GIT_PROPERTIES < Orders.ORDER_CI_OPTION_CONFIG_LOADER;
@@ -221,7 +221,7 @@ public class MainBuildEventSpy extends AbstractEventSpy {
         final Optional<String> gitRefName = GIT_REF_NAME.getValue(ciOptionContext);
         if ((!gitRefName.isPresent() || isEmpty(gitRefName.get())) && logger.isWarnEnabled()) {
             logger.warn(String.format(
-                "Can not find value of %s (%s)",
+                "    Can not find value of %s (%s)",
                 GIT_REF_NAME.getEnvVariableName(), GIT_REF_NAME.getPropertyName()
             ));
         }
@@ -240,10 +240,10 @@ public class MainBuildEventSpy extends AbstractEventSpy {
         final CiOptionContext ciOptionContext
     ) {
         if (logger.isInfoEnabled()) {
-            logger.info(String.format("globalSettingsFile: [%s]", request.getGlobalSettingsFile()));
-            logger.info(String.format("globalSettingsSource: [%s]", request.getGlobalSettingsSource()));
-            logger.info(String.format("userSettingsFile: [%s]", request.getUserSettingsFile()));
-            logger.info(String.format("userSettingsSource: [%s]", request.getUserSettingsSource()));
+            logger.info(String.format("    globalSettingsFile: [%s]", request.getGlobalSettingsFile()));
+            logger.info(String.format("    globalSettingsSource: [%s]", request.getGlobalSettingsSource()));
+            logger.info(String.format("    userSettingsFile: [%s]", request.getUserSettingsFile()));
+            logger.info(String.format("    userSettingsSource: [%s]", request.getUserSettingsSource()));
         }
 
         assert Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SERVERS;
@@ -302,8 +302,8 @@ public class MainBuildEventSpy extends AbstractEventSpy {
             PropertiesUtils.merge(request.getSystemProperties(), projectBuildingRequest.getSystemProperties());
             PropertiesUtils.merge(request.getUserProperties(), projectBuildingRequest.getUserProperties());
             if (logger.isInfoEnabled()) {
-                logProperties(logger, "projectBuildingRequest.systemProperties", projectBuildingRequest.getSystemProperties(), PATTERN_VARS_ENV_DOT_CI);
-                logProperties(logger, "projectBuildingRequest.userProperties", projectBuildingRequest.getUserProperties(), null);
+                logProperties(logger, "    projectBuildingRequest.systemProperties", projectBuildingRequest.getSystemProperties(), PATTERN_VARS_ENV_DOT_CI);
+                logProperties(logger, "    projectBuildingRequest.userProperties", projectBuildingRequest.getUserProperties(), null);
             }
 
             logger.info(logStart(this, "onProjectBuildingRequest", projectBuildingRequest));
@@ -311,7 +311,7 @@ public class MainBuildEventSpy extends AbstractEventSpy {
             logger.info(logEnd(this, "onProjectBuildingRequest", Void.TYPE, projectBuildingRequest));
         } else {
             if (logger.isInfoEnabled()) {
-                logger.info(String.format("onEvent MavenExecutionRequest %s but projectBuildingRequest is null.", request));
+                logger.info(String.format("    onEvent MavenExecutionRequest %s but projectBuildingRequest is null.", request));
             }
         }
     }
@@ -342,9 +342,9 @@ public class MainBuildEventSpy extends AbstractEventSpy {
             contextData.keySet().stream().sorted().forEach(k -> {
                 final Object v = contextData.get(k);
                 if (v instanceof Properties) {
-                    logger.debug(logProperties(logger, String.format("context.data.%s", k), (Properties) v, null));
+                    logger.debug(logProperties(logger, String.format("    context.data.%s", k), (Properties) v, null));
                 } else {
-                    logger.debug(String.format("context.data.%s=%s", k, v));
+                    logger.debug(String.format("    context.data.%s=%s", k, v));
                 }
             });
         }

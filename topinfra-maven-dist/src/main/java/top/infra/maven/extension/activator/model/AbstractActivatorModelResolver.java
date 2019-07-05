@@ -54,7 +54,7 @@ public abstract class AbstractActivatorModelResolver implements ActivatorModelRe
         if ("source".equals(profile.getSource())) {
             this.registerMemento(profile, pomFile, null);
             if (this.verbose) {
-                logger.debug(String.format("profile [%s] source is 'source'.", profile));
+                logger.debug(String.format("    profile [%s] source is 'source'.", profile));
             }
             return Optional.empty();
         }
@@ -62,7 +62,7 @@ public abstract class AbstractActivatorModelResolver implements ActivatorModelRe
         // if (profile.getBuild() == null) {
         //     this.registerMemento(profile, pomFile, null);
         //     if (this.verbose) {
-        //         logger.info(String.format("build config not found for profile [%s].", profile));
+        //         logger.info(String.format("    build config not found for profile [%s].", profile));
         //     }
         //     return Optional.empty();
         // }
@@ -70,7 +70,7 @@ public abstract class AbstractActivatorModelResolver implements ActivatorModelRe
         if (pomFile == null) {
             this.registerMemento(profile, null, null);
             if (this.verbose) {
-                logger.debug(String.format("pomFile not found for profile [%s].", profile));
+                logger.debug(String.format("    pomFile not found for profile [%s].", profile));
             }
             return Optional.empty();
         }
@@ -81,13 +81,13 @@ public abstract class AbstractActivatorModelResolver implements ActivatorModelRe
             modelFound = this.getMemento(profile, pomFile);
             doResolve = false;
             if (this.verbose) {
-                logger.debug(String.format("resolveModel [%s] for profile [%s]. false", pomFile.getPath(), profile));
+                logger.debug(String.format("    resolveModel [%s] for profile [%s]. false", pomFile.getPath(), profile));
             }
         } else {
             modelFound = null;
             doResolve = true;
             if (this.verbose) {
-                logger.debug(String.format("resolveModel [%s] for profile [%s]. true", pomFile.getPath(), profile));
+                logger.debug(String.format("    resolveModel [%s] for profile [%s]. true", pomFile.getPath(), profile));
             }
         }
 
@@ -97,9 +97,9 @@ public abstract class AbstractActivatorModelResolver implements ActivatorModelRe
 
         if (doResolve) {
             // if (logger.isDebugEnabled()) {
-            //     context.getProjectProperties().forEach((k, v) -> logger.debug(String.format("projectProperty %s => %s", k, v)));
-            //     context.getUserProperties().forEach((k, v) -> logger.debug(String.format("%s => %s", k, v)));
-            //     context.getSystemProperties().forEach((k, v) -> logger.debug(String.format("%s => %s", k, v)));
+            //     context.getProjectProperties().forEach((k, v) -> logger.debug(String.format("    projectProperty %s => %s", k, v)));
+            //     context.getUserProperties().forEach((k, v) -> logger.debug(String.format("    %s => %s", k, v)));
+            //     context.getSystemProperties().forEach((k, v) -> logger.debug(String.format("    %s => %s", k, v)));
             // }
 
             try {
@@ -108,7 +108,7 @@ public abstract class AbstractActivatorModelResolver implements ActivatorModelRe
                 return Optional.of(this.registerMemento(profile, pomFile, buildingResult.getEffectiveModel()));
             } catch (final Exception error) {
                 logger.error(
-                    String.format("resolveModel [%s] model for profile [%s] error. %s", pomFile.getPath(), profile, error.getMessage()),
+                    String.format("    resolveModel [%s] model for profile [%s] error. %s", pomFile.getPath(), profile, error.getMessage()),
                     error
                 );
                 return Optional.empty();
@@ -126,7 +126,7 @@ public abstract class AbstractActivatorModelResolver implements ActivatorModelRe
     private File projectPOM(final ProfileActivationContext context) {
         final File basedir = context.getProjectDirectory();
         if (basedir == null) {
-            // logger.debug("context.projectDirectory is null");
+            // logger.debug("    context.projectDirectory is null");
             return null;
         }
 
@@ -134,7 +134,7 @@ public abstract class AbstractActivatorModelResolver implements ActivatorModelRe
         if (pomFile.exists()) {
             return pomFile.getAbsoluteFile();
         } else {
-            logger.warn(String.format("pomFile not exists [%s]", pomFile.getPath()));
+            logger.warn(String.format("    pomFile not exists [%s]", pomFile.getPath()));
             return null;
         }
     }
@@ -146,13 +146,13 @@ public abstract class AbstractActivatorModelResolver implements ActivatorModelRe
         final String key = mementoKey(profile, pomFile);
         final boolean result = pomFile != null && this.profileMemento.containsKey(key);
         // if (logger.isDebugEnabled()) {
-        //     logger.debug(String.format("hasMemento(%s, %s) key %s, result %s", profile, pomFile, key, result));
+        //     logger.debug(String.format("    hasMemento(%s, %s) key %s, result %s", profile, pomFile, key, result));
         // }
         return result;
     }
 
     private Model getMemento(final Profile profile, final File pomFile) {
-        // logger.debug(String.format("getMemento(%s, %s)", profile, pomFile));
+        // logger.debug(String.format("    getMemento(%s, %s)", profile, pomFile));
         final String key = mementoKey(profile, pomFile);
         return hasMemento(profile, pomFile) ? this.profileMemento.get(key) : null;
     }
@@ -160,7 +160,7 @@ public abstract class AbstractActivatorModelResolver implements ActivatorModelRe
     private Model registerMemento(final Profile profile, final File pomFile, final Model model) {
         if (pomFile != null) {
             // if (logger.isDebugEnabled()) {
-            //     logger.debug(String.format("registerMemento(%s, %s)", profile, pomFile));
+            //     logger.debug(String.format("    registerMemento(%s, %s)", profile, pomFile));
             // }
             final String key = mementoKey(profile, pomFile);
             this.profileMemento.put(key, model);

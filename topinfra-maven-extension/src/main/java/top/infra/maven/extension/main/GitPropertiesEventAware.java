@@ -47,7 +47,7 @@ public class GitPropertiesEventAware implements MavenEventAware {
     private static final String GIT_BRANCH_FULL = "git.branch.full";
     // private static final String GIT_REF_NAME_FULL = "git.ref.name.full";
 
-    private static final String GIT_PROPERTIES_LOG_FORMAT = "GitProperties %s='%s'";
+    private static final String GIT_PROPERTIES_LOG_FORMAT = "    gitProperties %s='%s'";
 
     private Logger logger;
 
@@ -112,11 +112,11 @@ public class GitPropertiesEventAware implements MavenEventAware {
                 .setMustExist(true)
                 .build();
 
-            logger.debug("Using git repository: " + repository.getDirectory());
+            logger.debug("    Using git repository: " + repository.getDirectory());
 
             final ObjectId head = repository.resolve("HEAD");
             if (head == null) {
-                logger.warn("No such revision: HEAD");
+                logger.warn("    No such revision: HEAD");
                 // throw new IllegalStateException("No such revision: HEAD");
                 result = Optional.empty();
             } else {
@@ -192,7 +192,7 @@ public class GitPropertiesEventAware implements MavenEventAware {
                 result = Optional.of(properties);
             }
         } catch (final IOException ex) {
-            logger.warn("Exception on newGitProperties.", ex);
+            logger.warn("    Exception on newGitProperties.", ex);
             result = Optional.empty();
         }
 

@@ -63,7 +63,7 @@ public class MavenGoalEditorEventAware implements MavenEventAware {
         final Entry<List<String>, Properties> goalsAndProps = this.editGoals(logger, mavenExecution, ciOptContext);
 
         if (goalsAndProps.getKey().isEmpty() && !mavenExecution.getGoals().isEmpty()) {
-            logger.warn(String.format("No goal to run, all goals requested (%s) were removed.", mavenExecution.getGoals()));
+            logger.warn(String.format("    No goal to run, all goals requested (%s) were removed.", mavenExecution.getGoals()));
             // request.setGoals(Collections.singletonList("help:active-profiles"));
             mavenExecution.setGoals(Collections.singletonList("validate"));
         } else {
@@ -79,9 +79,9 @@ public class MavenGoalEditorEventAware implements MavenEventAware {
         final CiOptionContext ciOptContext
     ) {
         logger.info(logStart(this, "editGoals", request.getGoals()));
-        logger.info(new AppveyorVariables(ciOptContext.getSystemProperties()).toString());
-        logger.info(new GitlabCiVariables(ciOptContext.getSystemProperties()).toString());
-        logger.info(new TravisCiVariables(ciOptContext.getSystemProperties()).toString());
+        logger.info(String.format("    AppVeyor variables: %s", new AppveyorVariables(ciOptContext.getSystemProperties())));
+        logger.info(String.format("    GitLabCI variables: %s", new GitlabCiVariables(ciOptContext.getSystemProperties())));
+        logger.info(String.format("    TravisCI variables: %s", new TravisCiVariables(ciOptContext.getSystemProperties())));
 
         final MavenGoalEditor goalEditor = new MavenGoalEditor(
             logger,
@@ -93,7 +93,7 @@ public class MavenGoalEditorEventAware implements MavenEventAware {
         );
         final Entry<List<String>, Properties> goalsAndProps = goalEditor.goalsAndUserProperties(request.getGoals());
 
-        logProperties(logger, "goalEditor.userProperties", goalsAndProps.getValue(), null);
+        logProperties(logger, "    goalEditor.userProperties", goalsAndProps.getValue(), null);
         logger.info(logEnd(this, "initCiOptions", goalsAndProps, request.getGoals()));
         return goalsAndProps;
     }

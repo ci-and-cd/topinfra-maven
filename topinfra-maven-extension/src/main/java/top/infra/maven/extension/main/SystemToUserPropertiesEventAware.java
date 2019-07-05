@@ -73,7 +73,7 @@ public class SystemToUserPropertiesEventAware implements MavenEventAware {
             () -> {
                 final String systemUserDir = SystemUtils.systemUserDir();
                 logger.warn(String.format(
-                    "Value of system property [%s] not found, use user.dir [%s] instead.",
+                    "    Value of system property [%s] not found, use user.dir [%s] instead.",
                     MavenUtils.PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY, systemUserDir
                 ));
                 return systemUserDir;
@@ -82,12 +82,12 @@ public class SystemToUserPropertiesEventAware implements MavenEventAware {
 
         final List<String> propsToCopy = propsToCopy(systemProperties, userProperties);
 
-        logger.info(String.format("propsToCopy: %s", propsToCopy));
+        logger.info(String.format("    propsToCopy: %s", propsToCopy));
 
         propsToCopy.forEach(name -> {
             final String value = systemProperties.getProperty(name);
             logger.info(PropertiesUtils.maskSecrets(String.format(
-                "Copy from systemProperties into userProperties [%s=%s]",
+                "    Copy from systemProperties into userProperties [%s=%s]",
                 name, value)
             ));
             userProperties.setProperty(name, value);

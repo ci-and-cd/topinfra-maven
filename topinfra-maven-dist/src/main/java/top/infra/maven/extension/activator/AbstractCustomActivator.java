@@ -56,8 +56,8 @@ public abstract class AbstractCustomActivator implements CustomActivator {
                     result = false;
 
                     if (logger.isDebugEnabled()) {
-                        logger.debug(String.format("%s profile '%s' not presentInConfig", this.getName(), profileId(profile)));
-                        logger.debug(String.format("%s project='%s' profile='%s' result='false'",
+                        logger.debug(String.format("    %s profile '%s' not presentInConfig", this.getName(), profileId(profile)));
+                        logger.debug(String.format("    %s project='%s' profile='%s' result='false'",
                             this.getName(), projectName(context), profileId(profile)));
                     }
                 } else {
@@ -75,10 +75,10 @@ public abstract class AbstractCustomActivator implements CustomActivator {
                     }
 
                     if (result || this.cacheResult()) {
-                        logger.info(String.format("%s project='%s' profile='%s' result='%s'",
+                        logger.info(String.format("    %s project='%s' profile='%s' result='%s'",
                             this.getName(), projectName(context), profileId(profile), result));
                     } else if (logger.isDebugEnabled()) {
-                        logger.debug(String.format("%s project='%s' profile='%s' result='false'",
+                        logger.debug(String.format(    "%s project='%s' profile='%s' result='false'",
                             this.getName(), projectName(context), profileId(profile)));
                     }
                 }

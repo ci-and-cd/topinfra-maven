@@ -104,7 +104,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
         if (this.settingsXml != null) {
             if (logger.isInfoEnabled()) {
-                logger.info(String.format("Setting file [%s], using [%s]. (override userSettingsFile [%s])",
+                logger.info(String.format("    Setting file [%s], using [%s]. (override userSettingsFile [%s])",
                     SETTINGS_XML, this.settingsXml, request.getUserSettingsFile()));
             }
 
@@ -134,7 +134,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
         if (this.toolchainsXml != null) {
             if (logger.isInfoEnabled()) {
-                logger.info(String.format("Setting file [%s], using [%s]. (override userToolchainsSource [%s])",
+                logger.info(String.format("    Setting file [%s], using [%s]. (override userToolchainsSource [%s])",
                     TOOLCHAINS_XML, this.toolchainsXml, request.getUserToolchainsSource()));
             }
 
@@ -186,11 +186,11 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         }
 
         if (result.isPresent()) {
-            logger.info(String.format("Setting file [%s], using [%s].", filename, result.get()));
+            logger.info(String.format("    Setting file [%s], using [%s].", filename, result.get()));
             ciOptContext.getSystemProperties().setProperty(propertyName, result.get().toString());
             ciOptContext.getUserProperties().setProperty(propertyName, result.get().toString());
         } else {
-            logger.info(String.format("Setting file [%s], not found.", filename));
+            logger.info(String.format("    Setting file [%s], not found.", filename));
         }
 
         logger.info(logEnd(this, "findOrDownload", result.orElse(null), filename));

@@ -74,22 +74,22 @@ public class InfoPrinter implements MavenEventAware {
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info(String.format("user.language [%s], user.region [%s], user.timezone [%s]",
+            logger.info(String.format("    user.language [%s], user.region [%s], user.timezone [%s]",
                 System.getProperty("user.language"), System.getProperty("user.region"), System.getProperty("user.timezone")));
-            logger.info(String.format("USER [%s]", System.getProperty("user.name")));
-            logger.info(String.format("HOME [%s]", systemUserHome()));
-            logger.info(String.format("JAVA_HOME [%s]", System.getProperty("java.home")));
+            logger.info(String.format("    USER [%s]", System.getProperty("user.name")));
+            logger.info(String.format("    HOME [%s]", systemUserHome()));
+            logger.info(String.format("    JAVA_HOME [%s]", System.getProperty("java.home")));
 
             final String runtimeImplVersion = Runtime.class.getPackage().getImplementationVersion();
             final String javaVersion = runtimeImplVersion != null ? runtimeImplVersion : System.getProperty("java.runtime.version");
 
-            logger.info(String.format("Java version [%s]", javaVersion));
-            logger.info(String.format("Maven version [%s]", this.runtime.getMavenVersion()));
+            logger.info(String.format("    Java version [%s]", javaVersion));
+            logger.info(String.format("    Maven version [%s]", this.runtime.getMavenVersion()));
         }
 
         if (logger.isDebugEnabled()) {
-            logProperties(logger, "context.data.systemProperties", systemProperties, CiOptionNames.PATTERN_VARS_ENV_DOT_CI);
-            logProperties(logger, "context.data.userProperties", userProperties, null);
+            logProperties(logger, "    context.data.systemProperties", systemProperties, CiOptionNames.PATTERN_VARS_ENV_DOT_CI);
+            logProperties(logger, "    context.data.userProperties", userProperties, null);
         }
 
         logger.info(logEnd(this, "printInfo", Void.TYPE));
@@ -97,13 +97,13 @@ public class InfoPrinter implements MavenEventAware {
 
     private void printClassPath(final Class<?> mavenClass) {
         classPathEntries(logger, ClassLoader.getSystemClassLoader()).forEach(entry ->
-            logger.debug(String.format("                system classpath entry: %s", entry)));
+            logger.debug(String.format("                    system classpath entry: %s", entry)));
         classPathEntries(logger, Thread.currentThread().getContextClassLoader()).forEach(entry ->
-            logger.debug(String.format("current thread context classpath entry: %s", entry)));
+            logger.debug(String.format("    current thread context classpath entry: %s", entry)));
         classPathEntries(logger, mavenClass.getClassLoader()).forEach(entry ->
-            logger.debug(String.format("          apache-maven classpath entry: %s", entry)));
+            logger.debug(String.format("              apache-maven classpath entry: %s", entry)));
         classPathEntries(logger, this.getClass().getClassLoader()).forEach(entry ->
-            logger.debug(String.format(" maven-build-extension classpath entry: %s", entry)));
+            logger.debug(String.format("     maven-build-extension classpath entry: %s", entry)));
     }
 
     private static List<String> classPathEntries(
@@ -118,7 +118,7 @@ public class InfoPrinter implements MavenEventAware {
             }
         } else {
             if (logger.isWarnEnabled()) {
-                logger.warn(String.format("Inspecting entries of [%s] is not supported", cl.getClass().getCanonicalName()));
+                logger.warn(String.format("    Inspecting entries of [%s] is not supported", cl.getClass().getCanonicalName()));
             }
         }
         return result;

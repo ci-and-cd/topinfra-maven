@@ -115,7 +115,7 @@ public class MavenGoalEditor {
                     resultGoals.add(goal);
                 } else {
                     if (logger.isInfoEnabled()) {
-                        logger.info(String.format("onMavenExecutionRequest skip goal %s (%s: %s)",
+                        logger.info(String.format("    onMavenExecutionRequest skip goal %s (%s: %s)",
                             goal, MavenBuildExtensionOption.PUBLISH_TO_REPO.getEnvVariableName(), this.publishToRepo));
                     }
                 }
@@ -124,7 +124,7 @@ public class MavenGoalEditor {
                     resultGoals.add(goal);
                 } else {
                     if (logger.isInfoEnabled()) {
-                        logger.info(String.format("onMavenExecutionRequest skip goal %s (%s: %s)",
+                        logger.info(String.format("    onMavenExecutionRequest skip goal %s (%s: %s)",
                             goal, MavenOption.GENERATEREPORTS.getEnvVariableName(), this.generateReports));
                     }
                 }
@@ -134,7 +134,7 @@ public class MavenGoalEditor {
                     if (Constants.PHASE_PACKAGE.equals(goal)) {
                         resultGoals.add(Constants.PHASE_DEPLOY); // deploy artifacts into -DaltDeploymentRepository=wagonRepository
                         if (logger.isInfoEnabled()) {
-                            logger.info(String.format("onMavenExecutionRequest replace goal %s to %s (%s: %s)",
+                            logger.info(String.format("    onMavenExecutionRequest replace goal %s to %s (%s: %s)",
                                 goal, Constants.PHASE_DEPLOY,
                                 MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION.getEnvVariableName(),
                                 this.mvnDeployPublishSegregation.toString()));
@@ -142,7 +142,7 @@ public class MavenGoalEditor {
                     } else {
                         resultGoals.add(Constants.PHASE_DEPLOY); // deploy artifacts into -DaltDeploymentRepository=wagonRepository
                         if (logger.isInfoEnabled()) {
-                            logger.info(String.format("onMavenExecutionRequest replace goal %s to %s (%s: %s)",
+                            logger.info(String.format("    onMavenExecutionRequest replace goal %s to %s (%s: %s)",
                                 goal, Constants.PHASE_DEPLOY,
                                 MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION.getEnvVariableName(),
                                 this.mvnDeployPublishSegregation.toString()));
@@ -158,7 +158,7 @@ public class MavenGoalEditor {
                     resultGoals.add(goal);
                 } else {
                     if (logger.isInfoEnabled()) {
-                        logger.info(String.format("onMavenExecutionRequest skip goal %s (%s: %s, %s: %s)",
+                        logger.info(String.format("    onMavenExecutionRequest skip goal %s (%s: %s, %s: %s)",
                             goal,
                             MavenBuildExtensionOption.ORIGIN_REPO.getEnvVariableName(), this.originRepo,
                             VcsProperties.GIT_REF_NAME.getEnvVariableName(), this.gitRefName));

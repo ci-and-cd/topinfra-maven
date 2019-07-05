@@ -27,16 +27,16 @@ public class MavenBuildLifecycleParticipant extends AbstractMavenLifecyclePartic
         final org.codehaus.plexus.logging.Logger logger
     ) {
         this.logger = new LoggerPlexusImpl(logger);
-        logger.info(String.format("MavenBuildLifecycleParticipant [%s]", this));
+        logger.info(String.format("    MavenBuildLifecycleParticipant [%s]", this));
     }
 
     @Override
     public void afterProjectsRead(final MavenSession session) throws MavenExecutionException {
         if (session != null) {
             if (isOnRootProject(session)) {
-                logger.info(String.format("LifecycleParticipant afterProjectsRead on executionRoot [%s]", session.getCurrentProject()));
+                logger.info(String.format("    LifecycleParticipant afterProjectsRead on executionRoot [%s]", session.getCurrentProject()));
             } else {
-                logger.info(String.format("LifecycleParticipant afterProjectsRead [%s]", session.getCurrentProject()));
+                logger.info(String.format("    LifecycleParticipant afterProjectsRead [%s]", session.getCurrentProject()));
             }
         }
     }
@@ -45,9 +45,9 @@ public class MavenBuildLifecycleParticipant extends AbstractMavenLifecyclePartic
     public void afterSessionStart(final MavenSession session) throws MavenExecutionException {
         if (session != null) {
             if (isOnRootProject(session)) {
-                logger.info(String.format("LifecycleParticipant afterSessionStart on executionRoot [%s]", session.getCurrentProject()));
+                logger.info(String.format("    LifecycleParticipant afterSessionStart on executionRoot [%s]", session.getCurrentProject()));
             } else {
-                logger.info(String.format("LifecycleParticipant afterSessionStart [%s]", session.getCurrentProject()));
+                logger.info(String.format("    LifecycleParticipant afterSessionStart [%s]", session.getCurrentProject()));
             }
         }
     }
