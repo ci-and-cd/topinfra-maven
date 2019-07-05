@@ -4,6 +4,8 @@ import static top.infra.maven.extension.gpg.GpgOption.GPG_EXECUTABLE;
 import static top.infra.maven.extension.gpg.GpgOption.GPG_KEYID;
 import static top.infra.maven.extension.gpg.GpgOption.GPG_KEYNAME;
 import static top.infra.maven.extension.gpg.GpgOption.GPG_PASSPHRASE;
+import static top.infra.maven.utils.SupportFunction.logEnd;
+import static top.infra.maven.utils.SupportFunction.logStart;
 
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -47,7 +49,15 @@ public class GpgKeyEventAware implements MavenEventAware {
         final ProjectBuildingRequest projectBuilding,
         final CiOptionContext ciOptContext
     ) {
-        logger.info("    >>>>>>>>>> ---------- decrypt files and handle keys ---------- >>>>>>>>>>");
+        this.decryptAndImportKeys(cliRequest, ciOptContext);
+    }
+
+    public void decryptAndImportKeys(
+        final CliRequest cliRequest,
+        final CiOptionContext ciOptContext
+    ) {
+        logger.info(logStart(this, "decryptAndImportKeys"));
+
         final Optional<String> executable = GPG_EXECUTABLE.getValue(ciOptContext);
         if (executable.isPresent()) {
             final Optional<String> gpgKeyid = GPG_KEYID.getValue(ciOptContext);
@@ -66,9 +76,10 @@ public class GpgKeyEventAware implements MavenEventAware {
         } else {
             logger.warn("Both gpg and gpg2 are not found.");
         }
-        logger.info("    <<<<<<<<<< ---------- decrypt files and handle keys ---------- <<<<<<<<<<");
+
+        logger.info(logEnd(this, "decryptAndImportKeys", Void.TYPE));
     }
-    
+
     @Override
     public int getOrder() {
         return Orders.EVENT_AWARE_ORDER_GPG_KEY;

@@ -1,5 +1,8 @@
 package top.infra.maven.extension.main;
 
+import static top.infra.maven.utils.PropertiesUtils.logProperties;
+import static top.infra.maven.utils.SupportFunction.logEnd;
+import static top.infra.maven.utils.SupportFunction.logStart;
 import static top.infra.maven.utils.SystemUtils.systemUserHome;
 
 import java.net.URL;
@@ -15,13 +18,12 @@ import javax.inject.Singleton;
 import org.apache.maven.eventspy.EventSpy.Context;
 import org.apache.maven.rtinfo.RuntimeInformation;
 
-import top.infra.maven.extension.shared.CiOptionNames;
 import top.infra.maven.extension.MavenEventAware;
+import top.infra.maven.extension.shared.CiOptionNames;
 import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.MavenUtils;
-import top.infra.maven.utils.PropertiesUtils;
 
 @Named
 @Singleton
@@ -65,10 +67,13 @@ public class InfoPrinter implements MavenEventAware {
         final Properties systemProperties,
         final Properties userProperties
     ) {
-        this.printClassPath(mavenClass);
+        logger.info(logStart(this, "printInfo"));
+
+        if (logger.isDebugEnabled()) {
+            this.printClassPath(mavenClass);
+        }
 
         if (logger.isInfoEnabled()) {
-            logger.info(">>>>>>>>>> ---------- build context info ---------- >>>>>>>>>>");
             logger.info(String.format("user.language [%s], user.region [%s], user.timezone [%s]",
                 System.getProperty("user.language"), System.getProperty("user.region"), System.getProperty("user.timezone")));
             logger.info(String.format("USER [%s]", System.getProperty("user.name")));
@@ -80,28 +85,25 @@ public class InfoPrinter implements MavenEventAware {
 
             logger.info(String.format("Java version [%s]", javaVersion));
             logger.info(String.format("Maven version [%s]", this.runtime.getMavenVersion()));
-            logger.info("<<<<<<<<<< ---------- build context info ---------- <<<<<<<<<<");
         }
 
-        logger.info(">>>>>>>>>> ---------- init systemProperties ---------- >>>>>>>>>>");
-        logger.info(PropertiesUtils.toString(systemProperties, CiOptionNames.PATTERN_VARS_ENV_DOT_CI));
-        logger.info("<<<<<<<<<< ---------- init systemProperties ---------- <<<<<<<<<<");
-        logger.info(">>>>>>>>>> ---------- init userProperties ---------- >>>>>>>>>>");
-        logger.info(PropertiesUtils.toString(userProperties, null));
-        logger.info("<<<<<<<<<< ---------- init userProperties ---------- <<<<<<<<<<");
+        if (logger.isDebugEnabled()) {
+            logProperties(logger, "context.data.systemProperties", systemProperties, CiOptionNames.PATTERN_VARS_ENV_DOT_CI);
+            logProperties(logger, "context.data.userProperties", userProperties, null);
+        }
+
+        logger.info(logEnd(this, "printInfo", Void.TYPE));
     }
 
     private void printClassPath(final Class<?> mavenClass) {
-        if (logger.isInfoEnabled()) {
-            classPathEntries(logger, ClassLoader.getSystemClassLoader()).forEach(entry ->
-                logger.info(String.format("                system classpath entry: %s", entry)));
-            classPathEntries(logger, Thread.currentThread().getContextClassLoader()).forEach(entry ->
-                logger.info(String.format("current thread context classpath entry: %s", entry)));
-            classPathEntries(logger, mavenClass.getClassLoader()).forEach(entry ->
-                logger.info(String.format("          apache-maven classpath entry: %s", entry)));
-            classPathEntries(logger, this.getClass().getClassLoader()).forEach(entry ->
-                logger.info(String.format(" maven-build-extension classpath entry: %s", entry)));
-        }
+        classPathEntries(logger, ClassLoader.getSystemClassLoader()).forEach(entry ->
+            logger.debug(String.format("                system classpath entry: %s", entry)));
+        classPathEntries(logger, Thread.currentThread().getContextClassLoader()).forEach(entry ->
+            logger.debug(String.format("current thread context classpath entry: %s", entry)));
+        classPathEntries(logger, mavenClass.getClassLoader()).forEach(entry ->
+            logger.debug(String.format("          apache-maven classpath entry: %s", entry)));
+        classPathEntries(logger, this.getClass().getClassLoader()).forEach(entry ->
+            logger.debug(String.format(" maven-build-extension classpath entry: %s", entry)));
     }
 
     private static List<String> classPathEntries(

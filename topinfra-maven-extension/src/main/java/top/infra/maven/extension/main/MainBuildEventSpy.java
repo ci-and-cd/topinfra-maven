@@ -3,10 +3,12 @@ package top.infra.maven.extension.main;
 import static java.util.stream.Collectors.toList;
 import static top.infra.maven.extension.shared.CiOptionNames.PATTERN_VARS_ENV_DOT_CI;
 import static top.infra.maven.extension.shared.VcsProperties.GIT_REF_NAME;
+import static top.infra.maven.utils.PropertiesUtils.logProperties;
 import static top.infra.maven.utils.SupportFunction.isEmpty;
+import static top.infra.maven.utils.SupportFunction.logEnd;
+import static top.infra.maven.utils.SupportFunction.logStart;
 import static top.infra.maven.utils.SupportFunction.newTuple;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,7 +34,6 @@ import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
 import org.apache.maven.toolchain.building.ToolchainsBuildingResult;
 
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.exception.RuntimeIOException;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.shared.CiOptionContextBeanFactory;
 import top.infra.maven.extension.shared.Orders;
@@ -40,6 +41,7 @@ import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.MavenUtils;
 import top.infra.maven.utils.PropertiesUtils;
+import top.infra.maven.utils.SupportFunction;
 
 /**
  * Main entry point. Reads properties and exposes them as user properties.
@@ -50,12 +52,12 @@ import top.infra.maven.utils.PropertiesUtils;
 // @org.codehaus.plexus.component.annotations.Component(role = org.apache.maven.eventspy.EventSpy.class)
 @Named
 @Singleton
-public class MavenBuildEventSpy extends AbstractEventSpy {
+public class MainBuildEventSpy extends AbstractEventSpy {
 
     private final Logger logger;
 
     private final CiOptionContextBeanFactory ciOptContextFactory;
-    private final MavenBuildConfigurationProcessor cliRequestFactory;
+    private final MainConfigurationProcessor cliRequestFactory;
 
     private final Map<String, List<MavenEventAware>> eventAwares;
 
@@ -69,12 +71,14 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
      * @param eventAwares         inject eventAwares
      */
     @Inject
-    public MavenBuildEventSpy(
+    public MainBuildEventSpy(
         final org.codehaus.plexus.logging.Logger logger,
         final CiOptionContextBeanFactory ciOptContextFactory,
-        final MavenBuildConfigurationProcessor cliRequestFactory,
+        final MainConfigurationProcessor cliRequestFactory,
         final List<MavenEventAware> eventAwares
     ) {
+        logger.info(logStart(this, "constructor"));
+
         this.logger = new LoggerPlexusImpl(logger);
         this.ciOptContextFactory = ciOptContextFactory;
         this.cliRequestFactory = cliRequestFactory;
@@ -82,7 +86,11 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         this.ciOptContext = null;
 
         final List<MavenEventAware> list = eventAwares.stream().sorted().collect(toList());
-        logger.info(String.format("MavenBuildEventSpy [%s]", this));
+        final Map<String, List<MavenEventAware>> map = new LinkedHashMap<>();
+        predicates()
+            .forEach(tuple -> map.put(tuple.getKey(), handlers(list, tuple.getValue())));
+        this.eventAwares = map;
+
         IntStream
             .range(0, list.size())
             .forEach(idx -> {
@@ -92,33 +100,19 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
                     String.format("%02d ", idx),
                     String.format("%011d ", it.getOrder()),
                     it.getClass().getSimpleName(),
-                    module(it)
+                    SupportFunction.module(it)
                 ));
                 logger.info(String.format("    handles: %s", handles(it)));
             });
-
-        final Map<String, List<MavenEventAware>> map = new LinkedHashMap<>();
-        predicates()
-            .forEach(tuple -> map.put(tuple.getKey(), handlers(list, tuple.getValue())));
-        this.eventAwares = map;
 
         this.eventAwares.forEach((k, v) -> {
             logger.info(String.format("event [%s]", k));
             v.forEach(it ->
                 logger.info(String.format("    order: [%s], name: [%s], from module: [%s]",
-                    it.getOrder(), it.getClass().getSimpleName(), module(it)))
+                    it.getOrder(), it.getClass().getSimpleName(), SupportFunction.module(it)))
             );
         });
-    }
-
-    private static String module(final MavenEventAware impl) {
-        final Properties moduleInfo = new Properties();
-        try {
-            moduleInfo.load(impl.getClass().getClassLoader().getResourceAsStream("module-info.properties"));
-        } catch (final IOException ex) {
-            throw new RuntimeIOException(ex);
-        }
-        return moduleInfo.getProperty("artifactId", "unknown");
+        logger.info(logEnd(this, "constructor", Void.TYPE));
     }
 
     private static List<String> handles(final MavenEventAware eventAware) {
@@ -151,36 +145,51 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
 
     @Override
     public void init(final Context context) throws Exception {
+        logger.info(logStart(this, "init", context));
         try {
             this.onInit(context);
         } catch (final Exception ex) {
             logger.error("Exception on init.", ex);
             System.exit(1);
         }
+        logger.info(logEnd(this, "init", Void.TYPE, context));
     }
 
     @Override
     public void onEvent(final Object event) throws Exception {
+
         try {
             final CliRequest cliRequest = this.cliRequestFactory.getCliRequest();
 
             if (event instanceof SettingsBuildingRequest) {
+                logger.info(logStart(this, "afterInit"));
                 this.afterInit(cliRequest, this.ciOptContext);
+                logger.info(logEnd(this, "afterInit", Void.TYPE));
 
                 final SettingsBuildingRequest request = (SettingsBuildingRequest) event;
+                logger.info(logStart(this, "onSettingsBuildingRequest", request));
                 this.onSettingsBuildingRequest(cliRequest, request, this.ciOptContext);
+                logger.info(logEnd(this, "onSettingsBuildingRequest", Void.TYPE, request));
             } else if (event instanceof SettingsBuildingResult) {
                 final SettingsBuildingResult result = (SettingsBuildingResult) event;
+                logger.info(logStart(this, "onSettingsBuildingResult", result));
                 this.onSettingsBuildingResult(cliRequest, result, this.ciOptContext);
+                logger.info(logEnd(this, "onSettingsBuildingResult", Void.TYPE, result));
             } else if (event instanceof ToolchainsBuildingRequest) {
                 final ToolchainsBuildingRequest request = (ToolchainsBuildingRequest) event;
+                logger.info(logStart(this, "onToolchainsBuildingRequest", request));
                 this.onToolchainsBuildingRequest(cliRequest, request, this.ciOptContext);
+                logger.info(logEnd(this, "onToolchainsBuildingRequest", Void.TYPE, request));
             } else if (event instanceof ToolchainsBuildingResult) {
                 final ToolchainsBuildingResult result = (ToolchainsBuildingResult) event;
+                logger.info(logStart(this, "onToolchainsBuildingResult", result));
                 this.onToolchainsBuildingResult(cliRequest, result, this.ciOptContext);
+                logger.info(logEnd(this, "onToolchainsBuildingResult", Void.TYPE, result));
             } else if (event instanceof MavenExecutionRequest) {
                 final MavenExecutionRequest request = (MavenExecutionRequest) event;
+                logger.info(logStart(this, "onMavenExecutionRequest", request));
                 this.onMavenExecutionRequest(cliRequest, request, this.ciOptContext);
+                logger.info(logEnd(this, "onMavenExecutionRequest", Void.TYPE, request));
             } else {
                 if (logger.isDebugEnabled()) {
                     logger.debug(String.format("onEvent %s", event));
@@ -231,11 +240,10 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         final CiOptionContext ciOptionContext
     ) {
         if (logger.isInfoEnabled()) {
-            logger.info(String.format("onEvent SettingsBuildingRequest %s", request));
-            logger.info(String.format("onEvent SettingsBuildingRequest. globalSettingsFile: [%s]", request.getGlobalSettingsFile()));
-            logger.info(String.format("onEvent SettingsBuildingRequest. globalSettingsSource: [%s]", request.getGlobalSettingsSource()));
-            logger.info(String.format("onEvent SettingsBuildingRequest. userSettingsFile: [%s]", request.getUserSettingsFile()));
-            logger.info(String.format("onEvent SettingsBuildingRequest. userSettingsSource: [%s]", request.getUserSettingsSource()));
+            logger.info(String.format("globalSettingsFile: [%s]", request.getGlobalSettingsFile()));
+            logger.info(String.format("globalSettingsSource: [%s]", request.getGlobalSettingsSource()));
+            logger.info(String.format("userSettingsFile: [%s]", request.getUserSettingsFile()));
+            logger.info(String.format("userSettingsSource: [%s]", request.getUserSettingsSource()));
         }
 
         assert Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SERVERS;
@@ -249,10 +257,6 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         final SettingsBuildingResult result,
         final CiOptionContext ciOptionContext
     ) {
-        if (logger.isInfoEnabled()) {
-            logger.info(String.format("onEvent SettingsBuildingResult %s", result));
-        }
-
         // set settings.localRepository (if present) into effectiveSettings
         assert Orders.ORDER_CI_OPTION_INIT < Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
 
@@ -265,10 +269,6 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         final ToolchainsBuildingRequest request,
         final CiOptionContext ciOptionContext
     ) {
-        if (logger.isInfoEnabled()) {
-            logger.info(String.format("onEvent ToolchainsBuildingRequest %s", request));
-        }
-
         assert Orders.ORDER_CI_OPTION_INIT < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES;
 
         this.eventAwares.get("onToolchainsBuildingRequest")
@@ -280,10 +280,6 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         final ToolchainsBuildingResult result,
         final CiOptionContext ciOptionContext
     ) {
-        if (logger.isInfoEnabled()) {
-            logger.info(String.format("onEvent ToolchainsBuildingResult %s", result));
-        }
-
         this.eventAwares.get("onToolchainsBuildingResult")
             .forEach(it -> it.onToolchainsBuildingResult(cliRequest, result, ciOptionContext));
     }
@@ -293,10 +289,6 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         final MavenExecutionRequest request,
         final CiOptionContext ciOptionContext
     ) {
-        if (logger.isInfoEnabled()) {
-            logger.info(String.format("onEvent MavenExecutionRequest %s", request));
-        }
-
         assert Orders.ORDER_CI_OPTION_INIT < Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
         assert Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SERVERS;
 
@@ -310,16 +302,13 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
             PropertiesUtils.merge(request.getSystemProperties(), projectBuildingRequest.getSystemProperties());
             PropertiesUtils.merge(request.getUserProperties(), projectBuildingRequest.getUserProperties());
             if (logger.isInfoEnabled()) {
-                logger.info("     >>>>> projectBuildingRequest (ProfileActivationContext) systemProperties >>>>>");
-                logger.info(PropertiesUtils.toString(projectBuildingRequest.getSystemProperties(), PATTERN_VARS_ENV_DOT_CI));
-                logger.info("     <<<<< projectBuildingRequest (ProfileActivationContext) systemProperties <<<<<");
-
-                logger.info("     >>>>> projectBuildingRequest (ProfileActivationContext) userProperties >>>>>");
-                logger.info(PropertiesUtils.toString(projectBuildingRequest.getUserProperties(), null));
-                logger.info("     <<<<< projectBuildingRequest (ProfileActivationContext) userProperties <<<<<");
+                logProperties(logger, "projectBuildingRequest.systemProperties", projectBuildingRequest.getSystemProperties(), PATTERN_VARS_ENV_DOT_CI);
+                logProperties(logger, "projectBuildingRequest.userProperties", projectBuildingRequest.getUserProperties(), null);
             }
 
+            logger.info(logStart(this, "onProjectBuildingRequest", projectBuildingRequest));
             this.onProjectBuildingRequest(cliRequest, request, projectBuildingRequest, ciOptionContext);
+            logger.info(logEnd(this, "onProjectBuildingRequest", Void.TYPE, projectBuildingRequest));
         } else {
             if (logger.isInfoEnabled()) {
                 logger.info(String.format("onEvent MavenExecutionRequest %s but projectBuildingRequest is null.", request));
@@ -333,10 +322,6 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
         final ProjectBuildingRequest projectBuilding,
         final CiOptionContext ciOptionContext
     ) {
-        if (logger.isInfoEnabled()) {
-            logger.info(String.format("onEvent ProjectBuildingRequest %s", projectBuilding));
-        }
-
         // Options are not calculated and merged into projectBuildingRequest this time.
 
         // final File rootProjectDirectory = ((MavenExecutionRequest) request).getMultiModuleProjectDirectory();
@@ -352,17 +337,14 @@ public class MavenBuildEventSpy extends AbstractEventSpy {
     }
 
     public void onInit(final Context context) {
-        if (logger.isInfoEnabled()) {
-            logger.info(String.format("init with context [%s]", context));
-
+        if (logger.isDebugEnabled()) {
             final Map<String, Object> contextData = context.getData();
             contextData.keySet().stream().sorted().forEach(k -> {
                 final Object v = contextData.get(k);
                 if (v instanceof Properties) {
-                    logger.info(String.format("contextData found properties %s => ", k));
-                    logger.info(PropertiesUtils.toString((Properties) v, null));
+                    logger.debug(logProperties(logger, String.format("context.data.%s", k), (Properties) v, null));
                 } else {
-                    logger.info(String.format("contextData found property   %s => %s", k, v));
+                    logger.debug(String.format("context.data.%s=%s", k, v));
                 }
             });
         }

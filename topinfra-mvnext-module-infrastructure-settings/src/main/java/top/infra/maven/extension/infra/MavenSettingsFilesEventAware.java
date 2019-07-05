@@ -8,6 +8,8 @@ import static top.infra.maven.extension.shared.InfraOption.SETTINGS;
 import static top.infra.maven.extension.shared.InfraOption.SETTINGS_SECURITY;
 import static top.infra.maven.extension.shared.InfraOption.TOOLCHAINS;
 import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
+import static top.infra.maven.utils.SupportFunction.logEnd;
+import static top.infra.maven.utils.SupportFunction.logStart;
 import static top.infra.maven.utils.SystemUtils.os;
 
 import java.nio.file.Path;
@@ -82,7 +84,6 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         final String remoteOriginUrl = GIT_REMOTE_ORIGIN_URL.getValue(ciOptContext).orElse(null);
         this.gitRepository = GitRepository.newGitRepository(ciOptContext, logger, remoteOriginUrl).orElse(null);
 
-        logger.info(">>>>>>>>>> ---------- Setting file [settings.xml]. ---------- >>>>>>>>>>");
         this.settingsXml = this.findOrDownload(
             cliRequest,
             ciOptContext,
@@ -91,9 +92,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
             SETTINGS_XML,
             false
         ).orElse(null);
-        logger.info("<<<<<<<<<< ---------- Setting file [settings.xml]. ---------- <<<<<<<<<<");
 
-        logger.info(">>>>>>>>>> ---------- Setting file [settings-security.xml]. ---------- >>>>>>>>>>");
         this.findOrDownload(
             cliRequest,
             ciOptContext,
@@ -102,7 +101,6 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
             SETTINGS_SECURITY_XML,
             true
         );
-        logger.info("<<<<<<<<<< ---------- Setting file [settings-security.xml]. ---------- <<<<<<<<<<");
 
         if (this.settingsXml != null) {
             if (logger.isInfoEnabled()) {
@@ -125,7 +123,6 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         final ToolchainsBuildingRequest request,
         final CiOptionContext ciOptContext
     ) {
-        logger.info(">>>>>>>>>> ---------- Setting file [toolchains.xml]. ---------- >>>>>>>>>>");
         this.toolchainsXml = this.findOrDownload(
             cliRequest,
             ciOptContext,
@@ -134,7 +131,6 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
             TOOLCHAINS_XML,
             false
         ).orElse(null);
-        logger.info("<<<<<<<<<< ---------- Setting file [toolchains.xml]. ---------- <<<<<<<<<<");
 
         if (this.toolchainsXml != null) {
             if (logger.isInfoEnabled()) {
@@ -154,6 +150,8 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         final String filename,
         final boolean optional
     ) {
+        logger.info(logStart(this, "findOrDownload", filename));
+
         final String propertyName = option.getPropertyName();
 
         final Optional<String> cacheDir = CACHE_SETTINGS_PATH.getValue(ciOptContext);
@@ -195,6 +193,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
             logger.info(String.format("Setting file [%s], not found.", filename));
         }
 
+        logger.info(logEnd(this, "findOrDownload", result.orElse(null), filename));
         return result;
     }
 

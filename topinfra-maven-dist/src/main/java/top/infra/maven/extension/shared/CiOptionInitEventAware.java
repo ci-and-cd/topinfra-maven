@@ -2,6 +2,9 @@ package top.infra.maven.extension.shared;
 
 import static java.util.stream.Collectors.toMap;
 import static top.infra.maven.extension.shared.CiOptionNames.PATTERN_VARS_ENV_DOT_CI;
+import static top.infra.maven.utils.PropertiesUtils.logProperties;
+import static top.infra.maven.utils.SupportFunction.logEnd;
+import static top.infra.maven.utils.SupportFunction.logStart;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -59,12 +62,22 @@ public class CiOptionInitEventAware implements MavenEventAware {
         final CliRequest cliRequest,
         final CiOptionContext ciOptContext
     ) {
+        this.initCiOptions(ciOptContext);
+    }
+
+    @Override
+    public int getOrder() {
+        return Orders.ORDER_CI_OPTION_INIT;
+    }
+
+    private void initCiOptions(final CiOptionContext ciOptContext) {
+        logger.info(logStart(this, "initCiOptions"));
+
         final Properties userProperties = ciOptContext.getUserProperties();
         // write all ciOpt properties into userProperties
         final Properties ciOptProperties = ciOptContext.setCiOptPropertiesInto(this.optionCollections.values(), userProperties);
 
         if (logger.isInfoEnabled()) {
-            logger.info(">>>>>>>>>> ---------- set options (update userProperties) ---------- >>>>>>>>>>");
             logger.info(String.format("There are [%s] groups of options.", this.optionCollections.size()));
             final List<Class<?>> types = new ArrayList<>(this.optionCollections.keySet());
             final List<List<CiOption>> groups = new ArrayList<>(this.optionCollections.values());
@@ -82,19 +95,15 @@ public class CiOptionInitEventAware implements MavenEventAware {
                     group.stream().sorted().forEach(ciOption -> { // TODO better toString methods
                         final String displayName = ciOption.getEnvVariableName();
                         final String displayValue = ciOptProperties.getProperty(ciOption.getPropertyName(), "");
-                        logger.info(PropertiesUtils.maskSecrets(String.format("setOption %s=%s", displayName, displayValue)));
+                        logger.info(PropertiesUtils.maskSecrets(String.format("    %s=%s", displayName, displayValue)));
                     });
                 });
-            logger.info("<<<<<<<<<< ---------- set options (update userProperties) ---------- <<<<<<<<<<");
 
             final Properties systemProperties = ciOptContext.getSystemProperties();
-            logger.info(PropertiesUtils.toString(systemProperties, PATTERN_VARS_ENV_DOT_CI));
-            logger.info(PropertiesUtils.toString(userProperties, null));
+            logProperties(logger, "ciOptionContext.systemProperties", systemProperties, PATTERN_VARS_ENV_DOT_CI);
+            logProperties(logger, "ciOptionContext.userProperties", userProperties, null);
         }
-    }
 
-    @Override
-    public int getOrder() {
-        return Orders.ORDER_CI_OPTION_INIT;
+        logger.info(logEnd(this, "initCiOptions", Void.TYPE));
     }
 }

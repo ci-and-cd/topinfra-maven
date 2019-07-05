@@ -1,6 +1,8 @@
 package top.infra.maven.extension.main;
 
 import static java.util.stream.Collectors.toList;
+import static top.infra.maven.utils.SupportFunction.logEnd;
+import static top.infra.maven.utils.SupportFunction.logStart;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -26,7 +28,7 @@ import top.infra.maven.logging.LoggerPlexusImpl;
 // @Component(role = ConfigurationProcessor.class, hint = "settings-security")
 @Named
 @Singleton
-public class MavenBuildConfigurationProcessor implements ConfigurationProcessor {
+public class MainConfigurationProcessor implements ConfigurationProcessor {
 
     private Logger logger;
 
@@ -38,16 +40,17 @@ public class MavenBuildConfigurationProcessor implements ConfigurationProcessor 
     private CliRequest cliRequest;
 
     @Inject
-    public MavenBuildConfigurationProcessor(
+    public MainConfigurationProcessor(
         final org.codehaus.plexus.logging.Logger logger,
         final List<OrderedConfigurationProcessor> processors,
         final SettingsXmlConfigurationProcessor settingsXmlConfigurationProcessor
     ) {
+        logger.info(logStart(this, "constructor"));
+
         this.logger = new LoggerPlexusImpl(logger);
         this.processors = processors.stream().sorted().collect(toList());
         this.settingsXmlConfigurationProcessor = settingsXmlConfigurationProcessor;
 
-        logger.info(String.format("MavenBuildConfigurationProcessor [%s]", this));
         IntStream
             .range(0, this.processors.size())
             .forEach(idx -> {
@@ -59,6 +62,7 @@ public class MavenBuildConfigurationProcessor implements ConfigurationProcessor 
                     it.getClass().getSimpleName()
                 ));
             });
+        logger.info(logEnd(this, "constructor", Void.TYPE));
     }
 
     public CliRequest getCliRequest() {
@@ -67,7 +71,7 @@ public class MavenBuildConfigurationProcessor implements ConfigurationProcessor 
 
     @Override
     public void process(final CliRequest cliRequest) throws Exception {
-        logger.info("MavenBuildConfigurationProcessor process");
+        logger.info(logStart(this, "process"));
 
         this.cliRequest = cliRequest;
 
@@ -76,5 +80,7 @@ public class MavenBuildConfigurationProcessor implements ConfigurationProcessor 
         }
 
         this.settingsXmlConfigurationProcessor.process(cliRequest);
+
+        logger.info(logEnd(this, "process", Void.TYPE));
     }
 }

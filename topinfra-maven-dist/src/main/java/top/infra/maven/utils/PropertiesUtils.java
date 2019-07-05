@@ -6,8 +6,11 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
+import top.infra.maven.logging.Logger;
+
 public class PropertiesUtils {
 
+    @Deprecated
     public static Properties toProperties(final Map<String, String> map) {
         final Properties result;
         if (map != null) {
@@ -33,24 +36,26 @@ public class PropertiesUtils {
         return result;
     }
 
-    public static String toString(final Properties properties, final Pattern pattern) {
-        final StringBuilder sb = new StringBuilder(pattern != null ? pattern.pattern() : "").append(System.lineSeparator());
+    public static String logProperties(final Logger logger, final String title, final Properties properties, final Pattern pattern) {
+        final StringBuilder sb = new StringBuilder(pattern != null ? pattern.pattern() : "");
 
-        final String[] names = properties.stringPropertyNames()
+        final String[] propNames = properties.stringPropertyNames()
             .stream()
-            .filter(name -> pattern == null || pattern.matcher(name).matches())
+            .filter(propName -> pattern == null || pattern.matcher(propName).matches())
             .sorted()
             .toArray(String[]::new);
 
         IntStream
-            .range(0, names.length)
+            .range(0, propNames.length)
             .forEach(idx -> {
-                if (idx > 0) {
-                    sb.append(System.lineSeparator());
+                final String name = propNames[idx];
+                final String value = properties.getProperty(name);
+                final String line = String.format("%s[%03d] %s=%s", title, idx, name, value);
+                sb.append(System.lineSeparator());
+                sb.append(line);
+                if (logger != null) {
+                    logger.info(line);
                 }
-                sb.append(String.format("%03d ", idx));
-                final String name = names[idx];
-                sb.append(name).append("=").append(properties.getProperty(name));
             });
 
         return maskSecrets(sb.toString());

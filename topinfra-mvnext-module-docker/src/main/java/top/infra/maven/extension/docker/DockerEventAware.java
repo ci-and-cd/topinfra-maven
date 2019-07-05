@@ -7,6 +7,8 @@ import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY;
 import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY_PASS;
 import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY_URL;
 import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY_USER;
+import static top.infra.maven.utils.SupportFunction.logEnd;
+import static top.infra.maven.utils.SupportFunction.logStart;
 
 import java.util.List;
 import java.util.Optional;
@@ -127,7 +129,8 @@ public class DockerEventAware implements MavenEventAware {
     }
 
     private void pullBaseImages(final Docker docker) {
-        logger.info(">>>>>>>>>> ---------- pull_base_image ---------- >>>>>>>>>>");
+        logger.info(logStart(this, "pullBaseImages"));
+
         final List<String> dockerfiles = Docker.dockerfiles();
         if (logger.isInfoEnabled()) {
             logger.info(String.format("Found dockerfiles %s", dockerfiles));
@@ -136,6 +139,7 @@ public class DockerEventAware implements MavenEventAware {
         if (logger.isInfoEnabled()) {
             logger.info(String.format("Found baseImages %s", baseImages));
         }
-        logger.info("<<<<<<<<<< ---------- pull_base_image ---------- <<<<<<<<<<");
+
+        logger.info(logEnd(this, "pullBaseImages", Void.TYPE));
     }
 }

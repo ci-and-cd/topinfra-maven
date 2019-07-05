@@ -4,6 +4,7 @@ import static top.infra.maven.extension.shared.Constants.SRC_CI_OPTS_PROPERTIES;
 import static top.infra.maven.extension.shared.InfraOption.CACHE_SETTINGS_PATH;
 import static top.infra.maven.extension.shared.InfraOption.GIT_AUTH_TOKEN;
 import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
+import static top.infra.maven.utils.PropertiesUtils.logProperties;
 import static top.infra.maven.utils.SupportFunction.isEmpty;
 
 import java.io.FileInputStream;
@@ -20,14 +21,13 @@ import org.apache.maven.cli.CliRequest;
 
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.exception.RuntimeIOException;
-import top.infra.maven.extension.shared.InfraOption;
 import top.infra.maven.extension.MavenEventAware;
+import top.infra.maven.extension.shared.InfraOption;
 import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.FileUtils;
 import top.infra.maven.utils.MavenUtils;
-import top.infra.maven.utils.PropertiesUtils;
 
 @Named
 @Singleton
@@ -75,11 +75,7 @@ public class CiOptionConfigLoader implements MavenEventAware {
             .orElse(null);
         final Optional<Properties> loadedProperties = ciOptContextFromFile(ciOptionContext, logger, remoteOriginUrl, offline, update);
 
-        loadedProperties.ifPresent(props -> {
-            logger.info(">>>>>>>>>> ---------- load options from file ---------- >>>>>>>>>>");
-            logger.info(PropertiesUtils.toString(props, null));
-            logger.info("<<<<<<<<<< ---------- load options from file ---------- <<<<<<<<<<");
-        });
+        loadedProperties.ifPresent(props -> logProperties(logger, "ci_opts.properties", props, null));
 
         ciOptionContext.updateSystemProperties(loadedProperties.orElse(null));
     }

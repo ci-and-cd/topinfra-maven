@@ -4,6 +4,8 @@ import static java.lang.Boolean.FALSE;
 import static top.infra.maven.extension.shared.FastOption.FAST;
 import static top.infra.maven.extension.shared.MavenProjectInfo.newProjectInfoByBuildProject;
 import static top.infra.maven.extension.shared.MavenProjectInfo.newProjectInfoByReadPom;
+import static top.infra.maven.utils.SupportFunction.logEnd;
+import static top.infra.maven.utils.SupportFunction.logStart;
 
 import java.io.File;
 
@@ -66,14 +68,11 @@ public class MavenProjectInfoEventAware implements MavenEventAware {
     }
 
     private MavenProjectInfo resolve(final CiOptionContext ciOptContext, final MavenExecutionRequest mavenExecution) {
+        logger.info(logStart(this, "resolve"));
+
         final MavenProjectInfo mavenProjectInfo = this.getMavenProjectInfo(mavenExecution);
 
-        if (logger.isInfoEnabled()) {
-            logger.info(">>>>>>>>>> ---------- resolve project version ---------- >>>>>>>>>>");
-            logger.info(mavenProjectInfo.toString());
-            logger.info("<<<<<<<<<< ---------- resolve project version ---------- <<<<<<<<<<");
-        }
-
+        logger.info(logEnd(this, "resolve", mavenProjectInfo));
         return mavenProjectInfo;
     }
 

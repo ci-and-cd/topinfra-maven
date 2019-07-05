@@ -1,5 +1,6 @@
 package top.infra.maven.utils;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -13,9 +14,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import top.infra.maven.exception.RuntimeIOException;
 
 public abstract class SupportFunction {
 
@@ -144,5 +148,35 @@ public abstract class SupportFunction {
             hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    public static String logStart(final Object obj, final String methodName, final Object... args) {
+        return String.format(" >>> %s#%s%s --- hashCode: [%s] @ %s >>>",
+            obj.getClass().getSimpleName(), methodName, argsToStr(args), obj.hashCode(), module(obj));
+    }
+
+    public static String logEnd(final Object obj, final String methodName, final Object returns, final Object... args) {
+        return String.format(" <<< %s#%s%s%s --- hashCode: [%s] @ %s <<<",
+            obj.getClass().getSimpleName(), methodName, argsToStr(args), returnsToStr(returns), obj.hashCode(), module(obj));
+    }
+
+    private static String returnsToStr(final Object returns) {
+        return returns != Void.TYPE && returns != Void.class ? String.format(" -> %s", returns) : "";
+    }
+
+    private static String argsToStr(final Object... args) {
+        return args.length > 0
+            ? "(" + Stream.of(args).map(Object::toString).collect(Collectors.joining(", ")) + ")"
+            : "";
+    }
+
+    public static String module(final Object obj) {
+        final Properties moduleInfo = new Properties();
+        try {
+            moduleInfo.load(obj.getClass().getClassLoader().getResourceAsStream("module-info.properties"));
+        } catch (final IOException ex) {
+            throw new RuntimeIOException(ex);
+        }
+        return moduleInfo.getProperty("artifactId", "unknown");
     }
 }

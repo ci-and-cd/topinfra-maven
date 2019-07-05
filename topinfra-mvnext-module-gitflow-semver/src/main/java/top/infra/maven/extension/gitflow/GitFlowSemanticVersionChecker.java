@@ -8,6 +8,8 @@ import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_HOTFIX;
 import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_RELEASE;
 import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_SUPPORT;
 import static top.infra.maven.extension.shared.VcsProperties.GIT_REF_NAME;
+import static top.infra.maven.utils.SupportFunction.logEnd;
+import static top.infra.maven.utils.SupportFunction.logStart;
 import static top.infra.maven.utils.SupportFunction.newTuple;
 
 import java.util.Map.Entry;
@@ -58,7 +60,9 @@ public class GitFlowSemanticVersionChecker implements MavenEventAware {
         final ProjectBuildingRequest projectBuilding,
         final CiOptionContext ciOptContext
     ) {
-        this.check(ciOptContext);
+
+        final MavenProjectInfo mavenProjectInfo = this.projectInfoBean.getProjectInfo();
+        this.check(ciOptContext, mavenProjectInfo);
     }
 
     @Override
@@ -66,26 +70,19 @@ public class GitFlowSemanticVersionChecker implements MavenEventAware {
         return Orders.ORDER_GIT_FLOW_SEMANTIC_VERSION;
     }
 
-    private void check(final CiOptionContext ciOptContext) {
-        final MavenProjectInfo mavenProjectInfo = this.projectInfoBean.getProjectInfo();
-
-        if (logger.isInfoEnabled()) {
-            logger.info(">>>>>>>>>> ---------- resolve project version ---------- >>>>>>>>>>");
-            logger.info(mavenProjectInfo.toString());
-            logger.info("<<<<<<<<<< ---------- resolve project version ---------- <<<<<<<<<<");
-        }
+    private void check(
+        final CiOptionContext ciOptContext,
+        final MavenProjectInfo mavenProjectInfo
+    ) {
+        logger.info(logStart(this, "check", mavenProjectInfo));
 
         final String gitRefName = GIT_REF_NAME.getValue(ciOptContext).orElse("");
         final Entry<Boolean, RuntimeException> checkResult = checkProjectVersion(ciOptContext, mavenProjectInfo.getVersion());
-        final boolean valid = checkResult.getKey();
-        if (logger.isInfoEnabled()) {
-            logger.info(">>>>>>>>>> ---------- check project version ---------- >>>>>>>>>>");
-            logger.info(String.format("%s version [%s] for ref [%s].",
-                valid ? "Valid" : "Invalid", mavenProjectInfo.getVersion(), gitRefName));
-            logger.info("<<<<<<<<<< ---------- check project version ---------- <<<<<<<<<<");
-        }
+        final boolean result = checkResult.getKey();
+        final String valid = result ? "Valid" : "Invalid";
+        logger.info(String.format("%s version [%s] for ref [%s].", valid, mavenProjectInfo.getVersion(), gitRefName));
 
-        if (!valid) {
+        if (!result) {
             logger.warn("You should use versions with '-SNAPSHOT' suffix on develop branch or feature branches");
             logger.warn("You should use versions like 1.0.0-SNAPSHOT develop branch");
             logger.warn("You should use versions like 1.0.0-feature-SNAPSHOT or 1.0.0-branch-SNAPSHOT on feature branches");
@@ -93,9 +90,11 @@ public class GitFlowSemanticVersionChecker implements MavenEventAware {
             final RuntimeException ex = checkResult.getValue();
             if (ex != null) {
                 logger.error(ex.getMessage());
+                logger.info(logEnd(this, "check", valid));
                 throw ex;
             }
         }
+        logger.info(logEnd(this, "check", valid));
     }
 
     static Entry<Boolean, RuntimeException> checkProjectVersion(

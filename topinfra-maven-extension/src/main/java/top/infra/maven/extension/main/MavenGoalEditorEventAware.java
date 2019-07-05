@@ -1,8 +1,10 @@
 package top.infra.maven.extension.main;
 
 import static java.lang.Boolean.FALSE;
+import static top.infra.maven.utils.PropertiesUtils.logProperties;
+import static top.infra.maven.utils.SupportFunction.logEnd;
+import static top.infra.maven.utils.SupportFunction.logStart;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -16,10 +18,10 @@ import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.cienv.AppveyorVariables;
 import top.infra.maven.cienv.GitlabCiVariables;
 import top.infra.maven.cienv.TravisCiVariables;
-import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.shared.MavenOption;
 import top.infra.maven.extension.shared.Orders;
@@ -58,7 +60,7 @@ public class MavenGoalEditorEventAware implements MavenEventAware {
         final ProjectBuildingRequest projectBuilding,
         final CiOptionContext ciOptContext
     ) {
-        final Entry<List<String>, Properties> goalsAndProps = editGoals(logger, mavenExecution, ciOptContext);
+        final Entry<List<String>, Properties> goalsAndProps = this.editGoals(logger, mavenExecution, ciOptContext);
 
         if (goalsAndProps.getKey().isEmpty() && !mavenExecution.getGoals().isEmpty()) {
             logger.warn(String.format("No goal to run, all goals requested (%s) were removed.", mavenExecution.getGoals()));
@@ -71,19 +73,15 @@ public class MavenGoalEditorEventAware implements MavenEventAware {
         PropertiesUtils.merge(goalsAndProps.getValue(), projectBuilding.getUserProperties());
     }
 
-    private static Entry<List<String>, Properties> editGoals(
+    private Entry<List<String>, Properties> editGoals(
         final Logger logger,
         final MavenExecutionRequest request,
         final CiOptionContext ciOptContext
     ) {
-        final List<String> requestedGoals = new ArrayList<>(request.getGoals());
-        if (logger.isInfoEnabled()) {
-            logger.info(">>>>>>>>>> ---------- run_mvn alter_mvn ---------- >>>>>>>>>>");
-            logger.info(String.format("onMavenExecutionRequest requested goals: %s", String.join(" ", requestedGoals)));
-            logger.info(new AppveyorVariables(request.getSystemProperties()).toString());
-            logger.info(new GitlabCiVariables(request.getSystemProperties()).toString());
-            logger.info(new TravisCiVariables(request.getSystemProperties()).toString());
-        }
+        logger.info(logStart(this, "editGoals", request.getGoals()));
+        logger.info(new AppveyorVariables(ciOptContext.getSystemProperties()).toString());
+        logger.info(new GitlabCiVariables(ciOptContext.getSystemProperties()).toString());
+        logger.info(new TravisCiVariables(ciOptContext.getSystemProperties()).toString());
 
         final MavenGoalEditor goalEditor = new MavenGoalEditor(
             logger,
@@ -94,13 +92,9 @@ public class MavenGoalEditorEventAware implements MavenEventAware {
             MavenBuildExtensionOption.PUBLISH_TO_REPO.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null) // make sure version is valid too
         );
         final Entry<List<String>, Properties> goalsAndProps = goalEditor.goalsAndUserProperties(request.getGoals());
-        if (logger.isInfoEnabled()) {
-            logger.info(String.format("onMavenExecutionRequest result goals: %s", String.join(" ", goalsAndProps.getKey())));
-            logger.info(">>>>>>>>>> ---------- onMavenExecutionRequest additionalUserProperties ---------- >>>>>>>>>>");
-            logger.info(PropertiesUtils.toString(goalsAndProps.getValue(), null));
-            logger.info("<<<<<<<<<< ---------- onMavenExecutionRequest additionalUserProperties ---------- <<<<<<<<<<");
-            logger.info("<<<<<<<<<< ---------- run_mvn alter_mvn ---------- <<<<<<<<<<");
-        }
+
+        logProperties(logger, "goalEditor.userProperties", goalsAndProps.getValue(), null);
+        logger.info(logEnd(this, "initCiOptions", goalsAndProps, request.getGoals()));
         return goalsAndProps;
     }
 }

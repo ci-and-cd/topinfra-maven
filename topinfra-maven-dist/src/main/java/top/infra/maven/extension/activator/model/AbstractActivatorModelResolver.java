@@ -54,7 +54,7 @@ public abstract class AbstractActivatorModelResolver implements ActivatorModelRe
         if ("source".equals(profile.getSource())) {
             this.registerMemento(profile, pomFile, null);
             if (this.verbose) {
-                logger.info(String.format("profile [%s] source is 'source'.", profile));
+                logger.debug(String.format("profile [%s] source is 'source'.", profile));
             }
             return Optional.empty();
         }
@@ -70,7 +70,7 @@ public abstract class AbstractActivatorModelResolver implements ActivatorModelRe
         if (pomFile == null) {
             this.registerMemento(profile, null, null);
             if (this.verbose) {
-                logger.info(String.format("pomFile not found for profile [%s].", profile));
+                logger.debug(String.format("pomFile not found for profile [%s].", profile));
             }
             return Optional.empty();
         }
@@ -81,13 +81,13 @@ public abstract class AbstractActivatorModelResolver implements ActivatorModelRe
             modelFound = this.getMemento(profile, pomFile);
             doResolve = false;
             if (this.verbose) {
-                logger.info(String.format("resolveModel [%s] for profile [%s]. false", pomFile.getPath(), profile));
+                logger.debug(String.format("resolveModel [%s] for profile [%s]. false", pomFile.getPath(), profile));
             }
         } else {
             modelFound = null;
             doResolve = true;
             if (this.verbose) {
-                logger.info(String.format("resolveModel [%s] for profile [%s]. true", pomFile.getPath(), profile));
+                logger.debug(String.format("resolveModel [%s] for profile [%s]. true", pomFile.getPath(), profile));
             }
         }
 
