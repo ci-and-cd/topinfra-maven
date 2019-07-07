@@ -21,17 +21,12 @@ public enum MavenOption implements CiOption {
      * maven-failsafe-plugin and maven-surefire-plugin's configuration argLine.
      */
     ARGLINE("argLine", "") {
-        private Optional<String> addtionalArgs(final String argLine, final CiOptionContext context) {
+        private Optional<String> additionalArgs(final String argLine, final CiOptionContext context) {
             final Optional<String> result;
 
             final Optional<Integer> javaVersion = systemJavaVersion();
             if (javaVersion.map(version -> version >= 9).orElse(FALSE)) {
-                final String addExports = " --add-exports java.base/jdk.internal.loader=ALL-UNNAMED"
-                    + " --add-exports java.base/sun.security.ssl=ALL-UNNAMED"
-                    + " --add-opens java.base/jdk.internal.loader=ALL-UNNAMED"
-                    + " --add-opens java.base/sun.security.ssl=ALL-UNNAMED";
-
-                final Optional<String> addModules = JAVA_ADDMODULES.getValue(context);
+                final Optional<String> addModules = JAVA_ADDMODULES.getValue(context); // TODO calculate addModules in poms by maven plugins
                 final Optional<String> argLineWithModules;
                 if (addModules.isPresent() && (argLine == null || !argLine.contains("--add-modules"))) {
                     argLineWithModules = Optional.of(String.format("--add-modules %s", addModules.get()));
@@ -40,6 +35,10 @@ public enum MavenOption implements CiOption {
                 }
 
                 if (javaVersion.map(version -> version >= 11).orElse(FALSE)) {
+                    final String addExports = " --add-exports java.base/jdk.internal.loader=ALL-UNNAMED"
+                        + " --add-exports java.base/sun.security.ssl=ALL-UNNAMED"
+                        + " --add-opens java.base/jdk.internal.loader=ALL-UNNAMED"
+                        + " --add-opens java.base/sun.security.ssl=ALL-UNNAMED";
                     result = Optional.of(String.format("%s --illegal-access=permit %s", addExports, argLineWithModules.orElse("")));
                 } else {
                     result = argLineWithModules;
@@ -51,17 +50,17 @@ public enum MavenOption implements CiOption {
             return result;
         }
 
-        @Override
-        public Optional<String> calculateValue(final CiOptionContext context) {
-            return this.addtionalArgs(null, context);
-        }
+        // @Override
+        // public Optional<String> calculateValue(final CiOptionContext context) {
+        //     return this.additionalArgs(null, context);
+        // }
 
-        @Override
-        public Optional<String> getValue(final CiOptionContext context) {
-            final String argLine = this.findInProperties(context.getSystemProperties(), context.getUserProperties())
-                .orElse(null);
-            return this.addtionalArgs(argLine, context);
-        }
+        // @Override
+        // public Optional<String> getValue(final CiOptionContext context) {
+        //     final String argLine = this.findInProperties(context.getSystemProperties(), context.getUserProperties())
+        //         .orElse(null);
+        //     return this.additionalArgs(argLine, context);
+        // }
     },
     ENFORCER_SKIP("enforcer.skip") {
         @Override
