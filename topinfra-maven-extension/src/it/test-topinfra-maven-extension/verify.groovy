@@ -38,5 +38,5 @@ assertMagicFileExists('/build-docker/target/run-on-multi-module-root-and-sub-mod
 assertUserProperty('add.prefix.to.itself', 'text')
 assertUserProperty('infrastructure', 'ossrh')
 assertUserProperty('git.commit.id.skip', 'false')
-assertUserProperty('github.global.repositoryOwner', 'ci-and-cd')
+assertUserProperty('github.global.repositoryOwner', 'unknown-owner')
 assertUserProperty('private.nexus3', 'http://my-nexus3:28081/nexus/')
