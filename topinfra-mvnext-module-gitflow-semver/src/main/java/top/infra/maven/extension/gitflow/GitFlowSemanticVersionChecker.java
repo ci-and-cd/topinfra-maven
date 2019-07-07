@@ -61,7 +61,7 @@ public class GitFlowSemanticVersionChecker implements MavenEventAware {
         final CiOptionContext ciOptContext
     ) {
 
-        final MavenProjectInfo mavenProjectInfo = this.projectInfoBean.getProjectInfo();
+        final MavenProjectInfo mavenProjectInfo = this.projectInfoBean.getRootProjectInfo();
         this.check(ciOptContext, mavenProjectInfo);
     }
 

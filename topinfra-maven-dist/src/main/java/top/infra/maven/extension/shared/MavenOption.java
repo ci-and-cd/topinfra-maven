@@ -123,21 +123,17 @@ public enum MavenOption implements CiOption {
         @Override
         public Optional<String> getValue(final CiOptionContext context) {
             final Optional<String> jiraProjectKey = JIRA_PROJECTKEY.getValue(context);
-            return jiraProjectKey.isPresent()
-                ? super.getValue(context)
-                : Optional.empty();
+            return jiraProjectKey.isPresent() ? super.getValue(context) : Optional.empty();
         }
     },
     JIRA_PASSWORD("jira.password") {
         @Override
         public Optional<String> getValue(final CiOptionContext context) {
             final Optional<String> jiraProjectKey = JIRA_PROJECTKEY.getValue(context);
-            return jiraProjectKey.isPresent()
-                ? super.getValue(context)
-                : Optional.empty();
+            return jiraProjectKey.isPresent() ? super.getValue(context) : Optional.empty();
         }
     },
-    LINKXREF("linkXRef", BOOL_STRING_TRUE) {
+    LINKXREF("linkXRef") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             return Optional.ofNullable(FAST.getValue(context)
@@ -174,12 +170,15 @@ public enum MavenOption implements CiOption {
             return FAST.getValue(context);
         }
     },
+
     /**
      * Skip test-compile and skipTests and skipITs.
      * <p/>
      * maven.test.skip property skips compiling the tests. maven.test.skip is honored by Surefire, Failsafe and the Compiler Plugin.
      */
-    MAVEN_TEST_SKIP("maven.test.skip", BOOL_STRING_FALSE),
+    @Deprecated
+    MAVEN_TEST_SKIP("maven.test.skip"),
+
     PMD_SKIP("pmd.skip") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
@@ -187,15 +186,19 @@ public enum MavenOption implements CiOption {
                 .map(Boolean::parseBoolean).orElse(TRUE) ? null : BOOL_STRING_TRUE);
         }
     },
-    PROJECT_BUILD_SOURCEENCODING("project.build.sourceEncoding", UTF_8.name()),
-    PROJECT_REPORTING_OUTPUTENCODING("project.reporting.outputEncoding", UTF_8.name()),
+
+    @Deprecated
+    PROJECT_BUILD_SOURCEENCODING("project.build.sourceEncoding"),
+    @Deprecated
+    PROJECT_REPORTING_OUTPUTENCODING("project.reporting.outputEncoding"),
+
     /**
      * Since skipTests is also supported by the Surefire Plugin, this will have the effect of not running any tests.
      * If, instead, you want to skip only the integration tests being run by the Failsafe Plugin,
      * you would use the skipITs property instead.
      * see: https://maven.apache.org/surefire/maven-failsafe-plugin/examples/skipping-tests.html
      */
-    SKIPITS("skipITs", BOOL_STRING_FALSE) {
+    SKIPITS("skipITs") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             return FAST.getValue(context);

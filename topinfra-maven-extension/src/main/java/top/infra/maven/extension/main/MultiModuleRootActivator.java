@@ -54,7 +54,7 @@ public class MultiModuleRootActivator extends AbstractCustomActivator {
             //         this.getName(), projectName(context), profileId(profile)));
             // }
 
-            final MavenProjectInfo rootProjectInfo = this.projectInfoBean.getProjectInfo();
+            final MavenProjectInfo rootProjectInfo = this.projectInfoBean.getRootProjectInfo();
 
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("    %s rootProjectInfo: [%s], model: [%s]", this.getName(), rootProjectInfo, model));

@@ -350,6 +350,8 @@
         <github.global.repositoryName></github.global.repositoryName>
         <github.global.repositoryOwner>unknown-owner</github.global.repositoryOwner>
 
+        <add.prefix.to.itself>prefix/${add.prefix.to.itself}</add.prefix.to.itself>
+
         <private.nexus3>http://my-nexus3:28081/nexus/</private.nexus3>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -26,9 +26,12 @@ import top.infra.maven.extension.shared.MavenOption;
 import top.infra.maven.extension.shared.VcsProperties;
 
 public enum MavenBuildPomOption implements CiOption {
+    @Deprecated
     CHECKSTYLE_CONFIG_LOCATION("checkstyle.config.location"),
+
     // @Deprecated
     // CI_SCRIPT("ci.script"),
+
     DEPENDENCYCHECK("dependency-check") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
@@ -39,9 +42,13 @@ public enum MavenBuildPomOption implements CiOption {
                 .orElse(BOOL_STRING_FALSE));
         }
     },
+
+    @Deprecated
     FRONTEND_NODEDOWNLOADROOT("frontend.nodeDownloadRoot"),
+    @Deprecated
     FRONTEND_NPMDOWNLOADROOT("frontend.npmDownloadRoot"),
-    GIT_COMMIT_ID_SKIP("git.commit.id.skip", BOOL_STRING_FALSE),
+
+    GIT_COMMIT_ID_SKIP("git.commit.id.skip"),
     GITHUB_GLOBAL_OAUTH2TOKEN("github.global.oauth2Token") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
@@ -97,8 +104,12 @@ public enum MavenBuildPomOption implements CiOption {
             return Optional.ofNullable(skip ? null : BOOL_STRING_TRUE);
         }
     },
+
+    @Deprecated
     MAVEN_CENTRAL_PASS("maven.central.pass"),
+    @Deprecated
     MAVEN_CENTRAL_USER("maven.central.user"),
+
     NEXUS2_STAGING("nexus2.staging") {
         @Override
         public Optional<String> getValue(final CiOptionContext context) {
@@ -109,14 +120,15 @@ public enum MavenBuildPomOption implements CiOption {
                 : super.getValue(context);
         }
     },
-    PMD_RULESET_LOCATION("pmd.ruleset.location",
-        "https://raw.githubusercontent.com/ci-and-cd/maven-build/master/src/main/pmd/pmd-ruleset-6.8.0.xml"),
+
+    @Deprecated
+    PMD_RULESET_LOCATION("pmd.ruleset.location"),
 
     /**
      * Auto determine current build publish channel by current build ref name.<br/>
      * snapshot or release
      */
-    PUBLISH_CHANNEL("publish.channel", "snapshot") {
+    PUBLISH_CHANNEL("publish.channel") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             final String result;
@@ -140,8 +152,15 @@ public enum MavenBuildPomOption implements CiOption {
             return Optional.of(result);
         }
     },
-    SITE_PATH("site.path", "${publish.channel}/${site.path.prefix}"),
+
+    @Deprecated
+    SITE_PATH("site.path"),
+
+    @Deprecated
     SITE_PATH_PREFIX("site.path.prefix") {
+
+        // TODO expose git slug to pom and calculate site.path.prefix by maven plugin
+
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             final boolean generateReports = MavenOption.GENERATEREPORTS.getValue(context)
@@ -157,7 +176,9 @@ public enum MavenBuildPomOption implements CiOption {
             return result;
         }
     },
+
     SONAR("sonar"),
+
     WAGON_MERGEMAVENREPOS_ARTIFACTDIR("wagon.merge-maven-repos.artifactDir") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
@@ -167,6 +188,9 @@ public enum MavenBuildPomOption implements CiOption {
         }
     },
     WAGON_MERGEMAVENREPOS_SOURCE("wagon.merge-maven-repos.source") {
+
+        // TODO calculate wagon.merge-maven-repos.source and altDeploymentRepository by maven plugin?
+
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             final String commitId = VcsProperties.GIT_COMMIT_ID.getValue(context)
@@ -214,6 +238,9 @@ public enum MavenBuildPomOption implements CiOption {
         }
     },
     WAGON_MERGEMAVENREPOS_TARGETID("wagon.merge-maven-repos.targetId") {
+
+        // TODO calculate wagon.merge-maven-repos.targetId by maven plugin
+
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             final Optional<String> infrastructure = INFRASTRUCTURE.getValue(context);

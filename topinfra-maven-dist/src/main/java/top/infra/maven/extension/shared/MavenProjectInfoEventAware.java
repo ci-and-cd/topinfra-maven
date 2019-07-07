@@ -37,11 +37,9 @@ public class MavenProjectInfoEventAware implements MavenEventAware {
 
     private final DefaultRepositorySystemSessionFactory repositorySessionFactory;
 
-    private CiOptionContext ciOptContext;
-
     private MavenExecutionRequest mavenExecutionCopied;
 
-    private MavenProjectInfo projectInfo;
+    private MavenProjectInfo rootProjectInfo;
 
     @Inject
     public MavenProjectInfoEventAware(
@@ -59,29 +57,28 @@ public class MavenProjectInfoEventAware implements MavenEventAware {
         return Orders.EVENT_AWARE_ORDER_MAVEN_PROJECT_INFO;
     }
 
-    public MavenProjectInfo getProjectInfo() {
-        if (this.projectInfo == null && this.ciOptContext != null && this.mavenExecutionCopied != null) { // Lazy init
-            this.projectInfo = this.resolve(this.ciOptContext, this.mavenExecutionCopied);
+    public MavenProjectInfo getRootProjectInfo() {
+        if (this.rootProjectInfo == null && this.mavenExecutionCopied != null) { // Lazy init
+            this.rootProjectInfo = this.resolveRootProject();
         }
 
-        return this.projectInfo;
+        return this.rootProjectInfo;
     }
 
-    private MavenProjectInfo resolve(final CiOptionContext ciOptContext, final MavenExecutionRequest mavenExecution) {
+    private MavenProjectInfo resolveRootProject() {
         logger.info(logStart(this, "resolve"));
 
-        final MavenProjectInfo mavenProjectInfo = this.getMavenProjectInfo(mavenExecution);
+        final MavenProjectInfo projectInfo = this.resolve(this.mavenExecutionCopied.getPom());
 
-        logger.info(logEnd(this, "resolve", mavenProjectInfo));
-        return mavenProjectInfo;
+        logger.info(logEnd(this, "resolve", projectInfo));
+        return projectInfo;
     }
 
-    public MavenProjectInfo getMavenProjectInfo(final MavenExecutionRequest request) {
-        final boolean repositorySystemSessionNull = this.createRepositorySystemSessionIfAbsent(request);
-        final ProjectBuildingRequest projectBuildingRequest = request.getProjectBuildingRequest();
+    public MavenProjectInfo resolve(final File pomFile) {
+        final boolean repositorySystemSessionNull = this.createRepositorySystemSessionIfAbsent(this.mavenExecutionCopied);
+        final ProjectBuildingRequest projectBuildingRequest = this.mavenExecutionCopied.getProjectBuildingRequest();
 
         try {
-            final File pomFile = request.getPom();
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("    getMavenProjectInfo pomFile: [%s]", pomFile));
             }
@@ -147,13 +144,12 @@ public class MavenProjectInfoEventAware implements MavenEventAware {
         final ProjectBuildingRequest projectBuilding,
         final CiOptionContext ciOptContext
     ) {
+        this.mavenExecutionCopied = DefaultMavenExecutionRequest.copy(mavenExecution);
+
         if (!FAST.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(FALSE)) {
-            this.projectInfo = this.resolve(ciOptContext, mavenExecution);
+            this.rootProjectInfo = this.resolveRootProject();
         } else {
             // Lazy mode
-            this.ciOptContext = ciOptContext;
-            this.mavenExecutionCopied = DefaultMavenExecutionRequest.copy(mavenExecution);
-
             logger.info("    Skip resolving and checking project version under fast mode.");
         }
     }

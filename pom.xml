@@ -219,6 +219,7 @@
                                 <postBuildHookScript>verify</postBuildHookScript>
                                 <preBuildHookScript>setup</preBuildHookScript>
                                 <properties>
+                                    <add.prefix.to.itself>text</add.prefix.to.itself>
                                     <git.commit.id.skip>false</git.commit.id.skip>
                                     <infrastructure>ossrh</infrastructure>
                                     <sonar>true</sonar>

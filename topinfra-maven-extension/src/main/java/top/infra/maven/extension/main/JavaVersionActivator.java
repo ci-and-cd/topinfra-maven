@@ -23,6 +23,7 @@ import org.apache.maven.model.profile.ProfileActivationContext;
 
 import top.infra.maven.extension.activator.AbstractCustomActivator;
 import top.infra.maven.extension.activator.model.ProjectBuilderActivatorModelResolver;
+import top.infra.maven.extension.shared.MavenProjectInfoEventAware;
 
 // @Component(role = CustomActivator.class, hint = "JavaVersionActivator")
 @Named
@@ -31,12 +32,17 @@ public class JavaVersionActivator extends AbstractCustomActivator {
 
     private static final Pattern PATTERN_JAVA_PROFILE = Pattern.compile(".*java[-]?(\\d+)[-]?.*");
 
+    private final MavenProjectInfoEventAware projectInfoBean;
+
     @Inject
     public JavaVersionActivator(
         final org.codehaus.plexus.logging.Logger logger,
-        final ProjectBuilderActivatorModelResolver resolver
+        final ProjectBuilderActivatorModelResolver resolver,
+        final MavenProjectInfoEventAware projectInfoBean
     ) {
         super(logger, resolver);
+
+        this.projectInfoBean = projectInfoBean;
     }
 
     static boolean isJavaVersionRelatedProfile(final String id) {
@@ -64,29 +70,37 @@ public class JavaVersionActivator extends AbstractCustomActivator {
         if (this.supported(profile)) {
             final Optional<Integer> profileJavaVersion = profileJavaVersion(profile.getId());
 
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format(
+                    "project [%s], profile [%s], profileJavaVersion: [%s]",
+                    model.getArtifactId(), profile.getId(), profileJavaVersion.orElse(null)));
+            }
             // if (logger.isInfoEnabled()) {
-            //     logger.info(String.format("%s project='%s' profile='%s' is java version related profile (java %s)",
+            //     logger.info(String.format("%s project='%s' profile='%s' profileJavaVersion='%s'",
             //         this.getName(), projectName(context), profileId(profile), profileJavaVersion.orElse(null)));
             // }
 
+            // final MavenProjectInfo projectInfo = this.projectInfoBean.resolve(model.getPomFile());
             final Map<String, Object> projectContext = projectContext(model, context);
-
-            Optional<Integer> javaVersionForce;
-            try {
-                javaVersionForce = Optional.of(parseInt(String.format("%s", projectContext.get("javaVersionForce"))));
-            } catch (final Exception ex) {
-                javaVersionForce = Optional.empty();
-            }
+            final Optional<Integer> projectJavaVersion = getJavaVersion(projectContext, "java.version");
 
             final boolean javaVersionActive;
-            if (javaVersionForce.isPresent()) {
-                javaVersionActive = javaVersionForce.get().equals(profileJavaVersion.orElse(null));
+            if (projectJavaVersion.isPresent()) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format(
+                        "project [%s], profile [%s], projectJavaVersion present [%s].",
+                        model.getArtifactId(), profile.getId(), projectJavaVersion.get()));
+                }
+                javaVersionActive = projectJavaVersion.equals(profileJavaVersion);
             } else {
-                // final String javaDotVersion = String.format("%s", projectContext.get("java.version"));
-                final String javaDotVersion = context.getSystemProperties().get("java.version");
-                final Optional<Integer> projectJavaVersion = parseJavaVersion(javaDotVersion);
-                javaVersionActive = projectJavaVersion
-                    .map(integer -> integer.equals(profileJavaVersion.orElse(null))).orElse(false);
+                final Optional<Integer> systemJavaVersion = getJavaVersion(context.getSystemProperties(), "java.version");
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format(
+                        "project [%s], profile [%s], projectJavaVersion absent, try to use systemJavaVersion [%s].",
+                        model.getArtifactId(), profile.getId(), systemJavaVersion.orElse(null)));
+                }
+
+                javaVersionActive = systemJavaVersion.equals(profileJavaVersion);
             }
 
             result = javaVersionActive;
@@ -94,12 +108,22 @@ public class JavaVersionActivator extends AbstractCustomActivator {
             result = false;
 
             if (logger.isDebugEnabled() || profile.getId().contains("java")) {
-                logger.info(String.format("%s project='%s' profile='%s' is not java version related profile",
+                logger.debug(String.format("%s project='%s' profile='%s' is not java version related profile",
                     this.getName(), projectName(context), profileId(profile)));
             }
         }
 
         return result;
+    }
+
+    private static Optional<Integer> getJavaVersion(final Map<String, ?> properties, final String propertyName) {
+        Optional<Integer> value;
+        try {
+            value = parseJavaVersion(String.format("%s", properties.get(propertyName)));
+        } catch (final Exception ex) {
+            value = Optional.empty();
+        }
+        return value;
     }
 
     @Override
@@ -129,18 +153,19 @@ public class JavaVersionActivator extends AbstractCustomActivator {
     ) {
         // Note: keep order.
         final Map<String, Object> bindings = new LinkedHashMap<>();
-        // Inject project props: override defaults
-        bindings.putAll(context.getProjectProperties());
 
-        bindings.putAll(mapFromProperties(project.getProperties()));
-        // Inject system props, override previous.
         bindings.putAll(context.getSystemProperties());
+
+        bindings.putAll(context.getProjectProperties());
+        bindings.putAll(mapFromProperties(project.getProperties()));
+
         // Inject user props, override previous.
         bindings.putAll(context.getUserProperties());
+
         // Expose default variable context.
-        bindings.put("value", bindings);
+        // bindings.put("value", bindings);
         // Expose resolved pom.xml model.
-        bindings.put("project", project);
+        // bindings.put("project", project);
         return bindings;
     }
 }

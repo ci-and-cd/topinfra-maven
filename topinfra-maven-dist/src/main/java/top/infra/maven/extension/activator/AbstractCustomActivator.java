@@ -3,6 +3,7 @@ package top.infra.maven.extension.activator;
 import static top.infra.maven.utils.MavenUtils.profileId;
 import static top.infra.maven.utils.MavenUtils.projectName;
 
+import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -49,41 +50,42 @@ public abstract class AbstractCustomActivator implements CustomActivator {
         try {
             final Boolean result;
 
-            final Boolean found = this.profileMemento.get(profile.toString());
+            if (!this.presentInConfig(profile, context, problems)) {
+                result = false;
 
-            if (found == null) {
-                if (!this.presentInConfig(profile, context, problems)) {
-                    result = false;
-
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(String.format("    %s profile '%s' not presentInConfig", this.getName(), profileId(profile)));
-                        logger.debug(String.format("    %s project='%s' profile='%s' result='false'",
-                            this.getName(), projectName(context), profileId(profile)));
-                    }
-                } else {
-                    // Required project.
-                    final Optional<Model> project = this.resolver.resolveModel(profile, context);
-                    if (project.isPresent()) {
-                        result = this.isActive(project.get(), profile, context, problems);
-                    } else {
-                        // reportProblem("Failed to resolve model", new Exception("Invalid Project"), profile, context, problems);
-                        result = false;
-                    }
-
-                    if (this.cacheResult()) {
-                        this.profileMemento.put(profile.toString(), result);
-                    }
-
-                    if (result || this.cacheResult()) {
-                        logger.info(String.format("    %s project='%s' profile='%s' result='%s'",
-                            this.getName(), projectName(context), profileId(profile), result));
-                    } else if (logger.isDebugEnabled()) {
-                        logger.debug(String.format(    "%s project='%s' profile='%s' result='false'",
-                            this.getName(), projectName(context), profileId(profile)));
-                    }
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format("    %s profile '%s' not presentInConfig", this.getName(), profileId(profile)));
+                    logger.debug(String.format("    %s project='%s' profile='%s' result='false'",
+                        this.getName(), projectName(context), profileId(profile)));
                 }
             } else {
-                result = found;
+                // Required project.
+                final Optional<Model> project = this.resolver.resolveModel(profile, context);
+
+                if (project.isPresent()) {
+                    final String mementoKey = mementoKey(profile, project.get().getPomFile());
+                    final Boolean found = this.profileMemento.get(mementoKey);
+                    if (found == null) {
+                        result = this.isActive(project.get(), profile, context, problems);
+
+                        if (this.cacheResult()) {
+                            this.profileMemento.put(mementoKey, result);
+                        }
+
+                        if (result || this.cacheResult()) {
+                            logger.info(String.format("    %s project='%s' profile='%s' result='%s'",
+                                this.getName(), projectName(context), profileId(profile), result));
+                        } else if (logger.isDebugEnabled()) {
+                            logger.debug(String.format("    %s project='%s' profile='%s' result='false'",
+                                this.getName(), projectName(context), profileId(profile)));
+                        }
+                    } else {
+                        result = found;
+                    }
+                } else {
+                    // reportProblem("Failed to resolve model", new Exception("Invalid Project"), profile, context, problems);
+                    result = false;
+                }
             }
 
             return result;
@@ -117,4 +119,10 @@ public abstract class AbstractCustomActivator implements CustomActivator {
         ProfileActivationContext context,
         ModelProblemCollector problems
     );
+
+    private static String mementoKey(final Profile profile, final File pomFile) {
+        // TODO remove duplicate codes
+        final String pom = pomFile != null ? pomFile.getPath() : "";
+        return String.format("%s@%s", profile, pom);
+    }
 }

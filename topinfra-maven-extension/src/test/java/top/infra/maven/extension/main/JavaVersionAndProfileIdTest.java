@@ -36,6 +36,11 @@ public class JavaVersionAndProfileIdTest {
 
     @Test
     public void testProjectJavaVersion() {
+        assertEquals(Integer.valueOf(8), parseJavaVersion("1.8").orElse(null));
+        assertEquals(Integer.valueOf(8), parseJavaVersion("8").orElse(null));
+        assertEquals(Integer.valueOf(11), parseJavaVersion("11").orElse(null));
+        assertEquals(Integer.valueOf(11), parseJavaVersion("11.0").orElse(null));
+
         assertEquals(Integer.valueOf(8), parseJavaVersion("1.8.0_201").orElse(null));
         assertEquals(Integer.valueOf(10), parseJavaVersion("10.0.1").orElse(null));
     }

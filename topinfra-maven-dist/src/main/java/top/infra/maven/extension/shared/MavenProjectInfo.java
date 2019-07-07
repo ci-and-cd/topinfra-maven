@@ -29,16 +29,21 @@ public class MavenProjectInfo {
     private final String packaging;
     private final String version;
 
+    private final String javaVersion;
+
     public MavenProjectInfo(
         final String artifactId,
         final String groupId,
         final String packaging,
-        final String version
+        final String version,
+        final String javaVersion
     ) {
         this.artifactId = artifactId;
         this.groupId = groupId;
         this.packaging = packaging;
         this.version = version;
+
+        this.javaVersion = javaVersion;
     }
 
     public static Optional<MavenProjectInfo> newProjectInfoByReadPom(
@@ -48,7 +53,13 @@ public class MavenProjectInfo {
         final MavenXpp3Reader xpp3Reader = new MavenXpp3Reader();
         try {
             final Model model = xpp3Reader.read(new FileReader(pomFile));
-            return Optional.of(new MavenProjectInfo(model.getArtifactId(), model.getGroupId(), model.getPackaging(), model.getVersion()));
+            return Optional.of(new MavenProjectInfo(
+                model.getArtifactId(),
+                model.getGroupId(),
+                model.getPackaging(),
+                model.getVersion(),
+                model.getProperties().getProperty("java.version")
+            ));
         } catch (final IllegalArgumentException | IOException | XmlPullParserException ex) {
             if (logger.isWarnEnabled()) {
                 logger.warn(String.format("    Failed to read project info from pomFile [%s] (by MavenXpp3Reader)",
@@ -71,7 +82,14 @@ public class MavenProjectInfo {
         final String groupId = projectOptional.map(MavenProject::getGroupId).orElse(null);
         final String packaging = projectOptional.map(MavenProject::getPackaging).orElse(null);
         final String version = projectOptional.map(MavenProject::getVersion).orElse(null);
-        return new MavenProjectInfo(artifactId, groupId, packaging, version);
+        final String javaVersion = projectOptional.map(project -> project.getProperties().getProperty("java.version")).orElse(null);
+        return new MavenProjectInfo(
+            artifactId,
+            groupId,
+            packaging,
+            version,
+            javaVersion
+        );
     }
 
     public static Optional<MavenProject> buildProject(
@@ -132,6 +150,10 @@ public class MavenProjectInfo {
 
     public String getGroupId() {
         return this.groupId;
+    }
+
+    public String getJavaVersion() {
+        return this.javaVersion;
     }
 
     public String getPackaging() {
