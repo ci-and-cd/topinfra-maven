@@ -347,8 +347,8 @@
         <frontend.npmDownloadRoot>https://registry.npmjs.org/npm/-/</frontend.npmDownloadRoot>
         <git.commit.id.skip>true</git.commit.id.skip>
         <github.global.oauth2Token></github.global.oauth2Token>
-        <github.global.repositoryName></github.global.repositoryName>
-        <github.global.repositoryOwner>unknown-owner</github.global.repositoryOwner>
+        <github.global.repositoryName>unknown</github.global.repositoryName>
+        <github.global.repositoryOwner>unknown</github.global.repositoryOwner>
 
         <add.prefix.to.itself>prefix/${add.prefix.to.itself}</add.prefix.to.itself>
 

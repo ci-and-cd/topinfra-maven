@@ -3,13 +3,6 @@ package top.infra.maven.extension.mavenbuild;
 import static java.lang.Boolean.FALSE;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_FEATURE;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_HOTFIX;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_RELEASE;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_SUPPORT;
-import static top.infra.maven.extension.shared.Constants.PUBLISH_CHANNEL_RELEASE;
-import static top.infra.maven.extension.shared.Constants.PUBLISH_CHANNEL_SNAPSHOT;
 import static top.infra.maven.extension.shared.FastOption.FAST;
 import static top.infra.maven.extension.shared.InfraOption.GIT_AUTH_TOKEN;
 
@@ -45,7 +38,15 @@ public enum MavenBuildPomOption implements CiOption {
     GITHUB_GLOBAL_REPOSITORYNAME("github.global.repositoryName") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return SITE_PATH_PREFIX.getValue(context);
+            return GITHUB_GLOBAL_REPOSITORYOWNER.calculateValue(context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            final Optional<String> result = super.setProperties(context, properties);
+            result.ifPresent(value ->
+                context.getSystemProperties().setProperty(GITHUB_GLOBAL_REPOSITORYNAME.getSystemPropertyName(), value));
+            return result;
         }
     },
     GITHUB_GLOBAL_REPOSITORYOWNER("github.global.repositoryOwner") {
@@ -63,8 +64,8 @@ public enum MavenBuildPomOption implements CiOption {
         @Override
         public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
             final Optional<String> result = super.setProperties(context, properties);
-            result.ifPresent(owner ->
-                context.getSystemProperties().setProperty(GITHUB_GLOBAL_REPOSITORYOWNER.getSystemPropertyName(), owner));
+            result.ifPresent(value ->
+                context.getSystemProperties().setProperty(GITHUB_GLOBAL_REPOSITORYOWNER.getSystemPropertyName(), value));
             return result;
         }
     },
@@ -127,56 +128,6 @@ public enum MavenBuildPomOption implements CiOption {
 
     @Deprecated
     PMD_RULESET_LOCATION("pmd.ruleset.location"),
-
-    /**
-     * Auto determine current build publish channel by current build ref name.<br/>
-     * snapshot or release
-     */
-    @Deprecated
-    PUBLISH_CHANNEL("publish.channel") {
-        @Override
-        public Optional<String> calculateValue(final CiOptionContext context) {
-            final String result;
-
-            final String refName = VcsProperties.GIT_REF_NAME.getValue(context).orElse("");
-            if (GIT_REF_NAME_DEVELOP.equals(refName)) {
-                result = PUBLISH_CHANNEL_SNAPSHOT;
-            } else if (refName.startsWith(GIT_REF_PREFIX_FEATURE)) {
-                result = PUBLISH_CHANNEL_SNAPSHOT;
-            } else if (refName.startsWith(GIT_REF_PREFIX_HOTFIX)) {
-                result = PUBLISH_CHANNEL_RELEASE;
-            } else if (refName.startsWith(GIT_REF_PREFIX_RELEASE)) {
-                result = PUBLISH_CHANNEL_RELEASE;
-            } else if (refName.startsWith(GIT_REF_PREFIX_SUPPORT)) {
-                result = PUBLISH_CHANNEL_RELEASE;
-            } else {
-                result = PUBLISH_CHANNEL_SNAPSHOT;
-            }
-
-            return Optional.of(result);
-        }
-    },
-
-    @Deprecated
-    SITE_PATH_PREFIX("site.path.prefix") {
-
-        // TODO expose git slug to pom and calculate site.path.prefix by maven plugin
-
-        @Override
-        public Optional<String> calculateValue(final CiOptionContext context) {
-            final boolean generateReports = MavenOption.GENERATEREPORTS.getValue(context)
-                .map(Boolean::parseBoolean).orElse(FALSE);
-
-            final Optional<String> result;
-            if (generateReports) {
-                final Optional<String> gitRepoSlug = VcsProperties.gitRepoSlug(context);
-                result = gitRepoSlug.map(slug -> slug.split("/")[0]);
-            } else {
-                result = Optional.empty();
-            }
-            return result;
-        }
-    },
     ;
 
     private final String defaultValue;
