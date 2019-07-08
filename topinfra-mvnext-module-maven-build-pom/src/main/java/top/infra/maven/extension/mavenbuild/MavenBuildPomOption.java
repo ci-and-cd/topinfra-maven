@@ -73,6 +73,9 @@ public enum MavenBuildPomOption implements CiOption {
             return Optional.of(releaseRef ? "releases" : (snapshotRef ? "snapshots" : ""));
         }
     },
+    /**
+     * Need a explicit 'false' default value to activate profiles.
+     */
     GITHUB_SITE_PUBLISH("github.site.publish", BOOL_STRING_FALSE) {
         @Override
         public Optional<String> getValue(final CiOptionContext context) {
@@ -91,8 +94,7 @@ public enum MavenBuildPomOption implements CiOption {
     JACOCO("jacoco") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            final boolean skip = FAST.getValue(context)
-                .map(Boolean::parseBoolean).orElse(FALSE);
+            final boolean skip = FAST.getValue(context).map(Boolean::parseBoolean).orElse(FALSE);
 
             return Optional.ofNullable(skip ? null : BOOL_STRING_TRUE);
         }
@@ -101,13 +103,29 @@ public enum MavenBuildPomOption implements CiOption {
     NEXUS2_STAGING("nexus2.staging") {
         @Override
         public Optional<String> getValue(final CiOptionContext context) {
-            final String refName = VcsProperties.GIT_REF_NAME.getValue(context).orElse("");
-            final boolean releaseRef = VcsProperties.isReleaseRef(refName);
+            final boolean releaseRef = RELEASEREF.getValue(context).map(Boolean::parseBoolean).orElse(FALSE);
             return releaseRef ? super.getValue(context) : Optional.of(BOOL_STRING_FALSE);
         }
     },
 
+    RELEASEREF("releaseRef") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            final String refName = VcsProperties.GIT_REF_NAME.getValue(context).orElse("");
+            return Optional.of(String.valueOf(VcsProperties.isReleaseRef(refName)));
+        }
+    },
+
     SITE_PATH("site.path"),
+
+    SNAPSHOTREF("snapshotRef") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            final String refName = VcsProperties.GIT_REF_NAME.getValue(context).orElse("");
+            return Optional.of(String.valueOf(VcsProperties.isSnapshotRef(refName)));
+        }
+    },
+
     SONAR("sonar"),
 
     CHECKSTYLE_CONFIG_LOCATION("checkstyle.config.location"),
