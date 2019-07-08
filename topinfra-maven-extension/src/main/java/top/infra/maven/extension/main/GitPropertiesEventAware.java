@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -140,8 +141,17 @@ public class GitPropertiesEventAware implements MavenEventAware {
                         refNameFull = fullBranchRef.getName();
                         refName = shortenRefName(refNameFull);
                     } else {
-                        // refNameFull = "";
-                        refName = "";
+                        final List<String> refsMatched = repository.getRefDatabase().getRefs()
+                            .stream()
+                            .filter(ref -> ref.getObjectId().getName().equals(fullBranch))
+                            .filter(ref -> !ref.getName().equals("HEAD"))
+                            .map(Ref::getName)
+                            .collect(Collectors.toList());
+
+                        logger.info(String.format("refs matched. %s %s", fullBranch, refsMatched));
+
+                        refNameFull = refsMatched.stream().findFirst().orElse("");
+                        refName = shortenRefName(refNameFull);
                     }
                 } else {
                     final Optional<String> tag = findTag(repository, head);

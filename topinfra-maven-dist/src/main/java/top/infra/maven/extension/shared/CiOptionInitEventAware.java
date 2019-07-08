@@ -94,7 +94,7 @@ public class CiOptionInitEventAware implements MavenEventAware {
 
                     group.stream().sorted().forEach(ciOption -> { // TODO better toString methods
                         final String displayName = ciOption.getEnvVariableName();
-                        final String displayValue = ciOptProperties.getProperty(ciOption.getPropertyName(), "");
+                        final String displayValue = ciOptProperties.getProperty(ciOption.getPropertyName(), "null");
                         logger.info(PropertiesUtils.maskSecrets(String.format("        %s=%s", displayName, displayValue)));
                     });
                 });
