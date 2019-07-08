@@ -1,7 +1,7 @@
 package top.infra.maven.extension.shared;
 
 import static java.util.stream.Collectors.toMap;
-import static top.infra.maven.extension.shared.CiOptionNames.PATTERN_VARS_ENV_DOT_CI;
+import static top.infra.maven.extension.shared.CiOptions.PATTERN_VARS_ENV_DOT_CI;
 import static top.infra.maven.utils.PropertiesUtils.logProperties;
 import static top.infra.maven.utils.SupportFunction.logEnd;
 import static top.infra.maven.utils.SupportFunction.logStart;

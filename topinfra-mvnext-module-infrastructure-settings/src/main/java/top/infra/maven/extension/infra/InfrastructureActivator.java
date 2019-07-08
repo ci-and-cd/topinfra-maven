@@ -25,7 +25,7 @@ import top.infra.maven.extension.activator.AbstractCustomActivator;
 import top.infra.maven.extension.activator.CustomActivator;
 import top.infra.maven.extension.activator.model.ProjectBuilderActivatorModelResolver;
 import top.infra.maven.extension.shared.CiOptionContextBeanFactory;
-import top.infra.maven.extension.shared.InfraOption;
+import top.infra.maven.extension.shared.GlobalOption;
 import top.infra.maven.extension.shared.Orders;
 
 // @Component(role = CustomActivator.class, hint = "InfrastructureActivator") // This instance has multiple roles
@@ -100,7 +100,7 @@ public class InfrastructureActivator extends AbstractCustomActivator implements 
             //         this.getName(), projectName(context), profileId(profile), profileInfrastructure.orElse(null)));
             // }
 
-            final Optional<String> infrastructure = InfraOption.INFRASTRUCTURE.getValue(this.ciOptContext);
+            final Optional<String> infrastructure = GlobalOption.INFRASTRUCTURE.getValue(this.ciOptContext);
 
             result = infrastructure
                 .map(value -> value.equals(profileInfrastructure.orElse(null)))

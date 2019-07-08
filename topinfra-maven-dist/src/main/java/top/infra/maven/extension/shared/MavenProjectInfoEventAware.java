@@ -1,7 +1,7 @@
 package top.infra.maven.extension.shared;
 
 import static java.lang.Boolean.FALSE;
-import static top.infra.maven.extension.shared.FastOption.FAST;
+import static top.infra.maven.extension.shared.GlobalOption.FAST;
 import static top.infra.maven.extension.shared.MavenProjectInfo.newProjectInfoByBuildProject;
 import static top.infra.maven.extension.shared.MavenProjectInfo.newProjectInfoByReadPom;
 import static top.infra.maven.utils.SupportFunction.logEnd;

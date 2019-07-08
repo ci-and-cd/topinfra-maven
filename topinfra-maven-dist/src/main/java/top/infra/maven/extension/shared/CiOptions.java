@@ -4,7 +4,7 @@ import static top.infra.maven.utils.SupportFunction.isEmpty;
 
 import java.util.regex.Pattern;
 
-public class CiOptionNames {
+public class CiOptions {
 
     public static final Pattern PATTERN_VARS_ENV_DOT_CI = Pattern.compile("^env\\.CI_.+");
 

@@ -23,6 +23,7 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.profile.ProfileActivationContext;
 
 import top.infra.maven.CiOptionContext;
+import top.infra.maven.extension.shared.CiOptions;
 
 public abstract class MavenUtils {
 
@@ -34,6 +35,26 @@ public abstract class MavenUtils {
 
     public static Boolean cmdArgUpdateSnapshots(final CliRequest cliRequest) {
         return cliRequest.getCommandLine().hasOption(CLIManager.UPDATE_SNAPSHOTS);
+    }
+
+    public static Optional<String> findInProperties(
+        final String propertyName,
+        final Properties systemProperties,
+        final Properties userProperties
+    ) {
+        final String systemPropertyName = CiOptions.systemPropertyName(propertyName);
+
+        // systemProperty first
+        final Optional<String> systemProperty = Optional.ofNullable(systemProperties.getProperty(systemPropertyName));
+        return systemProperty.isPresent()
+            ? systemProperty
+            : Optional.ofNullable(userProperties.getProperty(propertyName));
+
+        // // userProperty first
+        // final Optional<String> userProperty = Optional.ofNullable(userProperties.getProperty(propertyName));
+        // return userProperty.isPresent()
+        //     ? userProperty
+        //     : Optional.ofNullable(systemProperties.getProperty(systemPropertyName));
     }
 
     /**

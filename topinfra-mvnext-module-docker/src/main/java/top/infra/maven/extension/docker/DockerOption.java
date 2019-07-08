@@ -1,19 +1,20 @@
 package top.infra.maven.extension.docker;
 
-import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
-import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.extension.docker.Docker.dockerHost;
 import static top.infra.maven.extension.docker.Docker.dockerfiles;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
+import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.extension.shared.GlobalOption.INFRASTRUCTURE;
 import static top.infra.maven.utils.SystemUtils.existsInPath;
 
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
-import top.infra.maven.extension.shared.Constants;
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.shared.InfraOption;
+import top.infra.maven.extension.shared.Constants;
+import top.infra.maven.extension.shared.GlobalOption;
 import top.infra.maven.utils.UrlUtils;
 
 public enum DockerOption implements CiOption {
@@ -80,7 +81,7 @@ public enum DockerOption implements CiOption {
             final Optional<String> result = super.setProperties(context, properties);
 
             result.ifPresent(value ->
-                InfraOption.INFRASTRUCTURE.getValue(context).ifPresent(infra ->
+                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
                     properties.setProperty(infra + "." + this.getPropertyName(), value))
             );
 
@@ -90,7 +91,7 @@ public enum DockerOption implements CiOption {
     DOCKER_REGISTRY_PASS("docker.registry.pass") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return InfraOption.getInfrastructureSpecificValue(this, context);
+            return GlobalOption.getInfrastructureSpecificValue(this, context);
         }
 
         @Override
@@ -98,7 +99,7 @@ public enum DockerOption implements CiOption {
             final Optional<String> result = super.setProperties(context, properties);
 
             result.ifPresent(value ->
-                InfraOption.INFRASTRUCTURE.getValue(context).ifPresent(infra ->
+                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
                     properties.setProperty(infra + "." + this.getPropertyName(), value))
             );
 
@@ -108,7 +109,7 @@ public enum DockerOption implements CiOption {
     DOCKER_REGISTRY_URL("docker.registry.url") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return InfraOption.getInfrastructureSpecificValue(this, context);
+            return GlobalOption.getInfrastructureSpecificValue(this, context);
         }
 
         @Override
@@ -116,7 +117,7 @@ public enum DockerOption implements CiOption {
             final Optional<String> result = super.setProperties(context, properties);
 
             result.ifPresent(value ->
-                InfraOption.INFRASTRUCTURE.getValue(context).ifPresent(infra ->
+                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
                     properties.setProperty(infra + "." + this.getPropertyName(), value))
             );
 
@@ -126,7 +127,7 @@ public enum DockerOption implements CiOption {
     DOCKER_REGISTRY_USER("docker.registry.user") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return InfraOption.getInfrastructureSpecificValue(this, context);
+            return GlobalOption.getInfrastructureSpecificValue(this, context);
         }
 
         @Override
@@ -134,7 +135,7 @@ public enum DockerOption implements CiOption {
             final Optional<String> result = super.setProperties(context, properties);
 
             result.ifPresent(value ->
-                InfraOption.INFRASTRUCTURE.getValue(context).ifPresent(infra ->
+                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
                     properties.setProperty(infra + "." + this.getPropertyName(), value))
             );
 

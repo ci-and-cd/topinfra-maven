@@ -19,7 +19,7 @@ import org.apache.maven.eventspy.EventSpy.Context;
 import org.apache.maven.rtinfo.RuntimeInformation;
 
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.shared.CiOptionNames;
+import top.infra.maven.extension.shared.CiOptions;
 import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
@@ -88,7 +88,7 @@ public class InfoPrinter implements MavenEventAware {
         }
 
         if (logger.isDebugEnabled()) {
-            logProperties(logger, "    context.data.systemProperties", systemProperties, CiOptionNames.PATTERN_VARS_ENV_DOT_CI);
+            logProperties(logger, "    context.data.systemProperties", systemProperties, CiOptions.PATTERN_VARS_ENV_DOT_CI);
             logProperties(logger, "    context.data.userProperties", userProperties, null);
         }
 

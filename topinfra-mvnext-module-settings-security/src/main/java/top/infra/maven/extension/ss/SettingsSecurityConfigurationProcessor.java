@@ -14,11 +14,12 @@ import org.apache.maven.cli.CliRequest;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
-import top.infra.maven.extension.shared.InfraOption;
 import top.infra.maven.extension.OrderedConfigurationProcessor;
+import top.infra.maven.extension.shared.Constants;
 import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
+import top.infra.maven.utils.MavenUtils;
 
 // @Component(role = OrderedConfigurationProcessor.class, hint = "settings-security")
 @Named
@@ -46,8 +47,8 @@ public class SettingsSecurityConfigurationProcessor implements OrderedConfigurat
 
     @Override
     public void process(final CliRequest cliRequest) throws Exception {
-        final Optional<Path> settingsSecurity = InfraOption.SETTINGS_SECURITY
-            .findInProperties(cliRequest.getSystemProperties(), cliRequest.getUserProperties())
+        final Optional<Path> settingsSecurity = MavenUtils.findInProperties(
+            Constants.PROP_NAME_SETTINGS_SECURITY, cliRequest.getSystemProperties(), cliRequest.getUserProperties())
             .map(Paths::get);
 
         if (logger.isInfoEnabled()) {

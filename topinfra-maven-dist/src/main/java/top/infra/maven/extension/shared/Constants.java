@@ -1,5 +1,7 @@
 package top.infra.maven.extension.shared;
 
+import static org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher.SYSTEM_PROPERTY_SEC_LOCATION;
+
 public final class Constants {
 
     public static final String BOOL_STRING_FALSE = "false";
@@ -20,6 +22,9 @@ public final class Constants {
 
     public static final String SRC_CI_OPTS_PROPERTIES = "src/main/ci-script/ci_opts.properties"; // TODO rename
     public static final String SETTINGS_SECURITY_XML = "settings-security.xml";
+    public static final String PROP_NAME_SETTINGS = "settings";
+    public static final String PROP_NAME_SETTINGS_SECURITY = SYSTEM_PROPERTY_SEC_LOCATION;
+    public static final String PROP_NAME_TOOLCHAINS = "toolchains";
 
     public static final String PUBLISH_CHANNEL_RELEASE = "release";
     public static final String PUBLISH_CHANNEL_SNAPSHOT = "snapshot";

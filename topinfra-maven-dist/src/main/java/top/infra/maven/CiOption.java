@@ -5,7 +5,8 @@ import static java.lang.Boolean.FALSE;
 import java.util.Optional;
 import java.util.Properties;
 
-import top.infra.maven.extension.shared.CiOptionNames;
+import top.infra.maven.extension.shared.CiOptions;
+import top.infra.maven.utils.MavenUtils;
 
 public interface CiOption {
 
@@ -14,13 +15,13 @@ public interface CiOption {
     Optional<String> getDefaultValue();
 
     default String getEnvVariableName() {
-        return CiOptionNames.envVariableName(this.getPropertyName());
+        return CiOptions.envVariableName(this.getPropertyName());
     }
 
     String getPropertyName();
 
     default String getSystemPropertyName() {
-        return CiOptionNames.systemPropertyName(this.getPropertyName());
+        return CiOptions.systemPropertyName(this.getPropertyName());
     }
 
     /**
@@ -51,17 +52,7 @@ public interface CiOption {
         final Properties systemProperties,
         final Properties userProperties
     ) {
-        // systemProperty first
-        final Optional<String> systemProperty = Optional.ofNullable(systemProperties.getProperty(this.getSystemPropertyName()));
-        return systemProperty.isPresent()
-            ? systemProperty
-            : Optional.ofNullable(userProperties.getProperty(this.getPropertyName()));
-
-        // // userProperty first
-        // final Optional<String> userProperty = Optional.ofNullable(userProperties.getProperty(this.getPropertyName()));
-        // return userProperty.isPresent()
-        //     ? userProperty
-        //     : Optional.ofNullable(systemProperties.getProperty(this.getSystemPropertyName()));
+        return MavenUtils.findInProperties(this.getPropertyName(), systemProperties, userProperties);
     }
 
     /**

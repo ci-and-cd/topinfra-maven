@@ -30,11 +30,12 @@ import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.unix4j.Unix4j;
 
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.shared.InfraOption;
 import top.infra.maven.extension.MavenEventAware;
+import top.infra.maven.extension.shared.Constants;
 import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
+import top.infra.maven.utils.MavenUtils;
 import top.infra.maven.utils.SupportFunction;
 
 /**
@@ -130,8 +131,11 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         final SettingsBuildingRequest request,
         final CiOptionContext ciOptContext
     ) {
-        InfraOption.SETTINGS
-            .findInProperties(ciOptContext.getSystemProperties(), ciOptContext.getUserProperties())
+        MavenUtils.findInProperties(
+            Constants.PROP_NAME_SETTINGS,
+            ciOptContext.getSystemProperties(),
+            ciOptContext.getUserProperties()
+        )
             .ifPresent(settingsXml -> {
                 final Properties systemProperties = ciOptContext.getSystemProperties();
                 final List<String> envVars = absentVarsInSettingsXml(Paths.get(settingsXml), systemProperties);
@@ -161,8 +165,8 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         final MavenExecutionRequest request,
         final CiOptionContext ciOptContext
     ) {
-        final Optional<String> settingsSecurityXml = InfraOption.SETTINGS_SECURITY
-            .findInProperties(ciOptContext.getSystemProperties(), ciOptContext.getUserProperties());
+        final Optional<String> settingsSecurityXml = MavenUtils.findInProperties(
+            Constants.PROP_NAME_SETTINGS_SECURITY, ciOptContext.getSystemProperties(), ciOptContext.getUserProperties());
         final Optional<MavenSettingsSecurity> settingsSecurity = settingsSecurityXml
             .map(xml -> new MavenSettingsSecurity(xml, false));
         this.encryptedBlankString = settingsSecurity.map(ss -> ss.encodeText(" ")).orElse(null);

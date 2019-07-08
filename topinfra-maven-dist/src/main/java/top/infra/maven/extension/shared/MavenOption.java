@@ -5,8 +5,7 @@ import static java.lang.Boolean.TRUE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.extension.shared.FastOption.FAST;
-import static top.infra.maven.utils.SystemUtils.systemJavaVersion;
+import static top.infra.maven.extension.shared.GlobalOption.FAST;
 
 import java.util.Optional;
 

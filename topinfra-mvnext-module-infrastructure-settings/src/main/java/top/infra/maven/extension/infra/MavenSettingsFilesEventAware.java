@@ -1,12 +1,9 @@
 package top.infra.maven.extension.infra;
 
 import static java.lang.Boolean.FALSE;
-import static top.infra.maven.extension.shared.CiOptionNames.systemPropertyName;
+import static top.infra.maven.extension.shared.CiOptions.systemPropertyName;
 import static top.infra.maven.extension.shared.Constants.SETTINGS_SECURITY_XML;
-import static top.infra.maven.extension.shared.InfraOption.CACHE_SETTINGS_PATH;
-import static top.infra.maven.extension.shared.InfraOption.SETTINGS;
-import static top.infra.maven.extension.shared.InfraOption.SETTINGS_SECURITY;
-import static top.infra.maven.extension.shared.InfraOption.TOOLCHAINS;
+import static top.infra.maven.extension.infra.InfraOption.CACHE_SETTINGS_PATH;
 import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 import static top.infra.maven.utils.SupportFunction.logEnd;
 import static top.infra.maven.utils.SupportFunction.logStart;
@@ -30,9 +27,9 @@ import org.apache.maven.cli.CliRequest;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
 import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
 
-import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
+import top.infra.maven.extension.shared.Constants;
 import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
@@ -87,7 +84,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         this.settingsXml = this.findOrDownload(
             cliRequest,
             ciOptContext,
-            SETTINGS,
+            Constants.PROP_NAME_SETTINGS,
             SRC_MAIN_MAVEN + "/" + SETTINGS_XML,
             SETTINGS_XML,
             false
@@ -96,7 +93,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         this.findOrDownload(
             cliRequest,
             ciOptContext,
-            SETTINGS_SECURITY,
+            Constants.PROP_NAME_SETTINGS_SECURITY,
             SRC_MAIN_MAVEN + "/" + SETTINGS_SECURITY_XML,
             SETTINGS_SECURITY_XML,
             true
@@ -126,7 +123,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         this.toolchainsXml = this.findOrDownload(
             cliRequest,
             ciOptContext,
-            TOOLCHAINS,
+            Constants.PROP_NAME_TOOLCHAINS,
             SRC_MAIN_MAVEN + "/" + TOOLCHAINS_XML,
             TOOLCHAINS_XML,
             false
@@ -145,14 +142,12 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
     private Optional<Path> findOrDownload(
         final CliRequest cliRequest,
         final CiOptionContext ciOptContext,
-        final CiOption option,
+        final String propertyName,
         final String sourceFile,
         final String filename,
         final boolean optional
     ) {
         logger.info(logStart(this, "findOrDownload", filename));
-
-        final String propertyName = option.getPropertyName();
 
         final Optional<String> cacheDir = CACHE_SETTINGS_PATH.getValue(ciOptContext);
 

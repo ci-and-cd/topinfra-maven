@@ -1,8 +1,8 @@
-package top.infra.maven.extension.shared;
+package top.infra.maven.extension.infra;
 
-import static org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher.SYSTEM_PROPERTY_SEC_LOCATION;
 import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_MASTER;
 import static top.infra.maven.extension.shared.Constants.SRC_CI_OPTS_PROPERTIES;
+import static top.infra.maven.extension.shared.GlobalOption.INFRASTRUCTURE;
 import static top.infra.maven.utils.SystemUtils.systemJavaIoTmp;
 import static top.infra.maven.utils.SystemUtils.systemUserHome;
 
@@ -13,6 +13,7 @@ import java.util.Properties;
 
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
+import top.infra.maven.extension.shared.GlobalOption;
 import top.infra.maven.utils.MavenUtils;
 
 public enum InfraOption implements CiOption {
@@ -46,7 +47,7 @@ public enum InfraOption implements CiOption {
     GIT_AUTH_TOKEN("git.auth.token") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return getInfrastructureSpecificValue(this, context);
+            return GlobalOption.getInfrastructureSpecificValue(this, context);
         }
 
         @Override
@@ -61,12 +62,6 @@ public enum InfraOption implements CiOption {
             return result;
         }
     },
-    /**
-     * Auto detect infrastructure using for this build.<br/>
-     * example of gitlab-ci's CI_PROJECT_URL: "https://example.com/gitlab-org/gitlab-ce"<br/>
-     * ossrh, private or customized infrastructure name.
-     */
-    INFRASTRUCTURE("infrastructure"),
 
     /**
      * TODO unused?
@@ -74,14 +69,10 @@ public enum InfraOption implements CiOption {
     MAVEN_BUILD_OPTS_REPO("maven.build.opts.repo"),
     MAVEN_BUILD_OPTS_REPO_REF("maven.build.opts.repo.ref", GIT_REF_NAME_MASTER),
 
-    SETTINGS("settings"),
-    SETTINGS_SECURITY(SYSTEM_PROPERTY_SEC_LOCATION),
-    TOOLCHAINS("toolchains"),
-
     NEXUS2("nexus2") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return getInfrastructureSpecificValue(this, context);
+            return GlobalOption.getInfrastructureSpecificValue(this, context);
         }
 
         @Override
@@ -100,7 +91,7 @@ public enum InfraOption implements CiOption {
     NEXUS3("nexus3") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return getInfrastructureSpecificValue(this, context);
+            return GlobalOption.getInfrastructureSpecificValue(this, context);
         }
 
         @Override
@@ -120,7 +111,7 @@ public enum InfraOption implements CiOption {
     SONAR_HOST_URL("sonar.host.url") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return getInfrastructureSpecificValue(this, context);
+            return GlobalOption.getInfrastructureSpecificValue(this, context);
         }
 
         @Override
@@ -138,7 +129,7 @@ public enum InfraOption implements CiOption {
     SONAR_LOGIN("sonar.login") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return getInfrastructureSpecificValue(this, context);
+            return GlobalOption.getInfrastructureSpecificValue(this, context);
         }
 
         @Override
@@ -156,7 +147,7 @@ public enum InfraOption implements CiOption {
     SONAR_ORGANIZATION("sonar.organization") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return getInfrastructureSpecificValue(this, context);
+            return GlobalOption.getInfrastructureSpecificValue(this, context);
         }
 
         @Override
@@ -174,7 +165,7 @@ public enum InfraOption implements CiOption {
     SONAR_PASSWORD("sonar.password") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return getInfrastructureSpecificValue(this, context);
+            return GlobalOption.getInfrastructureSpecificValue(this, context);
         }
 
         @Override
@@ -200,19 +191,6 @@ public enum InfraOption implements CiOption {
     InfraOption(final String propertyName, final String defaultValue) {
         this.defaultValue = defaultValue;
         this.propertyName = propertyName;
-    }
-
-    public static Optional<String> getInfrastructureSpecificValue(
-        final CiOption ciOption,
-        final CiOptionContext context
-    ) {
-        return INFRASTRUCTURE.getValue(context)
-            .map(infra -> {
-                final String propName = infra + "." + ciOption.getPropertyName();
-                final String systemPropName = CiOptionNames.systemPropertyName(propName);
-                return Optional.ofNullable(context.getUserProperties().getProperty(propName))
-                    .orElseGet(() -> context.getSystemProperties().getProperty(systemPropName));
-            });
     }
 
     @Override

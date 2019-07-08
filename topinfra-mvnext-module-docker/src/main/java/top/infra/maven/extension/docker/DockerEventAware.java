@@ -23,7 +23,7 @@ import org.apache.maven.project.ProjectBuildingRequest;
 
 import top.infra.maven.extension.shared.Constants;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.shared.FastOption;
+import top.infra.maven.extension.shared.GlobalOption;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
@@ -85,7 +85,7 @@ public class DockerEventAware implements MavenEventAware {
                 this.login(docker);
             }
 
-            if (!FastOption.FAST.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(FALSE)) {
+            if (!GlobalOption.FAST.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(FALSE)) {
                 this.cleanOldImages(docker);
 
                 this.pullBaseImages(docker);

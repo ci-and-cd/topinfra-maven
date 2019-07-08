@@ -3,8 +3,7 @@ package top.infra.maven.extension.mavenbuild;
 import static java.lang.Boolean.FALSE;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.extension.shared.FastOption.FAST;
-import static top.infra.maven.extension.shared.InfraOption.GIT_AUTH_TOKEN;
+import static top.infra.maven.extension.shared.GlobalOption.FAST;
 
 import java.util.Optional;
 import java.util.Properties;
@@ -29,12 +28,7 @@ public enum MavenBuildPomOption implements CiOption {
     },
 
     GIT_COMMIT_ID_SKIP("git.commit.id.skip"),
-    GITHUB_GLOBAL_OAUTH2TOKEN("github.global.oauth2Token") {
-        @Override
-        public Optional<String> calculateValue(final CiOptionContext context) {
-            return GIT_AUTH_TOKEN.getValue(context);
-        }
-    },
+    GITHUB_GLOBAL_OAUTH2TOKEN("github.global.oauth2Token", "${git.auth.token}"),
     GITHUB_GLOBAL_REPOSITORYNAME("github.global.repositoryName") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
@@ -113,20 +107,12 @@ public enum MavenBuildPomOption implements CiOption {
         }
     },
 
-    @Deprecated
     SITE_PATH("site.path"),
-
     SONAR("sonar"),
 
-    @Deprecated
     CHECKSTYLE_CONFIG_LOCATION("checkstyle.config.location"),
-
-    @Deprecated
     FRONTEND_NODEDOWNLOADROOT("frontend.nodeDownloadRoot"),
-    @Deprecated
     FRONTEND_NPMDOWNLOADROOT("frontend.npmDownloadRoot"),
-
-    @Deprecated
     PMD_RULESET_LOCATION("pmd.ruleset.location"),
     ;
 

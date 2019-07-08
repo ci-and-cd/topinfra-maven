@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import top.infra.maven.extension.shared.CiOptionNames;
+import top.infra.maven.extension.shared.CiOptions;
 import top.infra.maven.utils.PropertiesUtils;
 
 public class CiOptionContext {
@@ -39,7 +39,7 @@ public class CiOptionContext {
             .stream()
             .flatMap(group -> group.stream().sorted())
             .forEach(ciOption -> {
-                if (!ciOption.name().equals(CiOptionNames.name(ciOption.getPropertyName()))) {
+                if (!ciOption.name().equals(CiOptions.name(ciOption.getPropertyName()))) {
                     throw new IllegalArgumentException(String.format(
                         "invalid property name [%s] for enum name [%s]", ciOption.name(), ciOption.getPropertyName()));
                 }
@@ -57,7 +57,7 @@ public class CiOptionContext {
     public void updateSystemProperties(final Properties externalProperties) {
         if (externalProperties != null) {
             for (final String name : externalProperties.stringPropertyNames()) {
-                final String key = CiOptionNames.systemPropertyName(name);
+                final String key = CiOptions.systemPropertyName(name);
                 final String value = externalProperties.getProperty(name);
                 if (value != null && !this.systemProperties.containsKey(key)) {
                     this.systemProperties.setProperty(key, value);

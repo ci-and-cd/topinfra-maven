@@ -11,20 +11,20 @@ import top.infra.maven.extension.CiOptionFactoryBean;
 
 @Named
 @Singleton
-public class InfraOptionFactoryBean implements CiOptionFactoryBean {
+public class GlobalOptionFactoryBean implements CiOptionFactoryBean {
 
     @Override
     public int getOrder() {
-        return Orders.CI_OPTION_INFRA;
+        return Orders.CI_OPTION_FAST;
     }
 
     @Override
     public Class<?> getType() {
-        return InfraOption.class;
+        return GlobalOption.class;
     }
 
     @Override
     public List<CiOption> getOptions() {
-        return Arrays.asList(InfraOption.values());
+        return Arrays.asList(GlobalOption.values());
     }
 }

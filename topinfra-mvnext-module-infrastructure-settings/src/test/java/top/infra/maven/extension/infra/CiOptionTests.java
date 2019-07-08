@@ -3,8 +3,8 @@ package top.infra.maven.extension.infra;
 import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.assertEquals;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.extension.shared.InfraOption.SONAR_HOST_URL;
-import static top.infra.maven.extension.shared.InfraOption.SONAR_ORGANIZATION;
+import static top.infra.maven.extension.infra.InfraOption.SONAR_HOST_URL;
+import static top.infra.maven.extension.infra.InfraOption.SONAR_ORGANIZATION;
 import static top.infra.maven.extension.shared.MavenOption.GENERATEREPORTS;
 import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 

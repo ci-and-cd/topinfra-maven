@@ -6,8 +6,8 @@ import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.SYNC;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_MASTER;
-import static top.infra.maven.extension.shared.InfraOption.GIT_AUTH_TOKEN;
-import static top.infra.maven.extension.shared.InfraOption.MAVEN_BUILD_OPTS_REPO_REF;
+import static top.infra.maven.extension.infra.InfraOption.GIT_AUTH_TOKEN;
+import static top.infra.maven.extension.infra.InfraOption.MAVEN_BUILD_OPTS_REPO_REF;
 import static top.infra.maven.utils.FileUtils.readFile;
 import static top.infra.maven.utils.FileUtils.writeFile;
 import static top.infra.maven.utils.SupportFunction.isEmpty;
@@ -27,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.shared.InfraOption;
+import top.infra.maven.extension.shared.GlobalOption;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.utils.DownloadUtils;
 import top.infra.maven.utils.DownloadUtils.DownloadException;
@@ -73,7 +73,7 @@ public class GitRepository {
                     : UrlUtils.domainOrHostFromUrl(url).map(value -> "http://" + value).orElse(null));
         }
 
-        final Optional<String> gitRepo = InfraOption.INFRASTRUCTURE.getValue(ciOptContext)
+        final Optional<String> gitRepo = GlobalOption.INFRASTRUCTURE.getValue(ciOptContext)
             .map(infra -> {
                 final String repoOwner = "ci-and-cd";
                 final String repoName = String.format("maven-build-opts-%s", infra);
