@@ -1,15 +1,21 @@
 package top.infra.maven.extension.shared;
 
+import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_FEATURE;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_HOTFIX;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_RELEASE;
+import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_SUPPORT;
+
 import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import top.infra.maven.CiOption;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.cienv.AppveyorVariables;
 import top.infra.maven.cienv.GitlabCiVariables;
 import top.infra.maven.cienv.TravisCiVariables;
-import top.infra.maven.CiOption;
-import top.infra.maven.CiOptionContext;
 
 public enum VcsProperties implements CiOption {
 
@@ -68,6 +74,19 @@ public enum VcsProperties implements CiOption {
     VcsProperties(final String propertyName, final String defaultValue) {
         this.defaultValue = defaultValue;
         this.propertyName = propertyName;
+    }
+
+    public static boolean isSnapshotRef(final String gitRef) {
+        return gitRef != null && !gitRef.isEmpty()
+            && (GIT_REF_NAME_DEVELOP.equals(gitRef)
+            || gitRef.startsWith(GIT_REF_PREFIX_FEATURE));
+    }
+
+    public static boolean isReleaseRef(final String gitRef) {
+        return gitRef != null && !gitRef.isEmpty()
+            && (gitRef.startsWith(GIT_REF_PREFIX_HOTFIX)
+            || gitRef.startsWith(GIT_REF_PREFIX_RELEASE)
+            || gitRef.startsWith(GIT_REF_PREFIX_SUPPORT));
     }
 
     /**

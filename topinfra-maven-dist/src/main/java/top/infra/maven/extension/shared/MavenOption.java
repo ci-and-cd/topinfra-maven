@@ -21,34 +21,35 @@ public enum MavenOption implements CiOption {
      * maven-failsafe-plugin and maven-surefire-plugin's configuration argLine.
      */
     ARGLINE("argLine", "") {
-        private Optional<String> additionalArgs(final String argLine, final CiOptionContext context) {
-            final Optional<String> result;
-
-            final Optional<Integer> javaVersion = systemJavaVersion();
-            if (javaVersion.map(version -> version >= 9).orElse(FALSE)) {
-                final Optional<String> addModules = JAVA_ADDMODULES.getValue(context); // TODO calculate addModules in poms by maven plugins
-                final Optional<String> argLineWithModules;
-                if (addModules.isPresent() && (argLine == null || !argLine.contains("--add-modules"))) {
-                    argLineWithModules = Optional.of(String.format("--add-modules %s", addModules.get()));
-                } else {
-                    argLineWithModules = Optional.empty();
-                }
-
-                if (javaVersion.map(version -> version >= 11).orElse(FALSE)) {
-                    final String addExports = " --add-exports java.base/jdk.internal.loader=ALL-UNNAMED"
-                        + " --add-exports java.base/sun.security.ssl=ALL-UNNAMED"
-                        + " --add-opens java.base/jdk.internal.loader=ALL-UNNAMED"
-                        + " --add-opens java.base/sun.security.ssl=ALL-UNNAMED";
-                    result = Optional.of(String.format("%s --illegal-access=permit %s", addExports, argLineWithModules.orElse("")));
-                } else {
-                    result = argLineWithModules;
-                }
-            } else {
-                result = Optional.empty();
-            }
-
-            return result;
-        }
+        // private Optional<String> additionalArgs(final String argLine, final CiOptionContext context) {
+        //     final Optional<String> result;
+        //
+        //     final Optional<Integer> javaVersion = systemJavaVersion();
+        //     if (javaVersion.map(version -> version >= 9).orElse(FALSE)) {
+        //         // TODO calculate addModules in poms by maven plugins ?
+        //         final Optional<String> addModules = JAVA_ADDMODULES.getValue(context);
+        //         final Optional<String> argLineWithModules;
+        //         if (addModules.isPresent() && (argLine == null || !argLine.contains("--add-modules"))) {
+        //             argLineWithModules = Optional.of(String.format("--add-modules %s", addModules.get()));
+        //         } else {
+        //             argLineWithModules = Optional.empty();
+        //         }
+        //
+        //         if (javaVersion.map(version -> version >= 11).orElse(FALSE)) {
+        //             final String addExports = " --add-exports java.base/jdk.internal.loader=ALL-UNNAMED"
+        //                 + " --add-exports java.base/sun.security.ssl=ALL-UNNAMED"
+        //                 + " --add-opens java.base/jdk.internal.loader=ALL-UNNAMED"
+        //                 + " --add-opens java.base/sun.security.ssl=ALL-UNNAMED";
+        //             result = Optional.of(String.format("%s --illegal-access=permit %s", addExports, argLineWithModules.orElse("")));
+        //         } else {
+        //             result = argLineWithModules;
+        //         }
+        //     } else {
+        //         result = Optional.empty();
+        //     }
+        //
+        //     return result;
+        // }
 
         // @Override
         // public Optional<String> calculateValue(final CiOptionContext context) {
@@ -74,22 +75,22 @@ public enum MavenOption implements CiOption {
     //  */
     // @Deprecated
     // FILE_ENCODING("file.encoding", UTF_8.name()),
-    JAVA_ADDMODULES("java.addModules") {
-        @Override
-        public Optional<String> calculateValue(final CiOptionContext context) {
-            final Optional<Integer> javaVersion = systemJavaVersion();
-            return javaVersion
-                .map(version -> {
-                    final String defaultModules;
-                    if (version == 9) {
-                        defaultModules = "java.xml.bind,java.xml.ws,java.xml.ws.annotation";
-                    } else {
-                        defaultModules = null;
-                    }
-                    return defaultModules;
-                });
-        }
-    },
+    // JAVA_ADDMODULES("java.addModules") {
+    //     @Override
+    //     public Optional<String> calculateValue(final CiOptionContext context) {
+    //         final Optional<Integer> javaVersion = systemJavaVersion();
+    //         return javaVersion
+    //             .map(version -> {
+    //                 final String defaultModules;
+    //                 if (version == 9) {
+    //                     defaultModules = "java.xml.bind,java.xml.ws,java.xml.ws.annotation";
+    //                 } else {
+    //                     defaultModules = null;
+    //                 }
+    //                 return defaultModules;
+    //             });
+    //     }
+    // },
     MAVEN_CLEAN_SKIP("maven.clean.skip", BOOL_STRING_TRUE),
     MAVEN_COMPILER_ENCODING("maven.compiler.encoding", UTF_8.name()),
     MAVEN_INSTALL_SKIP("maven.install.skip"),

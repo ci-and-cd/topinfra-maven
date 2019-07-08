@@ -12,11 +12,7 @@ import static top.infra.maven.extension.shared.Constants.PUBLISH_CHANNEL_RELEASE
 import static top.infra.maven.extension.shared.Constants.PUBLISH_CHANNEL_SNAPSHOT;
 import static top.infra.maven.extension.shared.FastOption.FAST;
 import static top.infra.maven.extension.shared.InfraOption.GIT_AUTH_TOKEN;
-import static top.infra.maven.extension.shared.InfraOption.INFRASTRUCTURE;
-import static top.infra.maven.extension.shared.InfraOption.NEXUS2;
-import static top.infra.maven.utils.SystemUtils.systemUserDir;
 
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -25,12 +21,8 @@ import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.shared.MavenOption;
 import top.infra.maven.extension.shared.VcsProperties;
 
+// TODO Move all options that depend on project properties to ProjectOption class.
 public enum MavenBuildPomOption implements CiOption {
-    @Deprecated
-    CHECKSTYLE_CONFIG_LOCATION("checkstyle.config.location"),
-
-    // @Deprecated
-    // CI_SCRIPT("ci.script"),
 
     DEPENDENCYCHECK("dependency-check") {
         @Override
@@ -42,11 +34,6 @@ public enum MavenBuildPomOption implements CiOption {
                 .orElse(BOOL_STRING_FALSE));
         }
     },
-
-    @Deprecated
-    FRONTEND_NODEDOWNLOADROOT("frontend.nodeDownloadRoot"),
-    @Deprecated
-    FRONTEND_NPMDOWNLOADROOT("frontend.npmDownloadRoot"),
 
     GIT_COMMIT_ID_SKIP("git.commit.id.skip"),
     GITHUB_GLOBAL_OAUTH2TOKEN("github.global.oauth2Token") {
@@ -81,6 +68,16 @@ public enum MavenBuildPomOption implements CiOption {
             return result;
         }
     },
+
+    GITHUB_SITE_PATH("github.site.path") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            final String refName = VcsProperties.GIT_REF_NAME.getValue(context).orElse("");
+            final boolean releaseRef = VcsProperties.isReleaseRef(refName);
+            final boolean snapshotRef = VcsProperties.isSnapshotRef(refName);
+            return Optional.of(releaseRef ? "releases" : (snapshotRef ? "snapshots" : ""));
+        }
+    },
     GITHUB_SITE_PUBLISH("github.site.publish", BOOL_STRING_FALSE) {
         @Override
         public Optional<String> getValue(final CiOptionContext context) {
@@ -92,6 +89,7 @@ public enum MavenBuildPomOption implements CiOption {
                 : Optional.of(BOOL_STRING_FALSE);
         }
     },
+
     /**
      * Run jacoco if true, skip jacoco and enable cobertura if false, skip bothe jacoco and cobertura if absent.
      */
@@ -105,21 +103,27 @@ public enum MavenBuildPomOption implements CiOption {
         }
     },
 
-    @Deprecated
-    MAVEN_CENTRAL_PASS("maven.central.pass"),
-    @Deprecated
-    MAVEN_CENTRAL_USER("maven.central.user"),
-
     NEXUS2_STAGING("nexus2.staging") {
         @Override
         public Optional<String> getValue(final CiOptionContext context) {
-            final Optional<String> publishChannel = PUBLISH_CHANNEL.getValue(context);
-            final boolean publishSnapshot = publishChannel.map(PUBLISH_CHANNEL_SNAPSHOT::equals).orElse(FALSE);
-            return publishSnapshot
-                ? Optional.of(BOOL_STRING_FALSE)
-                : super.getValue(context);
+            final String refName = VcsProperties.GIT_REF_NAME.getValue(context).orElse("");
+            final boolean releaseRef = VcsProperties.isReleaseRef(refName);
+            return releaseRef ? super.getValue(context) : Optional.of(BOOL_STRING_FALSE);
         }
     },
+
+    @Deprecated
+    SITE_PATH("site.path"),
+
+    SONAR("sonar"),
+
+    @Deprecated
+    CHECKSTYLE_CONFIG_LOCATION("checkstyle.config.location"),
+
+    @Deprecated
+    FRONTEND_NODEDOWNLOADROOT("frontend.nodeDownloadRoot"),
+    @Deprecated
+    FRONTEND_NPMDOWNLOADROOT("frontend.npmDownloadRoot"),
 
     @Deprecated
     PMD_RULESET_LOCATION("pmd.ruleset.location"),
@@ -128,13 +132,13 @@ public enum MavenBuildPomOption implements CiOption {
      * Auto determine current build publish channel by current build ref name.<br/>
      * snapshot or release
      */
+    @Deprecated
     PUBLISH_CHANNEL("publish.channel") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             final String result;
 
-            final String refName = VcsProperties.GIT_REF_NAME.getValue(
-                context).orElse("");
+            final String refName = VcsProperties.GIT_REF_NAME.getValue(context).orElse("");
             if (GIT_REF_NAME_DEVELOP.equals(refName)) {
                 result = PUBLISH_CHANNEL_SNAPSHOT;
             } else if (refName.startsWith(GIT_REF_PREFIX_FEATURE)) {
@@ -154,9 +158,6 @@ public enum MavenBuildPomOption implements CiOption {
     },
 
     @Deprecated
-    SITE_PATH("site.path"),
-
-    @Deprecated
     SITE_PATH_PREFIX("site.path.prefix") {
 
         // TODO expose git slug to pom and calculate site.path.prefix by maven plugin
@@ -174,79 +175,6 @@ public enum MavenBuildPomOption implements CiOption {
                 result = Optional.empty();
             }
             return result;
-        }
-    },
-
-    SONAR("sonar"),
-
-    WAGON_MERGEMAVENREPOS_ARTIFACTDIR("wagon.merge-maven-repos.artifactDir") {
-        @Override
-        public Optional<String> calculateValue(final CiOptionContext context) {
-            // TODO System.setProperty("wagon.merge-maven-repos.artifactDir", "${project.groupId}".replace('.', '/') + "/${project.artifactId}")
-            // TODO Extract all options that depend on project properties to ProjectOption class.
-            return Optional.of("${project.groupId}/${project.artifactId}");
-        }
-    },
-    WAGON_MERGEMAVENREPOS_SOURCE("wagon.merge-maven-repos.source") {
-
-        // TODO calculate wagon.merge-maven-repos.source and altDeploymentRepository by maven plugin?
-
-        @Override
-        public Optional<String> calculateValue(final CiOptionContext context) {
-            final String commitId = VcsProperties.GIT_COMMIT_ID.getValue(context)
-                .map(value -> value.substring(0, 8))
-                .orElse("unknown-commit");
-            // final String prefix = Paths.get(systemUserHome(), ".ci-and-cd", "local-deploy").toString();
-            final String prefix = Paths.get(systemUserDir(), ".mvn", "wagonRepository").toString();
-            return Optional.of(Paths.get(prefix, commitId).toString());
-        }
-
-        @Override
-        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
-            final Optional<String> result = super.setProperties(context, properties);
-
-            result.ifPresent(source -> properties.setProperty("altDeploymentRepository", "repo::default::file://" + source));
-
-            return result;
-        }
-    },
-    WAGON_MERGEMAVENREPOS_TARGET("wagon.merge-maven-repos.target") {
-        @Override
-        public Optional<String> calculateValue(final CiOptionContext context) {
-            final Optional<String> infrastructure = INFRASTRUCTURE.getValue(context);
-            final Optional<String> nexus2 = NEXUS2.getValue(context);
-
-            final boolean nexus2Staging = NEXUS2_STAGING.getValue(context)
-                .map(Boolean::parseBoolean).orElse(FALSE);
-            final Optional<String> publishChannel = PUBLISH_CHANNEL.getValue(context);
-            final boolean publishRelease = publishChannel.map(PUBLISH_CHANNEL_RELEASE::equals).orElse(FALSE);
-
-            final String prefix = infrastructure.map(infra -> String.format("%s", infra)).orElse("");
-            final String value;
-            if (nexus2.isPresent()) {
-                if (publishRelease) {
-                    value = nexus2Staging
-                        ? String.format("${%snexus2}service/local/staging/deploy/maven2/", prefix)
-                        : String.format("${%snexus2}content/repositories/releases/", prefix);
-                } else {
-                    value = String.format("${%snexus2}content/repositories/snapshots/", prefix);
-                }
-            } else {
-                value = String.format("${%snexus3}repository/maven-${publish.channel}s", prefix);
-            }
-            return Optional.ofNullable(value);
-        }
-    },
-    WAGON_MERGEMAVENREPOS_TARGETID("wagon.merge-maven-repos.targetId") {
-
-        // TODO calculate wagon.merge-maven-repos.targetId by maven plugin
-
-        @Override
-        public Optional<String> calculateValue(final CiOptionContext context) {
-            final Optional<String> infrastructure = INFRASTRUCTURE.getValue(context);
-            return Optional.of(infrastructure
-                .map(infra -> String.format("%s-${publish.channel}s", infra))
-                .orElse("${publish.channel}s"));
         }
     },
     ;

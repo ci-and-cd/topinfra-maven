@@ -3,10 +3,6 @@ package top.infra.maven.extension.gitflow;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_FEATURE;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_HOTFIX;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_RELEASE;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_SUPPORT;
 import static top.infra.maven.extension.shared.VcsProperties.GIT_REF_NAME;
 import static top.infra.maven.utils.SupportFunction.logEnd;
 import static top.infra.maven.utils.SupportFunction.logStart;
@@ -28,6 +24,7 @@ import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.shared.MavenProjectInfo;
 import top.infra.maven.extension.shared.MavenProjectInfoEventAware;
 import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.extension.shared.VcsProperties;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 
@@ -111,20 +108,14 @@ public class GitFlowSemanticVersionChecker implements MavenEventAware {
         final Entry<Boolean, RuntimeException> err = newTuple(FALSE, new IllegalArgumentException(errMsg));
 
         if (gitRef != null && !gitRef.isEmpty()) {
-            final boolean snapshotRef = GIT_REF_NAME_DEVELOP.equals(gitRef)
-                || gitRef.startsWith(GIT_REF_PREFIX_FEATURE);
-            final boolean releaseRef = gitRef.startsWith(GIT_REF_PREFIX_HOTFIX)
-                || gitRef.startsWith(GIT_REF_PREFIX_RELEASE)
-                || gitRef.startsWith(GIT_REF_PREFIX_SUPPORT);
-
-            if (snapshotRef) {
+            if (VcsProperties.isSnapshotRef(gitRef)) {
                 if (GIT_REF_NAME_DEVELOP.equals(gitRef)) { // develop branch
                     // no feature name in version
                     result = isSemSnapshot(projectVersion) ? ok : warn;
                 } else { // feature branches
                     result = isSemFeature(projectVersion) ? ok : warn;
                 }
-            } else if (releaseRef) {
+            } else if (VcsProperties.isReleaseRef(gitRef)) {
                 result = isSemRelease(projectVersion) ? ok : err;
             } else {
                 result = ok;
