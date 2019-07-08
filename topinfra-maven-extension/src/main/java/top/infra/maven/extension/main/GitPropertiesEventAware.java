@@ -151,7 +151,7 @@ public class GitPropertiesEventAware implements MavenEventAware {
                         logger.info(String.format("refs matched. %s %s", fullBranch, refsMatched));
 
                         refNameFull = refsMatched.stream().findFirst().orElse("");
-                        refName = shortenRefName(refNameFull);
+                        refName = shortenRefName(refNameFull).replaceFirst("^origin/", "");
                     }
                 } else {
                     final Optional<String> tag = findTag(repository, head);
