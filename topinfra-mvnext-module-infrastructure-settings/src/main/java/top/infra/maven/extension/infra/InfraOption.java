@@ -3,6 +3,8 @@ package top.infra.maven.extension.infra;
 import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_MASTER;
 import static top.infra.maven.extension.shared.Constants.SRC_CI_OPTS_PROPERTIES;
 import static top.infra.maven.extension.shared.GlobalOption.INFRASTRUCTURE;
+import static top.infra.maven.extension.shared.GlobalOption.getInfrastructureSpecificValue;
+import static top.infra.maven.extension.shared.GlobalOption.setInfrastructureSpecificValue;
 import static top.infra.maven.utils.SystemUtils.systemJavaIoTmp;
 import static top.infra.maven.utils.SystemUtils.systemUserHome;
 
@@ -13,7 +15,6 @@ import java.util.Properties;
 
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.shared.GlobalOption;
 import top.infra.maven.utils.MavenUtils;
 
 public enum InfraOption implements CiOption {
@@ -44,137 +45,109 @@ public enum InfraOption implements CiOption {
             return result;
         }
     },
-    GIT_AUTH_TOKEN("git.auth.token") {
-        @Override
-        public Optional<String> calculateValue(final CiOptionContext context) {
-            return GlobalOption.getInfrastructureSpecificValue(this, context);
-        }
-
-        @Override
-        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
-            final Optional<String> result = super.setProperties(context, properties);
-
-            result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
-                    properties.setProperty(infra + "." + this.getPropertyName(), value))
-            );
-
-            return result;
-        }
-    },
 
     MAVEN_BUILD_OPTS_REPO("maven.build.opts.repo"),
     MAVEN_BUILD_OPTS_REPO_REF("maven.build.opts.repo.ref", GIT_REF_NAME_MASTER),
 
+    GIT_AUTH_TOKEN("git.auth.token") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
+
+    MVNSITE_PASSWORD("mvnsite.password") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
+    MVNSITE_USERNAME("mvnsite.username") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
+
     NEXUS2("nexus2") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return GlobalOption.getInfrastructureSpecificValue(this, context);
+            return getInfrastructureSpecificValue(this, context);
         }
 
         @Override
         public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
-            final Optional<String> result = super.setProperties(context, properties);
-
-            result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
-                    properties.setProperty(infra + "." + this.getPropertyName(), value))
-            );
-
-            return result;
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
         }
     },
-
     NEXUS3("nexus3") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return GlobalOption.getInfrastructureSpecificValue(this, context);
+            return getInfrastructureSpecificValue(this, context);
         }
 
         @Override
         public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
-            final Optional<String> result = super.setProperties(context, properties);
-
-            result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
-                    properties.setProperty(infra + "." + this.getPropertyName(), value))
-            );
-
-            return result;
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
         }
     },
-    // OSSRH_MVNSITE_PASSWORD("ossrh.mvnsite.password"),
-    // OSSRH_MVNSITE_USERNAME("ossrh.mvnsite.username"),
     SONAR_HOST_URL("sonar.host.url") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return GlobalOption.getInfrastructureSpecificValue(this, context);
+            return getInfrastructureSpecificValue(this, context);
         }
 
         @Override
         public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
-            final Optional<String> result = super.setProperties(context, properties);
-
-            result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
-                    properties.setProperty(infra + "." + this.getPropertyName(), value))
-            );
-
-            return result;
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
         }
     },
     SONAR_LOGIN("sonar.login") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return GlobalOption.getInfrastructureSpecificValue(this, context);
+            return getInfrastructureSpecificValue(this, context);
         }
 
         @Override
         public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
-            final Optional<String> result = super.setProperties(context, properties);
-
-            result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
-                    properties.setProperty(infra + "." + this.getPropertyName(), value))
-            );
-
-            return result;
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
         }
     },
     SONAR_ORGANIZATION("sonar.organization") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return GlobalOption.getInfrastructureSpecificValue(this, context);
+            return getInfrastructureSpecificValue(this, context);
         }
 
         @Override
         public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
-            final Optional<String> result = super.setProperties(context, properties);
-
-            result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
-                    properties.setProperty(infra + "." + this.getPropertyName(), value))
-            );
-
-            return result;
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
         }
     },
     SONAR_PASSWORD("sonar.password") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            return GlobalOption.getInfrastructureSpecificValue(this, context);
+            return getInfrastructureSpecificValue(this, context);
         }
 
         @Override
         public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
-            final Optional<String> result = super.setProperties(context, properties);
-
-            result.ifPresent(value ->
-                INFRASTRUCTURE.getValue(context).ifPresent(infra ->
-                    properties.setProperty(infra + "." + this.getPropertyName(), value))
-            );
-
-            return result;
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
         }
     };
 

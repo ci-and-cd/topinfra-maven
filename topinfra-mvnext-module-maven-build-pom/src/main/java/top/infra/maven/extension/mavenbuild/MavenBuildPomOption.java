@@ -4,6 +4,8 @@ import static java.lang.Boolean.FALSE;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.extension.shared.GlobalOption.FAST;
+import static top.infra.maven.extension.shared.GlobalOption.getInfrastructureSpecificValue;
+import static top.infra.maven.extension.shared.GlobalOption.setInfrastructureSpecificValue;
 
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -103,13 +105,7 @@ public enum MavenBuildPomOption implements CiOption {
         }
     },
 
-    NEXUS2_STAGING("nexus2.staging") {
-        @Override
-        public Optional<String> getValue(final CiOptionContext context) {
-            final boolean releaseRef = RELEASEREF.getValue(context).map(Boolean::parseBoolean).orElse(FALSE);
-            return releaseRef ? super.getValue(context) : Optional.of(BOOL_STRING_FALSE);
-        }
-    },
+    NEXUS2_STAGING("nexus2.staging"),
 
     NOTGENERATEREPORTS("notGenerateReports") {
         @Override
@@ -139,10 +135,50 @@ public enum MavenBuildPomOption implements CiOption {
 
     SONAR("sonar"),
 
-    CHECKSTYLE_CONFIG_LOCATION("checkstyle.config.location"),
-    FRONTEND_NODEDOWNLOADROOT("frontend.nodeDownloadRoot"),
-    FRONTEND_NPMDOWNLOADROOT("frontend.npmDownloadRoot"),
-    PMD_RULESET_LOCATION("pmd.ruleset.location"),
+    CHECKSTYLE_CONFIG_LOCATION("checkstyle.config.location") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
+    FRONTEND_NODEDOWNLOADROOT("frontend.nodeDownloadRoot") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
+    FRONTEND_NPMDOWNLOADROOT("frontend.npmDownloadRoot") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
+    PMD_RULESET_LOCATION("pmd.ruleset.location") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
 
     /**
      * Need to calculate this in extension for profile activation.

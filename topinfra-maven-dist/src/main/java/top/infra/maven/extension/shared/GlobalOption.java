@@ -1,6 +1,8 @@
 package top.infra.maven.extension.shared;
 
 import java.util.Optional;
+import java.util.Properties;
+import java.util.function.BiFunction;
 
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
@@ -39,6 +41,22 @@ public enum GlobalOption implements CiOption {
                 return Optional.ofNullable(context.getUserProperties().getProperty(propName))
                     .orElseGet(() -> context.getSystemProperties().getProperty(systemPropName));
             });
+    }
+
+    public static Optional<String> setInfrastructureSpecificValue(
+        final CiOption ciOption,
+        final BiFunction<CiOptionContext, Properties, Optional<String>> superSetProperties,
+        final CiOptionContext context,
+        final Properties properties
+    ) {
+        final Optional<String> result = superSetProperties.apply(context, properties);
+
+        result.ifPresent(value ->
+            INFRASTRUCTURE.getValue(context).ifPresent(infra ->
+                properties.setProperty(infra + "." + ciOption.getPropertyName(), value))
+        );
+
+        return result;
     }
 
     @Override
