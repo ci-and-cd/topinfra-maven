@@ -94,7 +94,7 @@ public class MavenGoalEditorEventAware implements MavenEventAware {
         final Entry<List<String>, Properties> goalsAndProps = goalEditor.goalsAndUserProperties(ciOptContext, request.getGoals());
 
         logProperties(logger, "    goalEditor.userProperties", goalsAndProps.getValue(), null);
-        logger.info(logEnd(this, "initCiOptions", goalsAndProps, request.getGoals()));
+        logger.info(logEnd(this, "editGoals", goalsAndProps, request.getGoals()));
         return goalsAndProps;
     }
 }
