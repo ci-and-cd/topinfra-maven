@@ -91,7 +91,7 @@ public class MavenGoalEditorEventAware implements MavenEventAware {
             MavenBuildExtensionOption.ORIGIN_REPO.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null),
             MavenBuildExtensionOption.PUBLISH_TO_REPO.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null) // make sure version is valid too
         );
-        final Entry<List<String>, Properties> goalsAndProps = goalEditor.goalsAndUserProperties(request.getGoals());
+        final Entry<List<String>, Properties> goalsAndProps = goalEditor.goalsAndUserProperties(ciOptContext, request.getGoals());
 
         logProperties(logger, "    goalEditor.userProperties", goalsAndProps.getValue(), null);
         logger.info(logEnd(this, "initCiOptions", goalsAndProps, request.getGoals()));

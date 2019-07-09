@@ -3,6 +3,7 @@ package top.infra.maven.extension.mavenbuild;
 import static java.lang.Boolean.FALSE;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.extension.shared.Constants.PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY;
 import static top.infra.maven.extension.shared.GlobalOption.FAST;
 import static top.infra.maven.extension.shared.GlobalOption.getInfrastructureSpecificValue;
 import static top.infra.maven.extension.shared.GlobalOption.setInfrastructureSpecificValue;
@@ -107,6 +108,14 @@ public enum MavenBuildPomOption implements CiOption {
 
     NEXUS2_STAGING("nexus2.staging"),
 
+    MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY) {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            final Optional<Boolean> nexus2Staging = NEXUS2_STAGING.getValue(context).map(Boolean::parseBoolean);
+            return Optional.ofNullable(nexus2Staging.map(staging -> staging ? BOOL_STRING_FALSE : null).orElse(null));
+        }
+    },
+
     NOTGENERATEREPORTS("notGenerateReports") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
@@ -191,11 +200,8 @@ public enum MavenBuildPomOption implements CiOption {
                 .map(value -> value.substring(0, 8))
                 .orElse("unknown-commit");
 
-            final String executionRoot = MavenUtils.findInProperties(
-                MavenUtils.PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY,
-                context.getSystemProperties(),
-                context.getUserProperties()
-            ).orElse(SystemUtils.systemUserDir());
+            final String executionRoot = MavenUtils.findInProperties(MavenUtils.PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY, context)
+                .orElse(SystemUtils.systemUserDir());
 
             final String prefix = Paths.get(executionRoot, ".mvn", "wagonRepository").toString();
 

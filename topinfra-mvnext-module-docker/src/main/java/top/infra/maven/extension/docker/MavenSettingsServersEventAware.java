@@ -165,8 +165,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         final MavenExecutionRequest request,
         final CiOptionContext ciOptContext
     ) {
-        final Optional<String> settingsSecurityXml = MavenUtils.findInProperties(
-            Constants.PROP_NAME_SETTINGS_SECURITY, ciOptContext.getSystemProperties(), ciOptContext.getUserProperties());
+        final Optional<String> settingsSecurityXml = MavenUtils.findInProperties(Constants.PROP_NAME_SETTINGS_SECURITY, ciOptContext);
         final Optional<MavenSettingsSecurity> settingsSecurity = settingsSecurityXml
             .map(xml -> new MavenSettingsSecurity(xml, false));
         this.encryptedBlankString = settingsSecurity.map(ss -> ss.encodeText(" ")).orElse(null);

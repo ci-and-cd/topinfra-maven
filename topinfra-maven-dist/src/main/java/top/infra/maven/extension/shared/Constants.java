@@ -26,6 +26,8 @@ public final class Constants {
     public static final String PROP_NAME_SETTINGS_SECURITY = SYSTEM_PROPERTY_SEC_LOCATION;
     public static final String PROP_NAME_TOOLCHAINS = "toolchains";
 
+    public static final String PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY = "mvn.deploy.publish.segregation.goal.deploy";
+
     public static final String PUBLISH_CHANNEL_RELEASE = "release";
     public static final String PUBLISH_CHANNEL_SNAPSHOT = "snapshot";
 

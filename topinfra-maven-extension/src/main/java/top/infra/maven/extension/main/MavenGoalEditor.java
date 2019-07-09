@@ -1,10 +1,12 @@
 package top.infra.maven.extension.main;
 
+import static java.lang.Boolean.TRUE;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toMap;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.extension.shared.Constants.PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY;
 import static top.infra.maven.utils.SupportFunction.isNotEmpty;
 import static top.infra.maven.utils.SupportFunction.newTuple;
 
@@ -21,16 +23,17 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 
-import top.infra.maven.extension.shared.Constants;
+import top.infra.maven.CiOptionContext;
 import top.infra.maven.MavenPhase;
+import top.infra.maven.extension.shared.Constants;
 import top.infra.maven.extension.shared.MavenOption;
 import top.infra.maven.extension.shared.VcsProperties;
 import top.infra.maven.logging.Logger;
+import top.infra.maven.utils.MavenUtils;
 
 public class MavenGoalEditor {
 
     private static final String PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL = "mvn.deploy.publish.segregation.goal";
-    private static final String PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY = "mvn.deploy.publish.segregation.goal.deploy";
     private static final String PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_INSTALL = "mvn.deploy.publish.segregation.goal.install";
     private static final String PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_PACKAGE = "mvn.deploy.publish.segregation.goal.package";
     private static final Map<String, MavenPhase> phaseMap = Collections.unmodifiableMap(
@@ -100,9 +103,12 @@ public class MavenGoalEditor {
         return phases.stream().anyMatch(it -> it.ordinal() >= phase.ordinal());
     }
 
-    public Entry<List<String>, Properties> goalsAndUserProperties(final List<String> requestedGoals) {
+    public Entry<List<String>, Properties> goalsAndUserProperties(
+        final CiOptionContext ciOptContext,
+        final List<String> requestedGoals
+    ) {
         final Collection<String> resultGoals = this.editGoals(requestedGoals);
-        final Properties userProperties = this.additionalUserProperties(requestedGoals, resultGoals);
+        final Properties userProperties = this.additionalUserProperties(ciOptContext, requestedGoals, resultGoals);
         return newTuple(new ArrayList<>(resultGoals), userProperties);
     }
 
@@ -171,12 +177,21 @@ public class MavenGoalEditor {
         return resultGoals;
     }
 
-    public Properties additionalUserProperties(final List<String> requested, final Collection<String> result) {
+    public Properties additionalUserProperties(
+        final CiOptionContext ciOptContext,
+        final List<String> requested,
+        final Collection<String> result
+    ) {
         final Collection<MavenPhase> requestedPhases = phases(requested);
         final Collection<MavenPhase> resultPhases = phases(result);
 
+        final Optional<Boolean> dpsDeploy = MavenUtils.findInProperties(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY, ciOptContext)
+            .map(Boolean::parseBoolean);
+
         final Properties properties = new Properties();
-        properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY, BOOL_STRING_FALSE);
+        if (!dpsDeploy.isPresent()) {
+            properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY, BOOL_STRING_FALSE);
+        }
         properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_INSTALL, BOOL_STRING_FALSE);
         properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_PACKAGE, BOOL_STRING_FALSE);
         if (requested.contains("clean")) {
@@ -203,7 +218,9 @@ public class MavenGoalEditor {
 
             final Optional<String> requestedDeployGoal = requested.stream().filter(MavenGoalEditor::isDeployGoal).findAny();
             if ((requestedDeployGoal.isPresent() || includes(requestedPhases, MavenPhase.DEPLOY))
-                && this.publishToRepo) {
+                && this.publishToRepo
+                && dpsDeploy.orElse(TRUE) // dpsDeploy true or absent
+            ) {
                 properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY, BOOL_STRING_TRUE);
                 properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL, Constants.PHASE_DEPLOY);
             }

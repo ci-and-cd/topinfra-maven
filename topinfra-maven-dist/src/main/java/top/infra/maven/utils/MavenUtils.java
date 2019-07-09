@@ -39,6 +39,13 @@ public abstract class MavenUtils {
 
     public static Optional<String> findInProperties(
         final String propertyName,
+        final CiOptionContext ciOptionContext
+    ) {
+        return findInProperties(propertyName, ciOptionContext.getSystemProperties(), ciOptionContext.getUserProperties());
+    }
+
+    public static Optional<String> findInProperties(
+        final String propertyName,
         final Properties systemProperties,
         final Properties userProperties
     ) {
