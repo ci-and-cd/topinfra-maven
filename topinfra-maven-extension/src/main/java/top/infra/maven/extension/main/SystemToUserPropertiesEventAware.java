@@ -20,7 +20,6 @@ import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.MavenUtils;
 import top.infra.maven.utils.PropertiesUtils;
-import top.infra.maven.utils.SystemUtils;
 
 /**
  * Move -Dproperty=value in MAVEN_OPTS from systemProperties into userProperties (maven does not do this automatically).
@@ -51,10 +50,7 @@ public class SystemToUserPropertiesEventAware implements MavenEventAware {
         final CliRequest cliRequest,
         final CiOptionContext ciOptContext
     ) {
-        this.systemToUserProperties(
-            ciOptContext.getSystemProperties(),
-            ciOptContext.getUserProperties()
-        );
+        this.systemToUserProperties(cliRequest, ciOptContext);
     }
 
     @Override
@@ -63,20 +59,23 @@ public class SystemToUserPropertiesEventAware implements MavenEventAware {
     }
 
     private void systemToUserProperties(
-        final Properties systemProperties,
-        final Properties userProperties
+        final CliRequest cliRequest,
+        final CiOptionContext ciOptContext
     ) {
+        final Properties systemProperties = ciOptContext.getSystemProperties();
+        final Properties userProperties = ciOptContext.getUserProperties();
+
         copyOrSetDefaultToUserProps(
             systemProperties,
             userProperties,
             MavenUtils.PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY,
             () -> {
-                final String systemUserDir = SystemUtils.systemUserDir();
+                final String defaultValue = MavenUtils.executionRootPath(cliRequest, ciOptContext).toString();
                 logger.warn(String.format(
-                    "    Value of system property [%s] not found, use user.dir [%s] instead.",
-                    MavenUtils.PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY, systemUserDir
+                    "    Value of system property [%s] not found, use defaultValue [%s] instead.",
+                    MavenUtils.PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY, defaultValue
                 ));
-                return systemUserDir;
+                return defaultValue;
             }
         );
 

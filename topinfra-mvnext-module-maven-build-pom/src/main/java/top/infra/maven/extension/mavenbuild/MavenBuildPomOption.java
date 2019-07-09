@@ -5,6 +5,7 @@ import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.extension.shared.GlobalOption.FAST;
 
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -12,6 +13,8 @@ import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.shared.MavenOption;
 import top.infra.maven.extension.shared.VcsProperties;
+import top.infra.maven.utils.MavenUtils;
+import top.infra.maven.utils.SystemUtils;
 
 // TODO Move all options that depend on project properties to ProjectOption class.
 public enum MavenBuildPomOption implements CiOption {
@@ -132,6 +135,40 @@ public enum MavenBuildPomOption implements CiOption {
     FRONTEND_NODEDOWNLOADROOT("frontend.nodeDownloadRoot"),
     FRONTEND_NPMDOWNLOADROOT("frontend.npmDownloadRoot"),
     PMD_RULESET_LOCATION("pmd.ruleset.location"),
+
+    /**
+     * Need to calculate this in extension for profile activation.
+     */
+    WAGON_MERGEMAVENREPOS_SOURCE("wagon.merge-maven-repos.source") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            final Optional<String> result;
+            final String commitId = VcsProperties.GIT_COMMIT_ID.getValue(context)
+                .map(value -> value.substring(0, 8))
+                .orElse("unknown-commit");
+
+            final String executionRoot = MavenUtils.findInProperties(
+                MavenUtils.PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY,
+                context.getSystemProperties(),
+                context.getUserProperties()
+            ).orElse(SystemUtils.systemUserDir());
+
+            final String prefix = Paths.get(executionRoot, ".mvn", "wagonRepository").toString();
+
+            result = Optional.of(Paths.get(prefix, commitId).toString());
+
+            return result;
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            final Optional<String> result = super.setProperties(context, properties);
+
+            result.ifPresent(source -> properties.setProperty("altDeploymentRepository", "repo::default::file://" + source));
+
+            return result;
+        }
+    },
     ;
 
     private final String defaultValue;

@@ -63,9 +63,6 @@ public enum InfraOption implements CiOption {
         }
     },
 
-    /**
-     * TODO FIXME unused?
-     */
     MAVEN_BUILD_OPTS_REPO("maven.build.opts.repo"),
     MAVEN_BUILD_OPTS_REPO_REF("maven.build.opts.repo.ref", GIT_REF_NAME_MASTER),
 
