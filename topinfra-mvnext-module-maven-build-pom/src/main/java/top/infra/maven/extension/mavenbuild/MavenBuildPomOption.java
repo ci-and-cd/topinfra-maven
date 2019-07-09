@@ -111,6 +111,14 @@ public enum MavenBuildPomOption implements CiOption {
         }
     },
 
+    NOTGENERATEREPORTS("notGenerateReports") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            final Optional<String> generateReports = MavenOption.GENERATEREPORTS.getValue(context);
+            return Optional.of(String.valueOf(generateReports.map(generate -> !Boolean.parseBoolean(generate)).orElse(FALSE)));
+        }
+    },
+
     RELEASEREF("releaseRef") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
