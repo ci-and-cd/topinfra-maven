@@ -144,7 +144,7 @@ public class GitPropertiesEventAware implements MavenEventAware {
                         final List<String> refsMatched = repository.getRefDatabase().getRefs()
                             .stream()
                             .filter(ref -> ref.getObjectId().getName().equals(fullBranch))
-                            .filter(ref -> !ref.getName().equals("HEAD"))
+                            .filter(ref -> !ref.getName().endsWith("/HEAD") && !ref.getName().equals("HEAD"))
                             .map(Ref::getName)
                             .collect(Collectors.toList());
 

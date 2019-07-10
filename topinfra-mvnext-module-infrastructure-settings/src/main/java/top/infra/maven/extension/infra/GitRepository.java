@@ -62,6 +62,7 @@ public class GitRepository {
         final CiOptionContext ciOptContext,
         @Nullable final String remoteOriginUrl
     ) {
+        // TODO urls like 'gitProperties git.remote.origin.url='https://gitlab-ci-token:token@gitlab.com/gitlab-cloud-ready/cloud-ready-parent.git''
         final Optional<String> gitPrefix;
         final Optional<String> ciProjectUrl = Optional.ofNullable(ciOptContext.getSystemProperties().getProperty("env.CI_PROJECT_URL"));
         if (ciProjectUrl.isPresent()) {
