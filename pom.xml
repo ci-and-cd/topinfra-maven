@@ -3,10 +3,36 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>top.infra.maven</groupId>
     <artifactId>topinfra-maven</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <description>Core extensions for maven based projects</description>
+    <groupId>top.infra.maven</groupId>
+    <name>topinfra-maven</name>
     <packaging>pom</packaging>
+    <url>https://github.com/ci-and-cd/topinfra-maven</url>
+    <version>1.0.0</version>
+
+    <developers>
+        <developer>
+            <name>Haolun Zhang</name>
+            <url>https://github.com/chshawkn</url>
+        </developer>
+    </developers>
+
+    <!--
+    To make formatter:off/on instructions work,
+    you must go to 'Preferences->Editor->Code Style->Formatter Control' and check 'Enable formatter markers in comments'.
+    -->
+    <!-- @formatter:off -->
+    <ciManagement><system>Travis CI</system><url>https://travis-ci.org/ci-and-cd/topinfra-maven</url></ciManagement>
+    <issueManagement><system>GitHub Issues</system><url>https://github.com/ci-and-cd/topinfra-maven/issues</url></issueManagement>
+    <licenses><license><name>MIT License</name><url>http://www.opensource.org/licenses/mit-license.php</url><distribution>repo</distribution></license></licenses>
+    <scm>
+        <url>https://github.com/ci-and-cd/topinfra-maven</url>
+        <connection>scm:git:https://github.com/ci-and-cd/topinfra-maven.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/ci-and-cd/topinfra-maven.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+    <!-- @formatter:on -->
 
     <build>
         <!-- @formatter:off -->
@@ -221,6 +247,8 @@
                                 <properties>
                                     <add.prefix.to.itself>text</add.prefix.to.itself>
                                     <git.commit.id.skip>false</git.commit.id.skip>
+                                    <!-- Avoid error 'Invalid version [0.0.1-SNAPSHOT] for ref [release/1.0.0]' on release branches -->
+                                    <git.ref.name>develop</git.ref.name>
                                     <infrastructure>ossrh</infrastructure>
                                     <sonar>true</sonar>
                                     <private.sonar.host.url>http://my-sonarqube:9000</private.sonar.host.url>
