@@ -4,6 +4,7 @@ import static org.eclipse.jgit.lib.Repository.shortenRefName;
 import static top.infra.maven.extension.shared.VcsProperties.GIT_COMMIT_ID;
 import static top.infra.maven.extension.shared.VcsProperties.GIT_REF_NAME;
 import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
+import static top.infra.maven.utils.PropertiesUtils.logProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +37,7 @@ import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.extension.shared.VcsProperties;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
+import top.infra.maven.utils.MavenUtils;
 import top.infra.maven.utils.PropertiesUtils;
 
 @Named
@@ -45,10 +47,8 @@ public class GitPropertiesEventAware implements MavenEventAware {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
     // private static final String GIT_BRANCH = "git.branch";
-    private static final String GIT_BRANCH_FULL = "git.branch.full";
+    // private static final String GIT_BRANCH_FULL = "git.branch.full";
     // private static final String GIT_REF_NAME_FULL = "git.ref.name.full";
-
-    private static final String GIT_PROPERTIES_LOG_FORMAT = "    gitProperties %s='%s'";
 
     private Logger logger;
 
@@ -78,16 +78,20 @@ public class GitPropertiesEventAware implements MavenEventAware {
         // TODO heck if .git file (git submodules) or .git directory exists.
         final Optional<Properties> gitProperties = newJgitProperties(this.logger);
         gitProperties.ifPresent(props -> {
-            final Properties copied = new Properties();
+            final Properties merged = new Properties();
             Stream.of(VcsProperties.values()).forEach(opt -> {
                 final String name = opt.getPropertyName();
-                final String value = props.getProperty(name);
+                final String value = MavenUtils.findInProperties(name, ciOptContext)
+                    .orElseGet(() -> props.getProperty(name));
                 if (value != null) {
-                    copied.setProperty(name, value);
+                    merged.setProperty(name, value);
                 }
             });
-            PropertiesUtils.merge(copied, ciOptContext.getSystemProperties());
-            PropertiesUtils.merge(copied, ciOptContext.getUserProperties());
+
+            logProperties(logger, "    gitProperties", merged, null);
+
+            PropertiesUtils.merge(merged, ciOptContext.getSystemProperties());
+            PropertiesUtils.merge(merged, ciOptContext.getUserProperties());
         });
     }
 
@@ -127,10 +131,6 @@ public class GitPropertiesEventAware implements MavenEventAware {
                 // map.put(GIT_BRANCH, nullToEmpty(branch));
                 final String fullBranch = repository.getFullBranch();
                 // map.put(GIT_BRANCH_FULL, nullToEmpty(fullBranch));
-                if (logger.isInfoEnabled()) {
-                    // logger.info(String.format(GIT_PROPERTIES_LOG_FORMAT, GIT_BRANCH, nullToEmpty(branch)));
-                    logger.info(String.format(GIT_PROPERTIES_LOG_FORMAT, GIT_BRANCH_FULL, fullBranch));
-                }
 
                 // `git symbolic-ref -q --short HEAD || git describe --tags --exact-match`
                 final String refName;
@@ -165,15 +165,8 @@ public class GitPropertiesEventAware implements MavenEventAware {
                 }
                 map.put(GIT_REF_NAME.getPropertyName(), refName);
                 // map.put(GIT_REF_NAME_FULL, refNameFull);
-                if (logger.isInfoEnabled()) {
-                    logger.info(String.format(GIT_PROPERTIES_LOG_FORMAT, GIT_REF_NAME.getPropertyName(), refName));
-                    // logger.info(String.format(GIT_PROPERTIES_LOG_FORMAT, GIT_REF_NAME_FULL, refNameFull));
-                }
 
                 final String commitId = head.name();
-                if (logger.isInfoEnabled()) {
-                    logger.info(String.format(GIT_PROPERTIES_LOG_FORMAT, GIT_COMMIT_ID.getPropertyName(), commitId));
-                }
                 map.put(GIT_COMMIT_ID.getPropertyName(), commitId);
 
                 // try (final org.eclipse.jgit.lib.ObjectReader objectReader = repository.newObjectReader()) {
@@ -192,9 +185,6 @@ public class GitPropertiesEventAware implements MavenEventAware {
                 // map.put("git.build.datetime.simple", getFormattedDate());
 
                 final String remoteOriginUrl = repository.getConfig().getString("remote", "origin", "url");
-                if (logger.isInfoEnabled()) {
-                    logger.info(String.format(GIT_PROPERTIES_LOG_FORMAT, GIT_REMOTE_ORIGIN_URL.getPropertyName(), remoteOriginUrl));
-                }
                 map.put(GIT_REMOTE_ORIGIN_URL.getPropertyName(), remoteOriginUrl);
 
                 final Properties properties = new Properties();
