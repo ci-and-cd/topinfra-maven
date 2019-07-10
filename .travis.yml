@@ -39,6 +39,12 @@ before_install:
     gpg2 --use-agent --batch=true --list-keys;
     printf 'trust\n5\ny\n' | gpg2 --use-agent --batch=true --command-fd 0 --edit-key ${CI_OPT_GPG_KEYNAME};
   - if [[ -z "${MAVEN_OPTS}" ]]; then export MAVEN_OPTS="-XX:TieredStopAtLevel=1 -XX:+UseParallelGC -Dprofile=title -DprofileFormat=JSON,HTML"; fi;
+  - if [[ "${CLEAN_TRAVIS_LOGS}" == "true" ]]; then
+      travis login --github-token ${CI_OPT_OSSRH_GIT_AUTH_TOKEN} --org;
+      LAST_BUILD_NUMBER=$(print '\n' | travis history --limit 10 --org | head -n1 | cut -d" " -f1 | cut -c2-);
+      echo "LAST_BUILD_NUMBER [${LAST_BUILD_NUMBER}]";
+      for bn in $(seq 1 ${LAST_BUILD_NUMBER} ); do print '\n' | travis logs ${bn} --delete --force --org; done;
+    fi;
 branches:
   only:
     #- master # do nothing on master branch

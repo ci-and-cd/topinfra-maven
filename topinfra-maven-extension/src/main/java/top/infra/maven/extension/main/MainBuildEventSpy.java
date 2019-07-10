@@ -344,7 +344,7 @@ public class MainBuildEventSpy extends AbstractEventSpy {
                 if (v instanceof Properties) {
                     logger.debug(logProperties(logger, String.format("    context.data.%s", k), (Properties) v, null));
                 } else {
-                    logger.debug(String.format("    context.data.%s=%s", k, v));
+                    logger.debug(PropertiesUtils.maskSecrets(String.format("    context.data.%s=%s", k, v)));
                 }
             });
         }
