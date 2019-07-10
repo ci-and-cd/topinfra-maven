@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                        http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+    <interactiveMode/>
+
+    <pluginGroups>
+        <pluginGroup>com.amashchenko.maven.plugin</pluginGroup>
+        <pluginGroup>com.github.ferstl</pluginGroup>
+        <pluginGroup>com.github.spotbugs</pluginGroup>
+        <pluginGroup>io.quarkus</pluginGroup>
+        <pluginGroup>io.takari</pluginGroup>
+        <pluginGroup>org.apache.maven.plugins</pluginGroup>
+        <pluginGroup>org.apache.tomcat.maven</pluginGroup>
+        <pluginGroup>org.codehaus.mojo</pluginGroup>
+        <pluginGroup>org.owasp</pluginGroup>
+        <pluginGroup>org.reficio</pluginGroup>
+        <pluginGroup>org.sonarsource.scanner.maven</pluginGroup>
+        <pluginGroup>org.springframework.boot</pluginGroup>
+    </pluginGroups>
+
+    <profiles>
+        <!-- @formatter:off -->
+        <profile>
+            <id>encrypted-properties</id>
+            <activation><activeByDefault>true</activeByDefault></activation>
+            <!-- -emp "password" "{d9B+VbRQ4kYH4T7bCu/fUxXmfNx0NwBbZAxqWZnEAg8=}" -->
+            <properties>
+                <!-- -ep "thisismypassword" "{lvggcgCyZ0QHIoYV5vXzvAjARj0nptlO/7R1CnPlNWOlIpnOo7y8bIJEhyDQchJb}" -->
+                <encrypted.password>{lvggcgCyZ0QHIoYV5vXzvAjARj0nptlO/7R1CnPlNWOlIpnOo7y8bIJEhyDQchJb}</encrypted.password>
+            </properties>
+        </profile>
+        <profile>
+            <id>default-public-repositories</id>
+            <activation><activeByDefault>true</activeByDefault></activation>
+            <repositories>
+                <!-- Make artifacts in OSSRH repositories available -->
+                <repository>
+                    <id>ossrh-releases</id>
+                    <name>central releases</name>
+                    <url>https://oss.sonatype.org/content/repositories/releases/</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                </repository>
+                <repository>
+                    <id>ossrh-snapshots</id>
+                    <name>central snapshots</name>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+                    <releases><enabled>false</enabled></releases>
+                    <snapshots><enabled>true</enabled></snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>central</id>
+                    <name>central</name>
+                    <url>https://repo1.maven.org/maven2/</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+        <!-- @formatter:on -->
+    </profiles>
+
+    <proxies>
+        <!--<proxy><id>http-proxy</id><active>true</active><protocol>http</protocol><host>127.0.0.1</host><port>8080</port><nonProxyHosts>127.0.0.1</nonProxyHosts></proxy>-->
+        <!--<proxy><id>http-proxy</id><active>true</active><protocol>socks5</protocol><host>127.0.0.1</host><port>1080</port><nonProxyHosts>127.0.0.1</nonProxyHosts></proxy>-->
+    </proxies>
+
+    <usePluginRegistry/>
+</settings>

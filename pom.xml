@@ -1,0 +1,394 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>topinfra-maven</artifactId>
+    <description>Core extensions for maven based projects</description>
+    <groupId>top.infra.maven</groupId>
+    <name>topinfra-maven</name>
+    <packaging>pom</packaging>
+    <url>https://github.com/ci-and-cd/topinfra-maven</url>
+    <version>1.0.0</version>
+
+    <developers>
+        <developer>
+            <name>Haolun Zhang</name>
+            <url>https://github.com/chshawkn</url>
+        </developer>
+    </developers>
+
+    <!--
+    To make formatter:off/on instructions work,
+    you must go to 'Preferences->Editor->Code Style->Formatter Control' and check 'Enable formatter markers in comments'.
+    -->
+    <!-- @formatter:off -->
+    <ciManagement><system>Travis CI</system><url>https://travis-ci.org/ci-and-cd/topinfra-maven</url></ciManagement>
+    <issueManagement><system>GitHub Issues</system><url>https://github.com/ci-and-cd/topinfra-maven/issues</url></issueManagement>
+    <licenses><license><name>MIT License</name><url>http://www.opensource.org/licenses/mit-license.php</url><distribution>repo</distribution></license></licenses>
+    <scm>
+        <url>https://github.com/ci-and-cd/topinfra-maven</url>
+        <connection>scm:git:https://github.com/ci-and-cd/topinfra-maven.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/ci-and-cd/topinfra-maven.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+    <!-- @formatter:on -->
+
+    <build>
+        <!-- @formatter:off -->
+        <plugins>
+        </plugins>
+        <!-- @formatter:on -->
+
+        <pluginManagement>
+            <!-- @formatter:off -->
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-component-metadata</artifactId>
+                    <version>2.0.0</version>
+                    <dependencies>
+                        <!-- Java 11 support. -->
+                        <dependency>
+                            <groupId>org.ow2.asm</groupId>
+                            <artifactId>asm</artifactId>
+                            <version>7.1</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId><version>${version.maven-jar-plugin}</version></plugin>
+
+                <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-shade-plugin</artifactId><version>3.2.1</version></plugin>
+            </plugins>
+            <!-- @formatter:on -->
+        </pluginManagement>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
+    <!-- @formatter:off -->
+    <dependencies>
+        <!--<dependency><groupId>com.google.code.findbugs</groupId><artifactId>annotations</artifactId></dependency>-->
+        <dependency><groupId>org.jetbrains</groupId><artifactId>annotations</artifactId></dependency>
+
+        <dependency><groupId>org.apache.maven</groupId><artifactId>maven-core</artifactId><scope>provided</scope></dependency>
+
+        <dependency><groupId>ch.qos.logback</groupId><artifactId>logback-classic</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>junit</groupId><artifactId>junit</artifactId><scope>test</scope></dependency>
+    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><classifier>mvn${version.maven}</classifier><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><classifier>shaded</classifier><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-test</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-docker</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-gitflow-semver</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-gpg-key</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-infrastructure-settings</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-extension</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-maven-build-pom</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-settings-security</artifactId><version>${project.version}</version></dependency>
+
+            <dependency><groupId>cn.home1.tools</groupId><artifactId>maven-settings-decoder-core</artifactId><version>1.1.0</version></dependency>
+            <dependency><groupId>com.google.code.findbugs</groupId><artifactId>annotations</artifactId><version>3.0.1u2</version></dependency>
+            <dependency><groupId>com.google.guava</groupId><artifactId>guava</artifactId><version>${version.guava}</version></dependency>
+            <dependency><groupId>org.jetbrains</groupId><artifactId>annotations</artifactId><version>16.0.3</version></dependency>
+
+            <dependency><groupId>org.apache.maven</groupId><artifactId>maven-artifact</artifactId><version>${version.maven}</version></dependency>
+            <dependency><groupId>org.apache.maven</groupId><artifactId>maven-core</artifactId><version>${version.maven}</version></dependency>
+            <dependency><groupId>org.apache.maven</groupId><artifactId>maven-embedder</artifactId><version>${version.maven}</version></dependency>
+            <dependency><groupId>org.apache.maven</groupId><artifactId>maven-model</artifactId><version>${version.maven}</version></dependency>
+            <dependency><groupId>org.codehaus.plexus</groupId><artifactId>plexus-component-annotations</artifactId><version>1.7.1</version></dependency>
+
+            <dependency><groupId>org.apache.maven</groupId><artifactId>maven-settings</artifactId><version>${version.maven}</version></dependency>
+            <dependency><groupId>org.sonatype.plexus</groupId><artifactId>plexus-cipher</artifactId><version>${version.plexus-cipher}</version></dependency>
+
+            <!--<dependency><groupId>com.squareup.okhttp3</groupId><artifactId>okhttp</artifactId><version>3.14.2</version></dependency>-->
+            <dependency><groupId>org.eclipse.jgit</groupId><artifactId>org.eclipse.jgit</artifactId><version>5.1.3.201810200350-r</version></dependency>
+            <dependency><groupId>org.json</groupId><artifactId>json</artifactId><version>20180813</version></dependency>
+            <dependency><groupId>org.unix4j</groupId><artifactId>unix4j-command</artifactId><version>0.5</version></dependency>
+
+            <dependency><groupId>ch.qos.logback</groupId><artifactId>logback-classic</artifactId><version>${version.logback}</version></dependency>
+            <dependency><groupId>org.apache.commons</groupId><artifactId>commons-lang3</artifactId><version>${version.commons-lang3}</version></dependency>
+            <dependency><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><version>${version.lombok}</version></dependency>
+            <dependency><groupId>org.springframework</groupId><artifactId>spring-context</artifactId><version>${version.spring-context}</version></dependency>
+            <dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>${version.junit.legacy}</version></dependency>
+        </dependencies>
+    </dependencyManagement>
+    <!-- @formatter:on -->
+
+    <!-- @formatter:off -->
+    <distributionManagement>
+        <repository><id>ossrh-staging</id><url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url></repository>
+        <snapshotRepository><id>ossrh-snapshots</id><url>https://oss.sonatype.org/content/repositories/snapshots</url></snapshotRepository>
+    </distributionManagement>
+    <!-- @formatter:on -->
+
+    <modules>
+        <module>topinfra-maven-dist</module>
+        <module>topinfra-maven-extension</module>
+        <module>topinfra-maven-test</module>
+        <module>topinfra-mvnext-module-docker</module>
+        <module>topinfra-mvnext-module-gitflow-semver</module>
+        <module>topinfra-mvnext-module-gpg-key</module>
+        <module>topinfra-mvnext-module-infrastructure-settings</module>
+        <module>topinfra-mvnext-module-maven-build-pom</module>
+        <module>topinfra-mvnext-module-settings-security</module>
+    </modules>
+
+    <!-- @formatter:off -->
+    <profiles>
+        <profile>
+            <id>gpg2-arguments</id>
+            <activation><property><name>gpg.loopback</name><value>true</value></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <configuration>
+                            <gpgArguments>
+                                <gpgArgument>--use-agent</gpgArgument>
+                                <gpgArgument>--pinentry-mode</gpgArgument>
+                                <gpgArgument>loopback</gpgArgument>
+                            </gpgArguments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>gpg-for-travis-and-maven-central</id>
+            <activation><property><name>gpg.executable</name></property></activation>
+            <properties>
+                <!-- Do not set gpg.executable here -->
+                <!--<gpg.executable>gpg</gpg.executable>-->
+                <gpg.keyname>${env.CI_OPT_GPG_KEYNAME}</gpg.keyname>
+                <gpg.passphrase>${env.CI_OPT_GPG_PASSPHRASE}</gpg.passphrase>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution><id>sign-artifacts</id><phase>verify</phase><goals><goal>sign</goal></goals></execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>skip-tests-when-fast-option-present</id>
+            <activation><property><name>fast</name></property></activation>
+            <properties>
+                <skipTests>true</skipTests>
+                <skipITs>true</skipITs>
+            </properties>
+        </profile>
+        <profile>
+            <id>skip-these-plugins-when-fast-option-present</id>
+            <activation><property><name>!fast</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution><id>attach-sources</id><goals><goal>jar-no-fork</goal></goals><phase>prepare-package</phase></execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution><id>attach-javadocs</id><goals><goal>jar</goal></goals><phase>prepare-package</phase></execution>
+                            <execution><id>attach-test-javadocs</id><goals><goal>test-jar</goal></goals><phase>prepare-package</phase></execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                            <detectBuildFailures>true</detectBuildFailures>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <serverId>ossrh-staging</serverId>
+                            <!--<sslAllowAll>true</sslAllowAll>-->
+                            <stagingProgressPauseDurationSeconds>30</stagingProgressPauseDurationSeconds>
+                            <stagingProgressTimeoutMinutes>60</stagingProgressTimeoutMinutes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+                <pluginManagement>
+                    <plugins>
+                        <plugin><groupId>com.googlecode.maven-download-plugin</groupId><artifactId>download-maven-plugin</artifactId><version>1.4.2</version></plugin>
+
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-invoker-plugin</artifactId>
+                            <version>3.2.0</version>
+                            <configuration>
+                                <cloneProjectsTo>${project.basedir}/target/it</cloneProjectsTo>
+                                <debug>false</debug>
+                                <goals>
+                                    <!-- Goals for child maven. -->
+                                    <goal>clean</goal>
+                                    <goal>dependency:resolve</goal>
+                                    <goal>install</goal>
+                                </goals>
+                                <ignoreFailures>false</ignoreFailures>
+                                <invokerPropertiesFile>invoker.properties</invokerPropertiesFile>
+                                <postBuildHookScript>verify</postBuildHookScript>
+                                <preBuildHookScript>setup</preBuildHookScript>
+                                <properties>
+                                    <add.prefix.to.itself>text</add.prefix.to.itself>
+                                    <git.commit.id.skip>false</git.commit.id.skip>
+                                    <!-- Avoid error 'Invalid version [0.0.1-SNAPSHOT] for ref [release/1.0.0]' on release branches -->
+                                    <git.ref.name>develop</git.ref.name>
+                                    <infrastructure>ossrh</infrastructure>
+                                    <sonar>true</sonar>
+                                    <private.sonar.host.url>http://my-sonarqube:9000</private.sonar.host.url>
+                                    <site>true</site>
+                                </properties>
+                                <projectsDirectory>${project.basedir}/src/it</projectsDirectory>
+                                <!--<settingsFile>src/it/settings.xml</settingsFile>-->
+                                <showErrors>false</showErrors>
+                                <streamLogs>false</streamLogs>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>integration-test</id>
+                                    <goals>
+                                        <!-- Goals for parent maven. -->
+                                        <goal>install</goal>
+                                        <goal>run</goal>
+                                        <goal>verify</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin><artifactId>maven-gpg-plugin</artifactId><version>${version.maven-gpg-plugin}</version></plugin>
+                        <plugin>
+                            <artifactId>maven-javadoc-plugin</artifactId><version>${version.maven-javadoc-plugin}</version>
+                            <configuration>
+                                <additionalJOption>-J-Duser.language=en</additionalJOption>
+                                <!--<additionalOptions>-views -all</additionalOptions>-->
+                                <charset>${project.build.sourceEncoding}</charset>
+                                <!--<doclet>org.umlgraph.doclet.UmlGraphDoc</doclet>-->
+                                <!-- UML Graph needs to match HTML tag to insert images into javadoc -->
+                                <!--<docletArtifact><groupId>org.umlgraph</groupId><artifactId>umlgraph</artifactId><version>${umlgraph.version}</version></docletArtifact>-->
+                                <doclint>none</doclint>
+                                <encoding>${project.build.sourceEncoding}</encoding>
+                                <failOnError>${maven.javadoc.failsOnError}</failOnError>
+                                <notimestamp>true</notimestamp>
+                                <useStandardDocletOptions>true</useStandardDocletOptions>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <version>${version.maven.testing}</version>
+                            <dependencies>
+                                <dependency>
+                                    <groupId>org.junit.jupiter</groupId>
+                                    <artifactId>junit-jupiter-engine</artifactId>
+                                    <version>${version.junit.jupiter}</version>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.junit.vintage</groupId>
+                                    <artifactId>junit-vintage-engine</artifactId>
+                                    <version>${version.junit.vintage}</version>
+                                </dependency>
+                            </dependencies>
+                            <configuration>
+                                <runOrder>alphabetical</runOrder>
+                                <includes>
+                                    <include>**/*Test.class</include>
+                                    <include>**/*Suite.class</include>
+                                </includes>
+                            </configuration>
+                        </plugin>
+
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-failsafe-plugin</artifactId>
+                            <version>${version.maven.testing}</version>
+                            <dependencies>
+                                <dependency>
+                                    <groupId>org.junit.jupiter</groupId>
+                                    <artifactId>junit-jupiter-engine</artifactId>
+                                    <version>${version.junit.jupiter}</version>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.junit.vintage</groupId>
+                                    <artifactId>junit-vintage-engine</artifactId>
+                                    <version>${version.junit.vintage}</version>
+                                </dependency>
+                            </dependencies>
+                            <configuration>
+                                <includes>
+                                    <include>**/*IT.java</include>
+                                    <include>**/*Verify.java</include>
+                                </includes>
+                            </configuration>
+                        </plugin>
+                        <plugin><artifactId>maven-source-plugin</artifactId><version>${version.maven-source-plugin}</version></plugin>
+                        <plugin><artifactId>nexus-staging-maven-plugin</artifactId><groupId>org.sonatype.plugins</groupId><version>${version.nexus-staging-maven-plugin}</version></plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+    </profiles>
+    <!-- @formatter:on -->
+
+    <properties>
+        <java.version>8</java.version>
+
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+
+        <version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
+        <version.maven-javadoc-plugin>3.1.0</version.maven-javadoc-plugin>
+        <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
+
+        <maven.javadoc.failsOnError>false</maven.javadoc.failsOnError>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- mvn install -Dprofile="profile name" -DprofileFormat=JSON,HTML -->
+        <maven-profiler-report-directory>${project.basedir}/.mvn/profilerReport</maven-profiler-report-directory>
+
+        <version.commons-lang3>3.8.1</version.commons-lang3>
+        <version.guava>27.1-jre</version.guava>
+        <version.junit.jupiter>5.4.2</version.junit.jupiter>
+        <version.junit.legacy>4.12</version.junit.legacy>
+        <version.junit.vintage>5.4.2</version.junit.vintage>
+        <version.logback>1.2.3</version.logback>
+        <version.lombok>1.16.14</version.lombok>
+        <version.maven>3.6.1</version.maven>
+        <md5.maven>fd43b329dcf4c837f4951ff9834f0e6f</md5.maven>
+        <version.maven-jar-plugin>3.1.2</version.maven-jar-plugin>
+        <version.maven.testing>2.22.2</version.maven.testing>
+        <version.nexus-staging-maven-plugin>1.6.8</version.nexus-staging-maven-plugin>
+        <version.plexus-cipher>1.7</version.plexus-cipher>
+        <version.spring-context>5.1.6.RELEASE</version.spring-context>
+    </properties>
+
+    <!-- @formatter:off -->
+    <repositories>
+        <repository>
+            <id>ossrh-releases</id><name>central releases</name><url>https://oss.sonatype.org/content/repositories/releases/</url>
+            <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases><snapshots><enabled>false</enabled></snapshots>
+        </repository>
+        <repository>
+            <id>ossrh-snapshots</id><name>central snapshots</name><url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <releases><enabled>false</enabled></releases><snapshots><enabled>true</enabled><updatePolicy>daily</updatePolicy></snapshots>
+        </repository>
+    </repositories>
+    <!-- @formatter:on -->
+</project>

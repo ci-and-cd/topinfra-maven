@@ -1,0 +1,87 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>top.infra.maven</groupId>
+        <artifactId>topinfra-maven</artifactId>
+        <version>1.0.0</version>
+    </parent>
+    <artifactId>topinfra-maven-extension</artifactId>
+    <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <!-- Package as Maven extension. -->
+            <plugin>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-component-metadata</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-metadata</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- @formatter:off -->
+    <dependencies>
+        <dependency><groupId>org.apache.maven</groupId><artifactId>maven-embedder</artifactId><scope>provided</scope></dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId><artifactId>org.eclipse.jgit</artifactId>
+            <exclusions>
+                <exclusion><artifactId>JavaEWAH</artifactId><groupId>com.googlecode.javaewah</groupId></exclusion>
+                <exclusion><artifactId>jsch</artifactId><groupId>com.jcraft</groupId></exclusion>
+                <exclusion><artifactId>jzlib</artifactId><groupId>com.jcraft</groupId></exclusion>
+                <exclusion><artifactId>slf4j-api</artifactId><groupId>org.slf4j</groupId></exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><classifier>shaded</classifier><scope>provided</scope></dependency>
+
+        <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-test</artifactId><scope>test</scope></dependency>
+
+        <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-docker</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-gitflow-semver</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-gpg-key</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-infrastructure-settings</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-maven-build-pom</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-settings-security</artifactId><scope>test</scope></dependency>
+    </dependencies>
+    <!-- @formatter:on -->
+
+    <!-- @formatter:off -->
+    <profiles>
+        <profile>
+            <id>skip-invoker-when-fast-option-present</id>
+            <activation><property><name>!fast</name></property></activation>
+            <build>
+                <plugins>
+                    <!-- Invoke integration tests. -->
+                    <plugin>
+                        <artifactId>maven-invoker-plugin</artifactId>
+                        <configuration>
+                            <!-- <debug>true</debug> -->
+                            <showErrors>true</showErrors>
+                            <streamLogs>true</streamLogs>
+                            <localRepositoryPath>${project.basedir}/../test-repo</localRepositoryPath>
+                            <mavenHome>../topinfra-maven-dist/target/apache-maven-${version.maven}/apache-maven-${version.maven}</mavenHome>
+                            <pomIncludes>
+                                <include>test-topinfra-maven-extension</include>
+                            </pomIncludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    <!-- @formatter:on -->
+
+    <properties>
+    </properties>
+</project>

@@ -1,0 +1,60 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+    <id>zip</id>
+    <includeBaseDirectory>true</includeBaseDirectory>
+
+    <formats>
+        <format>dir</format>
+        <format>zip</format>
+    </formats>
+    <fileSets>
+        <fileSet>
+            <directory>${project.basedir}/src/main/assembly/apache-maven/apache-maven-${version.maven}</directory>
+            <excludes>
+                <exclude>/conf/settings.xml</exclude>
+            </excludes>
+            <outputDirectory>/</outputDirectory>
+        </fileSet>
+    </fileSets>
+    <files>
+        <!--
+        <file>
+            <destName>${project.artifactId}.${project.packaging}</destName>
+            <outputDirectory>/lib</outputDirectory>
+            <source>${project.build.directory}/${project.artifactId}-${project.version}-mvn${version.maven}.${project.packaging}</source>
+        </file>
+        -->
+        <file>
+            <destName>${project.artifactId}-shaded.${project.packaging}</destName>
+            <outputDirectory>/lib</outputDirectory>
+            <source>${project.build.directory}/${project.artifactId}-${project.version}-shaded.${project.packaging}</source>
+        </file>
+        <file>
+            <source>${project.basedir}/src/main/assembly/settings.xml</source>
+            <outputDirectory>/conf</outputDirectory>
+        </file>
+    </files>
+    <dependencySets>
+        <!--
+        Use 'outputFileNameMapping' to strip down the version from file name, see
+        https://stackoverflow.com/questions/1709290/how-can-i-force-maven-to-leave-the-version-number-out-of-dependency-file-names
+        -->
+        <!-- No 'dependencySet' when using shaded package
+        <dependencySet>
+            <excludes>
+                <exclude>${project.groupId}:${project.artifactId}:jar:*</exclude>
+                <exclude>com.google.code.findbugs:annotations:jar:*</exclude>
+                <exclude>com.googlecode.javaewah:JavaEWAH:jar:*</exclude>
+                <exclude>com.jcraft:jsch:jar:*</exclude>
+                <exclude>com.jcraft:jzlib:jar:*</exclude>
+                <exclude>com.google.code.findbugs:annotations:jar:*</exclude>
+                <exclude>org.jetbrains:annotations:jar:*</exclude>
+                <exclude>org.slf4j:*</exclude>
+            </excludes>
+            <outputDirectory>/lib</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        -->
+    </dependencySets>
+</assembly>

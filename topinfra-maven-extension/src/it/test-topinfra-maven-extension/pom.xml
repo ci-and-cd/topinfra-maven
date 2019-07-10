@@ -1,0 +1,363 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>top.infra</groupId>
+    <artifactId>maven-build</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-help-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>help-active-profiles</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>active-profiles</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>filtering-dockerfile</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <delimiters>
+                                <!--<delimiter>${*}</delimiter>-->
+                                <delimiter>@</delimiter>
+                            </delimiters>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <groupId>com.github.spotbugs</groupId>
+                <executions>
+                    <execution>
+                        <id>spotbugs-spotbugs</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>spotbugs</goal>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>1.8</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-help-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>pl.project13.maven</groupId>
+                    <artifactId>git-commit-id-plugin</artifactId>
+                    <version>${git-commit-id-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>get-the-git-infos</id>
+                            <phase>initialize</phase>
+                            <goals><goal>revision</goal></goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <commitIdGenerationMode>flat</commitIdGenerationMode>
+                        <dotGitDirectory>${maven.multiModuleProjectDirectory}/.git</dotGitDirectory>
+                        <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                        <failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
+                        <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                        <!--generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename-->
+                        <generateGitPropertiesFilename>src/main/resources/git.properties</generateGitPropertiesFilename>
+                        <injectAllReactorProjects>true</injectAllReactorProjects>
+                        <prefix>git</prefix>
+                        <skip>${git.commit.id.skip}</skip>
+                        <skipPoms>false</skipPoms>
+                        <verbose>false</verbose>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>${spotbugs-maven-plugin.version}</version>
+                    <dependencies>
+                        <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
+                        <dependency>
+                            <groupId>com.github.spotbugs</groupId>
+                            <artifactId>spotbugs</artifactId>
+                            <version>${spotbugs.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <modules>
+        <module>build-docker</module>
+    </modules>
+
+    <profiles>
+        <profile>
+            <id>git-commit-id</id>
+            <!-- works on both git submodule and normal local repository -->
+            <activation><file><exists>${maven.multiModuleProjectDirectory}/.git</exists></file></activation>
+            <build>
+                <plugins>
+                    <plugin><groupId>pl.project13.maven</groupId><artifactId>git-commit-id-plugin</artifactId></plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>infrastructure_ossrh</id>
+            <properties>
+                <magic.file.parent-infrastructure_ossrh>${project.basedir}/target/parent-infrastructure_ossrh.md</magic.file.parent-infrastructure_ossrh>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <configuration>
+                                    <target name="magic-file-parent-infrastructure_ossrh">
+                                        <echo file="${magic.file.parent-infrastructure_ossrh}" append="false">${magic.file.parent-infrastructure_ossrh}</echo>
+                                    </target>
+                                </configuration>
+                                <id>parent-infrastructure_ossrh-magic-file</id>
+                                <goals><goal>run</goal></goals>
+                                <phase>validate</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>infrastructure_ossrh-nexus2_staging</id>
+            <activation><property><name>nexus2_staging</name><value>true</value></property></activation>
+            <properties>
+                <magic.file.parent-infrastructure_ossrh-nexus2_staging>${project.basedir}/target/parent-infrastructure_ossrh-nexus2_staging.md</magic.file.parent-infrastructure_ossrh-nexus2_staging>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <configuration>
+                                    <target name="magic-file-parent-infrastructure_ossrh-nexus2_staging">
+                                        <echo file="${magic.file.parent-infrastructure_ossrh-nexus2_staging}" append="false">${magic.file.parent-infrastructure_ossrh-nexus2_staging}</echo>
+                                    </target>
+                                </configuration>
+                                <id>parent-infrastructure_ossrh-nexus2_staging-magic-file</id>
+                                <goals><goal>run</goal></goals>
+                                <phase>validate</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Produce marker file for integration test. -->
+        <profile>
+            <id>parent-java8-profile1</id>
+            <properties>
+                <magic.file.parent-java8-profile1>${project.basedir}/target/parent-java8-profile1.md</magic.file.parent-java8-profile1>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <configuration>
+                                    <target name="magic-file-parent-java8-profile1">
+                                        <echo file="${magic.file.parent-java8-profile1}" append="false">${magic.file.parent-java8-profile1}</echo>
+                                    </target>
+                                </configuration>
+                                <id>parent-java8-profile1-magic-file</id>
+                                <goals><goal>run</goal></goals>
+                                <phase>validate</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>parent-java-8-profile2</id>
+            <activation>
+                <file><missing>${basedir}/src/main/groovy</missing></file>
+            </activation>
+            <properties>
+                <magic.file.parent-java-8-profile2>${project.basedir}/target/parent-java-8-profile2.md</magic.file.parent-java-8-profile2>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <configuration>
+                                    <target name="magic-file-parent-java-8-profile2">
+                                        <echo file="${magic.file.parent-java-8-profile2}" append="false">${magic.file.parent-java-8-profile2}</echo>
+                                    </target>
+                                </configuration>
+                                <id>parent-java-8-profile2-magic-file</id>
+                                <goals><goal>run</goal></goals>
+                                <phase>validate</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>profile-sonar</id>
+            <activation>
+                <property><name>sonar</name><value>true</value></property>
+            </activation>
+            <properties>
+                <magic.file.profile-sonar>${project.basedir}/target/parent-profile-sonar.md</magic.file.profile-sonar>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <configuration>
+                                    <target name="magic-file-profile-sonar">
+                                        <echo file="${magic.file.profile-sonar}" append="false">${sonar}</echo>
+                                    </target>
+                                </configuration>
+                                <id>parent-profile-sonar-magic-file</id>
+                                <goals><goal>run</goal></goals>
+                                <phase>validate</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>run-on-multi_module_root_only</id>
+            <activation>
+                <property><name>sonar</name><value>true</value></property>
+            </activation>
+            <properties>
+                <magic.file.run-on-multi_module_root_only>${project.basedir}/target/run-on-multi_module_root_only.md</magic.file.run-on-multi_module_root_only>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <configuration>
+                                    <target name="magic-file-run-on-multi_module_root_only">
+                                        <echo file="${magic.file.run-on-multi_module_root_only}" append="false">root</echo>
+                                    </target>
+                                </configuration>
+                                <id>run-on-multi_module_root_only-magic-file</id>
+                                <goals><goal>run</goal></goals>
+                                <phase>validate</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>run-on-multi-module-root-and-sub-modules</id>
+            <activation>
+                <property><name>sonar</name><value>true</value></property>
+            </activation>
+            <properties>
+                <magic.file.run-on-multi-module-root-and-sub-modules>${project.basedir}/target/run-on-multi-module-root-and-sub-modules.md</magic.file.run-on-multi-module-root-and-sub-modules>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <configuration>
+                                    <target name="magic-file-run-on-multi-module-root-and-sub-modules">
+                                        <echo file="${magic.file.run-on-multi-module-root-and-sub-modules}" append="false">root</echo>
+                                    </target>
+                                </configuration>
+                                <id>run-on-multi-module-root-and-sub-modules-magic-file</id>
+                                <goals><goal>run</goal></goals>
+                                <phase>validate</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <properties>
+        <git-commit-id-plugin.version>2.2.6</git-commit-id-plugin.version>
+
+        <!-- maven-build properties -->
+        <checkstyle.config.location>https://raw.githubusercontent.com/ci-and-cd/maven-build/master/src/main/checkstyle/google_checks_8.10.xml</checkstyle.config.location>
+        <!-- https://npm.taobao.org/mirrors/node/ -->
+        <frontend.nodeDownloadRoot>https://nodejs.org/dist/</frontend.nodeDownloadRoot>
+        <!-- http://registry.npm.taobao.org/npm/-/ -->
+        <frontend.npmDownloadRoot>https://registry.npmjs.org/npm/-/</frontend.npmDownloadRoot>
+        <git.commit.id.skip>true</git.commit.id.skip>
+        <github.global.oauth2Token></github.global.oauth2Token>
+        <github.global.repositoryName>unknown</github.global.repositoryName>
+        <github.global.repositoryOwner>unknown</github.global.repositoryOwner>
+
+        <add.prefix.to.itself>prefix/${add.prefix.to.itself}</add.prefix.to.itself>
+
+        <private.nexus3>http://my-nexus3:28081/nexus/</private.nexus3>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <spotbugs.version>3.1.12</spotbugs.version>
+        <spotbugs-maven-plugin.version>3.1.11</spotbugs-maven-plugin.version>
+    </properties>
+</project>

@@ -1,0 +1,38 @@
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/*Report/
+.mvn/*Repository/
+
+# Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
+!/.mvn/wrapper/maven-wrapper.jar
+/.profiler
+
+# see: https://tjrobinson.net/2019/04/28/a-gitignore-file-for-excluding-rider-idea-directories-except-runconfigurations.html
+# Ignore only specific Rider files/directories
+# For syntax see: https://stackoverflow.com/a/14422549/12124
+/.idea/*
+!/.idea/.idea.*
+/.idea/.idea.*/*
+!/.idea/.idea.*/.idea
+/.idea/.idea.*/.idea/*
+!/.idea/.idea.*/.idea/runConfigurations
+*.iml
+*.ipr
+*.iws
+
+.DS_Store
+
+*.asc
+git.properties
+
+/test-repo/
+*/test-repo/**/*/
+
+/TODO*.*
