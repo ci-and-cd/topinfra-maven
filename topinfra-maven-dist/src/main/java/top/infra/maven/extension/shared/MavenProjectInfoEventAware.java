@@ -150,7 +150,7 @@ public class MavenProjectInfoEventAware implements MavenEventAware {
             this.rootProjectInfo = this.resolveRootProject();
         } else {
             // Lazy mode
-            logger.info("    Skip resolving and checking project version under fast mode.");
+            logger.info("    Lazy resolving project version under fast mode.");
         }
     }
 }
