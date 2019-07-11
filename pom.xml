@@ -9,7 +9,7 @@
     <name>topinfra-maven</name>
     <packaging>pom</packaging>
     <url>https://github.com/ci-and-cd/topinfra-maven</url>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 
     <developers>
         <developer>
@@ -361,7 +361,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- mvn install -Dprofile="profile name" -DprofileFormat=JSON,HTML -->
-        <maven-profiler-report-directory>${project.basedir}/.mvn/profilerReport</maven-profiler-report-directory>
+        <maven-profiler-report-directory>${project.basedir}/.mvn/profiler-report</maven-profiler-report-directory>
 
         <version.commons-lang3>3.8.1</version.commons-lang3>
         <version.guava>27.1-jre</version.guava>
