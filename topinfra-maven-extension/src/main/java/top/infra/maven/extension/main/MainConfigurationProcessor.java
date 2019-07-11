@@ -50,7 +50,7 @@ public class MainConfigurationProcessor implements ConfigurationProcessor {
         this.logger = new LoggerPlexusImpl(logger);
         this.processors = processors.stream().sorted().collect(toList());
         this.settingsXmlConfigurationProcessor = settingsXmlConfigurationProcessor;
-
+        
         IntStream
             .range(0, this.processors.size())
             .forEach(idx -> {

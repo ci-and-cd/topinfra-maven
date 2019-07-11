@@ -8,6 +8,7 @@ import static top.infra.maven.utils.SupportFunction.logEnd;
 import static top.infra.maven.utils.SupportFunction.logStart;
 import static top.infra.maven.utils.SupportFunction.newTuple;
 
+import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
@@ -57,9 +58,14 @@ public class GitFlowSemanticVersionChecker implements MavenEventAware {
         final ProjectBuildingRequest projectBuilding,
         final CiOptionContext ciOptContext
     ) {
-
         final MavenProjectInfo mavenProjectInfo = this.projectInfoBean.getRootProjectInfo();
-        this.check(ciOptContext, mavenProjectInfo);
+
+        final Collection<String> requestedGoals = mavenExecution.getGoals();
+        if (requestedGoals.stream().anyMatch(goal -> goal.contains("gitflow") || goal.contains("versions"))) {
+            logger.info(String.format("    Bypass version check when executing git-flow versions goals (%s).", requestedGoals));
+        } else {
+            this.check(ciOptContext, mavenProjectInfo);
+        }
     }
 
     @Override

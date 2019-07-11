@@ -177,6 +177,9 @@ public abstract class SupportFunction {
         } catch (final IOException ex) {
             throw new RuntimeIOException(ex);
         }
-        return moduleInfo.getProperty("artifactId", "unknown");
+        return String.format(
+            "%s:%s",
+            moduleInfo.getProperty("artifactId", "unknown"),
+            moduleInfo.getProperty("version", "unknown"));
     }
 }

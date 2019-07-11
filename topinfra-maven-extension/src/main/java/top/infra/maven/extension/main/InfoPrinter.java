@@ -79,6 +79,7 @@ public class InfoPrinter implements MavenEventAware {
             logger.info(String.format("    USER [%s]", System.getProperty("user.name")));
             logger.info(String.format("    HOME [%s]", systemUserHome()));
             logger.info(String.format("    JAVA_HOME [%s]", System.getProperty("java.home")));
+            logger.info(String.format("    maven.home [%s]", System.getProperty("maven.home")));
 
             final String runtimeImplVersion = Runtime.class.getPackage().getImplementationVersion();
             final String javaVersion = runtimeImplVersion != null ? runtimeImplVersion : System.getProperty("java.runtime.version");
