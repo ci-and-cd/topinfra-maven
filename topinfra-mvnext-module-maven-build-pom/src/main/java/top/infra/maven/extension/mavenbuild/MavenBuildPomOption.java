@@ -14,6 +14,7 @@ import java.util.Properties;
 
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
+import top.infra.maven.extension.shared.Constants;
 import top.infra.maven.extension.shared.MavenOption;
 import top.infra.maven.extension.shared.VcsProperties;
 import top.infra.maven.utils.MavenUtils;
@@ -106,13 +107,13 @@ public enum MavenBuildPomOption implements CiOption {
         }
     },
 
-    NEXUS2_STAGING("nexus2.staging"),
+    NEXUS2_STAGING(Constants.PROP_NEXUS2_STAGING),
 
     MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY) {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             final Optional<Boolean> nexus2Staging = NEXUS2_STAGING.getValue(context).map(Boolean::parseBoolean);
-            return Optional.ofNullable(nexus2Staging.map(staging -> staging ? BOOL_STRING_FALSE : null).orElse(null));
+            return nexus2Staging.map(staging -> staging ? BOOL_STRING_FALSE : null);
         }
     },
 

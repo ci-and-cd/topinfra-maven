@@ -136,23 +136,13 @@ public class MavenGoalEditor {
                 }
             } else if (Constants.PHASE_PACKAGE.equals(goal) || isInstallGoal(goal)) {
                 // goals need to alter
-                if (mvnDeployPublishSegregation) {
-                    if (Constants.PHASE_PACKAGE.equals(goal)) {
-                        resultGoals.add(Constants.PHASE_DEPLOY); // deploy artifacts into -DaltDeploymentRepository=wagonRepository
-                        if (logger.isInfoEnabled()) {
-                            logger.info(String.format("    onMavenExecutionRequest replace goal %s to %s (%s: %s)",
-                                goal, Constants.PHASE_DEPLOY,
-                                MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION.getEnvVariableName(),
-                                this.mvnDeployPublishSegregation.toString()));
-                        }
-                    } else {
-                        resultGoals.add(Constants.PHASE_DEPLOY); // deploy artifacts into -DaltDeploymentRepository=wagonRepository
-                        if (logger.isInfoEnabled()) {
-                            logger.info(String.format("    onMavenExecutionRequest replace goal %s to %s (%s: %s)",
-                                goal, Constants.PHASE_DEPLOY,
-                                MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION.getEnvVariableName(),
-                                this.mvnDeployPublishSegregation.toString()));
-                        }
+                if (this.mvnDeployPublishSegregation) {
+                    resultGoals.add(Constants.PHASE_DEPLOY); // deploy artifacts into -DaltDeploymentRepository=wagonRepository
+                    if (logger.isInfoEnabled()) {
+                        logger.info(String.format("    onMavenExecutionRequest replace goal %s to %s (%s: %s)",
+                            goal, Constants.PHASE_DEPLOY,
+                            MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION.getEnvVariableName(),
+                            this.mvnDeployPublishSegregation.toString()));
                     }
                 } else {
                     resultGoals.add(goal);
@@ -201,6 +191,10 @@ public class MavenGoalEditor {
         if (this.mvnDeployPublishSegregation) {
             if (notIncludes(requestedPhases, MavenPhase.INSTALL) && notIncludes(resultPhases, MavenPhase.INSTALL)) {
                 properties.setProperty(MavenOption.MAVEN_INSTALL_SKIP.getPropertyName(), BOOL_STRING_TRUE);
+            }
+
+            if (notIncludes(requestedPhases, MavenPhase.DEPLOY) && includes(resultPhases, MavenPhase.DEPLOY)) { // deploy added
+                properties.setProperty(Constants.PROP_NEXUS2_STAGING, BOOL_STRING_FALSE);
             }
 
             if (includes(resultPhases, MavenPhase.PACKAGE)) {
