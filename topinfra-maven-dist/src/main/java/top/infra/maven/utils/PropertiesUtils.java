@@ -50,7 +50,7 @@ public class PropertiesUtils {
             .forEach(idx -> {
                 final String name = propNames[idx];
                 final String value = properties.getProperty(name);
-                final String line = String.format("%s[%03d] %s=%s", title, idx, name, value);
+                final String line = PropertiesUtils.maskSecrets(String.format("%s[%03d] %s=%s", title, idx, name, value));
                 sb.append(System.lineSeparator());
                 sb.append(line);
                 if (logger != null) {
@@ -62,25 +62,28 @@ public class PropertiesUtils {
     }
 
     public static String maskSecrets(final String text) {
+        // see: https://stackoverflow.com/questions/406230/regular-expression-to-match-a-line-that-doesnt-contain-a-word
         return "" + text
-            .replaceAll("KEYNAME=.+", "KEYNAME=<secret>")
-            .replaceAll("keyname=.+", "keyname=<secret>")
-            .replaceAll("LOGIN=.+", "LOGIN=<secret>")
-            .replaceAll("login=.+", "login=<secret>")
-            .replaceAll("ORGANIZATION=.+", "ORGANIZATION=<secret>")
-            .replaceAll("organization=.+", "organization=<secret>")
-            .replaceAll("PASS=.+", "PASS=<secret>")
-            .replaceAll("pass=.+", "pass=<secret>")
-            .replaceAll("PASSWORD=.+", "PASSWORD=<secret>")
-            .replaceAll("password=.+", "password=<secret>")
-            .replaceAll("PASSPHRASE=.+", "PASSPHRASE=<secret>")
-            .replaceAll("passphrase=.+", "passphrase=<secret>")
-            .replaceAll("TOKEN=.+", "TOKEN=<secret>")
-            .replaceAll("token=.+", "token=<secret>")
-            .replaceAll("USER=.+", "USER=<secret>")
-            .replaceAll("user=.+", "user=<secret>")
-            .replaceAll("USERNAME=.+", "USERNAME=<secret>")
-            .replaceAll("username=.+", "username=<secret>");
+            .replaceAll("KEY=(?!null).*", "KEY=[secure]")
+            .replaceAll("key=(?!null).*", "key=[secure]")
+            .replaceAll("KEYNAME=(?!null).*", "KEYNAME=[secure]")
+            .replaceAll("keyname=(?!null).*", "keyname=[secure]")
+            .replaceAll("LOGIN=(?!null).*", "LOGIN=[secure]")
+            .replaceAll("login=(?!null).*", "login=[secure]")
+            .replaceAll("ORGANIZATION=(?!null).*", "ORGANIZATION=[secure]")
+            .replaceAll("organization=(?!null).*", "organization=[secure]")
+            .replaceAll("PASS=(?!null).*", "PASS=[secure]")
+            .replaceAll("pass=(?!null).*", "pass=[secure]")
+            .replaceAll("PASSWORD=(?!null).*", "PASSWORD=[secure]")
+            .replaceAll("password=(?!null).*", "password=[secure]")
+            .replaceAll("PASSPHRASE=(?!null).*", "PASSPHRASE=[secure]")
+            .replaceAll("passphrase=(?!null).*", "passphrase=[secure]")
+            .replaceAll("TOKEN=(?!null).*", "TOKEN=[secure]")
+            .replaceAll("token=(?!null).*", "token=[secure]")
+            .replaceAll("USER=(?!null).*", "USER=[secure]")
+            .replaceAll("user=(?!null).*", "user=[secure]")
+            .replaceAll("USERNAME=(?!null).*", "USERNAME=[secure]")
+            .replaceAll("username=(?!null).*", "username=[secure]");
     }
 
     public static String toString(final Map<String, String> properties, final Pattern pattern) {
