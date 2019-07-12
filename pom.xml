@@ -37,12 +37,73 @@
     <build>
         <!-- @formatter:off -->
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>sourceDir-on-initialize</id>
+                        <phase>initialize</phase>
+                        <goals><goal>bsh-property</goal></goals>
+                        <configuration>
+                            <source>
+                                multiModuleProjectDirectory = System.getProperty("maven.multiModuleProjectDirectory", "");
+                                sourceDir = multiModuleProjectDirectory + File.separator + ".mvn" + File.separator + "wagonRepository";
+
+                                deferred = sourceDir + File.separator + "deferred";
+                                altDeployment = sourceDir + File.separator + "altDeployment";
+
+                                System.setProperty("wagon.merge-maven-repos.source", altDeployment);
+                                session.getUserProperties().setProperty("wagon.merge-maven-repos.source", altDeployment);
+
+                                altDeploymentRepository = "repo::default::file://" + altDeployment;
+                                System.setProperty("altDeploymentRepository", altDeploymentRepository);
+                                session.getUserProperties().setProperty("altDeploymentRepository", altDeploymentRepository);
+                            </source>
+                            <properties><property>sourceDir</property></properties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>echo-altDeploymentRepository-at-initialize</id>
+                        <phase>initialize</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <target>
+                                <echo message="altDeploymentRepository: ${altDeploymentRepository}"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <!-- @formatter:on -->
 
         <pluginManagement>
             <!-- @formatter:off -->
             <plugins>
+                <plugin>
+                    <groupId>pl.project13.maven</groupId>
+                    <artifactId>git-commit-id-plugin</artifactId>
+                    <version>${version.git-commit-id-plugin}</version>
+                    <configuration>
+                        <commitIdGenerationMode>flat</commitIdGenerationMode>
+                        <dotGitDirectory>${maven.multiModuleProjectDirectory}/.git</dotGitDirectory>
+                        <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                        <failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
+                        <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                        <!--generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename-->
+                        <generateGitPropertiesFilename>src/main/resources/git.properties</generateGitPropertiesFilename>
+                        <injectAllReactorProjects>true</injectAllReactorProjects>
+                        <prefix>git</prefix>
+                        <skipPoms>false</skipPoms>
+                        <verbose>false</verbose>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.codehaus.plexus</groupId>
                     <artifactId>plexus-component-metadata</artifactId>
@@ -56,9 +117,25 @@
                         </dependency>
                     </dependencies>
                 </plugin>
-                <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId><version>${version.maven-jar-plugin}</version></plugin>
+                <plugin>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>${version.maven-antrun-plugin}</version>
+                    <dependencies>
+                        <dependency><groupId>ant-contrib</groupId><artifactId>ant-contrib</artifactId><version>${version.ant-contrib}</version></dependency>
+                    </dependencies>
+                </plugin>
+                <plugin><artifactId>maven-deploy-plugin</artifactId><version>${version.maven-deploy-plugin}</version></plugin>
+                <plugin><artifactId>maven-invoker-plugin</artifactId><version>3.2.0</version></plugin>
+                <plugin><artifactId>maven-jar-plugin</artifactId><version>${version.maven-jar-plugin}</version></plugin>
+                <plugin><artifactId>maven-gpg-plugin</artifactId><version>${version.maven-gpg-plugin}</version></plugin>
+                <plugin><artifactId>maven-javadoc-plugin</artifactId><version>${version.maven-javadoc-plugin}</version></plugin>
+                <plugin><artifactId>maven-resources-plugin</artifactId><version>${version.maven-resources-plugin}</version></plugin>
+                <plugin><artifactId>maven-shade-plugin</artifactId><version>3.2.1</version></plugin>
+                <plugin><artifactId>maven-source-plugin</artifactId><version>${version.maven-source-plugin}</version></plugin>
+                <plugin><artifactId>nexus-staging-maven-plugin</artifactId><groupId>org.sonatype.plugins</groupId><version>${version.nexus-staging-maven-plugin}</version></plugin>
 
-                <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-shade-plugin</artifactId><version>3.2.1</version></plugin>
+                <plugin><groupId>org.codehaus.mojo</groupId><artifactId>build-helper-maven-plugin</artifactId><version>${version.build-helper-maven-plugin}</version></plugin>
+                <plugin><groupId>org.codehaus.mojo</groupId><artifactId>wagon-maven-plugin</artifactId><version>${version.wagon-maven-plugin}</version></plugin>
             </plugins>
             <!-- @formatter:on -->
         </pluginManagement>
@@ -123,13 +200,6 @@
     </dependencyManagement>
     <!-- @formatter:on -->
 
-    <!-- @formatter:off -->
-    <distributionManagement>
-        <repository><id>ossrh-nexus2-staging</id><url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url></repository>
-        <snapshotRepository><id>ossrh-nexus2-snapshots</id><url>https://oss.sonatype.org/content/repositories/snapshots</url></snapshotRepository>
-    </distributionManagement>
-    <!-- @formatter:on -->
-
     <modules>
         <module>topinfra-maven-dist</module>
         <module>topinfra-maven-extension</module>
@@ -144,6 +214,71 @@
 
     <!-- @formatter:off -->
     <profiles>
+        <profile>
+            <id>default-infrastructure_ossrh</id>
+            <activation><property><name>!infrastructure</name></property></activation>
+            <distributionManagement>
+                <repository><id>ossrh-nexus2-staging</id><url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url></repository>
+                <snapshotRepository><id>ossrh-nexus2-snapshots</id><url>https://oss.sonatype.org/content/repositories/snapshots</url></snapshotRepository>
+            </distributionManagement>
+        </profile>
+        <profile>
+            <id>infrastructure_custom</id>
+            <activation><property><name>infrastructure</name><value>custom</value></property></activation>
+            <distributionManagement>
+                <repository><id>custom-nexus3-releases</id><url>${custom.nexus3}repository/maven-releases/</url></repository>
+                <snapshotRepository><id>custom-nexus3-snapshots</id><url>${custom.nexus3}repository/maven-snapshots/</url></snapshotRepository>
+            </distributionManagement>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>custom-nexus3-releases</id>
+                    <name>custom nexus3 releases</name>
+                    <url>${custom.nexus3}repository/maven-releases/</url>
+                    <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>custom-nexus3-snapshots</id>
+                    <name>custom nexus3 snapshots</name>
+                    <url>${custom.nexus3}repository/maven-snapshots/</url>
+                    <releases><enabled>false</enabled></releases>
+                    <snapshots><enabled>true</enabled><updatePolicy>daily</updatePolicy></snapshots>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>custom-nexus3-thirdparty</id>
+                    <name>custom nexus3 thirdparty</name>
+                    <url>${custom.nexus3}repository/maven-thirdparty/</url>
+                    <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases>
+                    <snapshots><enabled>true</enabled><updatePolicy>daily</updatePolicy></snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+            <properties>
+                <nexus3>${custom.nexus3}</nexus3>
+            </properties>
+            <repositories>
+                <repository>
+                    <id>custom-nexus3-releases</id>
+                    <name>custom nexus3 releases</name>
+                    <url>${custom.nexus3}repository/maven-releases/</url>
+                    <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                </repository>
+                <repository>
+                    <id>custom-nexus3-snapshots</id>
+                    <name>custom nexus3 snapshots</name>
+                    <url>${custom.nexus3}repository/maven-snapshots/</url>
+                    <releases><enabled>false</enabled></releases>
+                    <snapshots><enabled>true</enabled><updatePolicy>daily</updatePolicy></snapshots>
+                </repository>
+                <repository>
+                    <id>custom-nexus3-thirdparty</id>
+                    <name>custom nexus3 thirdparty</name>
+                    <url>${custom.nexus3}repository/maven-thirdparty/</url>
+                    <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases>
+                    <snapshots><enabled>true</enabled><updatePolicy>daily</updatePolicy></snapshots>
+                </repository>
+            </repositories>
+        </profile>
         <profile>
             <id>gpg2-arguments</id>
             <activation><property><name>gpg.loopback</name><value>true</value></property></activation>
@@ -183,12 +318,216 @@
             </build>
         </profile>
         <profile>
+            <id>maven_packages_skip</id>
+            <activation>
+                <!--<file><exists>${wagon.merge-maven-repos.source}</exists></file>-->
+                <property><name>maven.packages.skip</name><value>true</value></property>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <!-- -Dassembly.skipAssembly=true -->
+                        <plugin>
+                            <artifactId>maven-assembly-plugin</artifactId>
+                            <configuration><skipAssembly>true</skipAssembly></configuration>
+                        </plugin>
+                        <plugin>
+                            <artifactId>maven-jar-plugin</artifactId>
+                            <executions><execution><id>default-jar</id><phase>none</phase></execution></executions>
+                        </plugin>
+                        <plugin>
+                            <artifactId>maven-install-plugin</artifactId>
+                            <configuration><skip>true</skip></configuration>
+                            <executions>
+                                <execution>
+                                    <id>default-install</id>
+                                    <phase>none</phase>
+                                    <goals><goal>install</goal></goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin>
+                            <artifactId>maven-deploy-plugin</artifactId>
+                            <configuration><skip>true</skip></configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>pl.project13.maven</groupId><artifactId>git-commit-id-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>get-the-git-infos</id>
+                                <phase>initialize</phase>
+                                <goals><goal>revision</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>targetId-on-initialize</id>
+                                <phase>initialize</phase>
+                                <goals><goal>bsh-property</goal></goals>
+                                <configuration>
+                                    <source>
+                                        ref = project.getProperties().getProperty("git.branch", session.getUserProperties().getProperty("git.branch"));
+                                        releaseRef = ref == null || ref.equals("") ? false : ref.startsWith("hotfix/") || ref.startsWith("release/") || ref.startsWith("support/");
+                                        snapshotRef = ref == null || ref.equals("") ? false : ref.equals("develop") || ref.startsWith("feature/");
+                                        channel = releaseRef ? "releases" : snapshotRef ? "snapshots" : "mixed";
+
+                                        targetId = "custom-nexus3-" + channel;
+
+                                        System.setProperty("wagon.merge-maven-repos.targetId", targetId);
+                                        session.getUserProperties().setProperty("wagon.merge-maven-repos.targetId", targetId);
+                                        project.getProperties().setProperty("wagon.merge-maven-repos.targetId", targetId);
+                                    </source>
+                                    <properties><property>targetId</property></properties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>targetRepo-on-initialize</id>
+                                <phase>initialize</phase>
+                                <goals><goal>bsh-property</goal></goals>
+                                <configuration>
+                                    <source>
+                                        ref = project.getProperties().getProperty("git.branch", session.getUserProperties().getProperty("git.branch"));
+                                        releaseRef = ref == null || ref.equals("") ? false : ref.startsWith("hotfix/") || ref.startsWith("release/") || ref.startsWith("support/");
+                                        snapshotRef = ref == null || ref.equals("") ? false : ref.equals("develop") || ref.startsWith("feature/");
+                                        channel = releaseRef ? "releases" : snapshotRef ? "snapshots" : "mixed";
+
+                                        targetRepo = "${custom.nexus3}repository/maven-" + channel + "/";
+
+                                        System.setProperty("wagon.merge-maven-repos.target", targetRepo);
+                                        session.getUserProperties().setProperty("wagon.merge-maven-repos.target", targetRepo);
+                                        project.getProperties().setProperty("wagon.merge-maven-repos.target", targetRepo);
+                                    </source>
+                                    <properties><property>targetRepo</property></properties>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>echo-wagon-properties-at-initialize</id>
+                                <phase>initialize</phase>
+                                <goals><goal>run</goal></goals>
+                                <configuration>
+                                    <target>
+                                        <echo message="wagon.merge-maven-repos.source: ${wagon.merge-maven-repos.source}"/>
+                                        <echo message="wagon.merge-maven-repos.target: ${wagon.merge-maven-repos.target}"/>
+                                        <echo message="wagon.merge-maven-repos.targetId: ${wagon.merge-maven-repos.targetId}"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>rename-maven_metadata_nexus_xml-to-maven_metadata_xml</id>
+                                <inherited>false</inherited>
+                                <phase>initialize</phase>
+                                <goals><goal>run</goal></goals>
+                                <configuration>
+                                    <target>
+                                        <echo message="rename ${project.basedir}/.mvn/wagonRepository/deferred/**/maven-metadata-nexus.xml"/>
+                                        <move includeemptydirs="false"
+                                              overwrite="true"
+                                              todir="${project.basedir}/.mvn/wagonRepository/deferred"
+                                              verbose="true">
+                                            <fileset dir="${project.basedir}/.mvn/wagonRepository/deferred">
+                                                <include name="**/maven-metadata-nexus.*"/>
+                                            </fileset>
+                                            <filtermapper>
+                                                <replacestring from="maven-metadata-nexus" to="maven-metadata"/>
+                                            </filtermapper>
+                                        </move>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>wagon-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>merge-maven-repos-deploy</id>
+                                <inherited>false</inherited>
+                                <phase>deploy</phase>
+                                <goals><goal>merge-maven-repos</goal></goals>
+                                <configuration>
+                                    <source>file://${wagon.merge-maven-repos.source}</source>
+                                    <target>${wagon.merge-maven-repos.target}</target>
+                                    <targetId>${wagon.merge-maven-repos.targetId}</targetId>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>skip-tests-when-fast-option-present</id>
             <activation><property><name>fast</name></property></activation>
             <properties>
                 <skipTests>true</skipTests>
                 <skipITs>true</skipITs>
             </properties>
+        </profile>
+        <profile>
+            <id>nexus2_staging</id>
+            <activation><property><name>nexus2.staging</name><value>true</value></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-deploy</id>
+                                <phase>deploy</phase>
+                                <goals><goal>deploy</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <!--<extensions>true</extensions>-->
+                        <configuration>
+                            <altStagingDirectory>${sourceDir}</altStagingDirectory>
+                            <autoDropAfterRelease>true</autoDropAfterRelease>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                            <detectBuildFailures>true</detectBuildFailures>
+                            <keepStagingRepositoryOnFailure>false</keepStagingRepositoryOnFailure>
+                            <keepStagingRepositoryOnCloseRuleFailure>false</keepStagingRepositoryOnCloseRuleFailure>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <serverId>ossrh-nexus2-staging</serverId>
+                            <!--<sslAllowAll>true</sslAllowAll>-->
+                            <stagingProgressPauseDurationSeconds>30</stagingProgressPauseDurationSeconds>
+                            <stagingProgressTimeoutMinutes>60</stagingProgressTimeoutMinutes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>default-deploy</id>
+                                <phase>deploy</phase>
+                                <goals><goal>deploy</goal></goals>
+                            </execution>
+                            <!--
+                            <execution>
+                                <id>deploy-staged-repository</id>
+                                <phase>deploy</phase>
+                                <goals><goal>deploy-staged-repository</goal></goals>
+                                <configuration>
+                                    <repositoryDirectory>${sourceDir}</repositoryDirectory>
+                                </configuration>
+                            </execution>
+                            -->
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>skip-these-plugins-when-fast-option-present</id>
@@ -208,29 +547,13 @@
                             <execution><id>attach-test-javadocs</id><goals><goal>test-jar</goal></goals><phase>prepare-package</phase></execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
-                            <detectBuildFailures>true</detectBuildFailures>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <serverId>ossrh-nexus2-staging</serverId>
-                            <!--<sslAllowAll>true</sslAllowAll>-->
-                            <stagingProgressPauseDurationSeconds>30</stagingProgressPauseDurationSeconds>
-                            <stagingProgressTimeoutMinutes>60</stagingProgressTimeoutMinutes>
-                        </configuration>
-                    </plugin>
                 </plugins>
                 <pluginManagement>
                     <plugins>
                         <plugin><groupId>com.googlecode.maven-download-plugin</groupId><artifactId>download-maven-plugin</artifactId><version>1.4.2</version></plugin>
 
                         <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-invoker-plugin</artifactId>
-                            <version>3.2.0</version>
                             <configuration>
                                 <cloneProjectsTo>${project.basedir}/target/it</cloneProjectsTo>
                                 <debug>false</debug>
@@ -271,9 +594,8 @@
                                 </execution>
                             </executions>
                         </plugin>
-                        <plugin><artifactId>maven-gpg-plugin</artifactId><version>${version.maven-gpg-plugin}</version></plugin>
                         <plugin>
-                            <artifactId>maven-javadoc-plugin</artifactId><version>${version.maven-javadoc-plugin}</version>
+                            <artifactId>maven-javadoc-plugin</artifactId>
                             <configuration>
                                 <additionalJOption>-J-Duser.language=en</additionalJOption>
                                 <!--<additionalOptions>-views -all</additionalOptions>-->
@@ -289,7 +611,6 @@
                             </configuration>
                         </plugin>
                         <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-surefire-plugin</artifactId>
                             <version>${version.maven.testing}</version>
                             <dependencies>
@@ -314,7 +635,6 @@
                         </plugin>
 
                         <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-failsafe-plugin</artifactId>
                             <version>${version.maven.testing}</version>
                             <dependencies>
@@ -336,32 +656,74 @@
                                 </includes>
                             </configuration>
                         </plugin>
-                        <plugin><artifactId>maven-source-plugin</artifactId><version>${version.maven-source-plugin}</version></plugin>
-                        <plugin><artifactId>nexus-staging-maven-plugin</artifactId><groupId>org.sonatype.plugins</groupId><version>${version.nexus-staging-maven-plugin}</version></plugin>
                     </plugins>
                 </pluginManagement>
+            </build>
+        </profile>
+
+        <profile>
+            <id>userProperties</id>
+            <activation><file><exists>${basedir}/src/main/resources/userProperties.properties</exists></file></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>filtering-dockerfile</id>
+                                <phase>process-sources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <delimiters>
+                                        <!--<delimiter>${*}</delimiter>-->
+                                        <delimiter>@</delimiter>
+                                    </delimiters>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/main/resources</directory>
+                                            <includes>
+                                                <include>userProperties.properties</include>
+                                            </includes>
+                                            <filtering>true</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
             </build>
         </profile>
     </profiles>
     <!-- @formatter:on -->
 
     <properties>
-        <java.version>8</java.version>
+        <custom.nexus3>https://nexus3.infra.top/nexus/</custom.nexus3>
 
+        <java.version>8</java.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
 
-        <version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
-        <version.maven-javadoc-plugin>3.1.0</version.maven-javadoc-plugin>
-        <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
-
         <maven.javadoc.failsOnError>false</maven.javadoc.failsOnError>
+
+        <!-- mvn install -Dprofile="profile name" -DprofileFormat=JSON,HTML -->
+        <maven-profiler-report-directory>${project.basedir}/.mvn/profiler-report</maven-profiler-report-directory>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <!-- mvn install -Dprofile="profile name" -DprofileFormat=JSON,HTML -->
-        <maven-profiler-report-directory>${project.basedir}/.mvn/profiler-report</maven-profiler-report-directory>
+        <version.ant-contrib>20020829</version.ant-contrib>
+        <version.build-helper-maven-plugin>3.0.0</version.build-helper-maven-plugin>
+        <version.git-commit-id-plugin>2.2.6</version.git-commit-id-plugin>
+        <version.maven-antrun-plugin>1.8</version.maven-antrun-plugin>
+        <version.maven-deploy-plugin>3.0.0-M1</version.maven-deploy-plugin>
+        <version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
+        <version.maven-javadoc-plugin>3.1.0</version.maven-javadoc-plugin>
+        <version.maven-resources-plugin>3.1.0</version.maven-resources-plugin>
+        <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
 
         <version.commons-lang3>3.8.1</version.commons-lang3>
         <version.guava>27.1-jre</version.guava>
@@ -377,9 +739,21 @@
         <version.nexus-staging-maven-plugin>1.6.8</version.nexus-staging-maven-plugin>
         <version.plexus-cipher>1.7</version.plexus-cipher>
         <version.spring-context>5.1.6.RELEASE</version.spring-context>
+
+        <version.wagon-maven-plugin>wagon-maven-plugin-2.0.1-snapshot-chshawkn-1.6</version.wagon-maven-plugin>
     </properties>
 
     <!-- @formatter:off -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>github-mvn-repo-wagon-maven-plugin</id>
+            <url>https://raw.github.com/ci-and-cd/wagon-maven-plugin/mvn-repo/</url>
+            <name>Forked wagon-maven-plugin that can merge snapshots metadata correctly</name>
+            <layout>default</layout>
+            <snapshots><enabled>true</enabled><updatePolicy>daily</updatePolicy></snapshots>
+            <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases>
+        </pluginRepository>
+    </pluginRepositories>
     <repositories>
         <repository>
             <id>ossrh-nexus2-releases</id><name>ossrh nexus2 releases</name><url>https://oss.sonatype.org/content/repositories/releases/</url>

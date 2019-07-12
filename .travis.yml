@@ -80,7 +80,10 @@ script:
   # When prefixed with `travis_wait 30`, no log output until it is done.
   # see: https://github.com/travis-ci/travis-ci/issues/4190 or https://github.com/HaxeFoundation/hxcpp/issues/709
   - while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
-  - time CI_OPT_SONAR="true" CI_OPT_SONAR_ORGANIZATION="home1-oss-github" ./mvnw -Dgpg.executable=gpg2 -Dgpg.loopback=true -s settings.xml clean deploy;
+  #      ./mvnw -e ${MAVEN_GLOBAL_SETTINGS} -s settings.xml -Dgpg.executable=gpg -Dgpg.loopback=true -Dnexus2.staging=true clean deploy;
+  - time ./mvnw -e ${MAVEN_GLOBAL_SETTINGS} -s settings.xml -Dgpg.executable=gpg2 -Dgpg.loopback=true -Dnexus2.staging=true clean deploy;
+    if type -p column > /dev/null; then find .mvn/profiler-report -name "*.json" | xargs cat | jq -r '.projects[]|"module:", .project, "plugins", (.mojos[]|[.mojo,.time]|@tsv)' | column -t; fi; rm -rf .mvn/profiler-report;
+    time ./mvnw -e ${MAVEN_GLOBAL_SETTINGS} -ntp -s settings.xml -Dcustom.nexus3=https://nexus3.infra.top/nexus/ -Dfast=true -Dinfrastructure=custom -Dmaven.clean.skip=true -Dmaven.install.skip=true -Dmaven.packages.skip=true -Dnexus2.staging=false deploy;
     if type -p column > /dev/null; then find .mvn/profiler-report -name "*.json" | xargs cat | jq -r '.projects[]|"module:", .project, "plugins", (.mojos[]|[.mojo,.time]|@tsv)' | column -t; fi; rm -rf .mvn/profiler-report;
   - kill %1
 sudo: false

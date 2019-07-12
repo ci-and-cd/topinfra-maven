@@ -8,6 +8,7 @@ import static top.infra.maven.utils.PropertiesUtils.logProperties;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
@@ -75,24 +76,29 @@ public class GitPropertiesEventAware implements MavenEventAware {
         final CliRequest cliRequest,
         final CiOptionContext ciOptContext
     ) {
-        // TODO heck if .git file (git submodules) or .git directory exists.
-        final Optional<Properties> gitProperties = newJgitProperties(this.logger);
-        gitProperties.ifPresent(props -> {
-            final Properties merged = new Properties();
-            Stream.of(VcsProperties.values()).forEach(opt -> {
-                final String name = opt.getPropertyName();
-                final String value = MavenUtils.findInProperties(name, ciOptContext)
-                    .orElseGet(() -> props.getProperty(name));
-                if (value != null) {
-                    merged.setProperty(name, value);
-                }
+        final Path executionRootPath = MavenUtils.executionRootPath(cliRequest, ciOptContext);
+        final Path dotGit = executionRootPath.resolve(".git");
+        if (dotGit.toFile().exists()) {
+            final Optional<Properties> gitProperties = newJgitProperties(this.logger);
+            gitProperties.ifPresent(props -> {
+                final Properties merged = new Properties();
+                Stream.of(VcsProperties.values()).forEach(opt -> {
+                    final String name = opt.getPropertyName();
+                    final String value = MavenUtils.findInProperties(name, ciOptContext)
+                        .orElseGet(() -> props.getProperty(name));
+                    if (value != null) {
+                        merged.setProperty(name, value);
+                    }
+                });
+
+                logProperties(logger, "    gitProperties", merged, null);
+
+                PropertiesUtils.merge(merged, ciOptContext.getSystemProperties());
+                PropertiesUtils.merge(merged, ciOptContext.getUserProperties());
             });
-
-            logProperties(logger, "    gitProperties", merged, null);
-
-            PropertiesUtils.merge(merged, ciOptContext.getSystemProperties());
-            PropertiesUtils.merge(merged, ciOptContext.getUserProperties());
-        });
+        } else {
+            logger.info(String.format("    Git repo [%s] not found. Skip initializing gitProperties.", dotGit));
+        }
     }
 
     @Override

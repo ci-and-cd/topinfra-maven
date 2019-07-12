@@ -30,6 +30,28 @@
     <!-- @formatter:off -->
     <profiles>
         <profile>
+            <id>infrastructure_custom-allow-using-snapshots-parents-and-plugins</id>
+            <activation><property><name>custom.nexus3</name></property></activation>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>custom-nexus3-snapshots</id>
+                    <name>custom nexus3 snapshots</name>
+                    <url>${custom.nexus3}repository/maven-snapshots/</url>
+                    <releases><enabled>false</enabled></releases>
+                    <snapshots><enabled>true</enabled><updatePolicy>daily</updatePolicy></snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+            <repositories>
+                <repository>
+                    <id>custom-nexus3-snapshots</id>
+                    <name>custom nexus3 snapshots</name>
+                    <url>${custom.nexus3}repository/maven-snapshots/</url>
+                    <releases><enabled>false</enabled></releases>
+                    <snapshots><enabled>true</enabled><updatePolicy>daily</updatePolicy></snapshots>
+                </repository>
+            </repositories>
+        </profile>
+        <profile>
             <id>gpg-keyname</id>
             <activation><activeByDefault>true</activeByDefault></activation>
             <properties><gpg.keyname>${env.CI_OPT_GPG_KEYNAME}</gpg.keyname></properties>
@@ -45,6 +67,10 @@
         <server><id>gpg.passphrase</id><passphrase>${env.CI_OPT_GPG_PASSPHRASE}</passphrase></server>
         <server><id>ossrh-nexus2-snapshots</id><username>${env.CI_OPT_OSSRH_NEXUS2_USER}</username><password>${env.CI_OPT_OSSRH_NEXUS2_PASS}</password></server>
         <server><id>ossrh-nexus2-staging</id><username>${env.CI_OPT_OSSRH_NEXUS2_USER}</username><password>${env.CI_OPT_OSSRH_NEXUS2_PASS}</password></server>
+
+        <server><id>custom-nexus3-releases</id><username>${env.CI_OPT_CUSTOM_NEXUS3_USER}</username><password>${env.CI_OPT_CUSTOM_NEXUS3_PASS}</password></server>
+        <server><id>custom-nexus3-snapshots</id><username>${env.CI_OPT_CUSTOM_NEXUS3_USER}</username><password>${env.CI_OPT_CUSTOM_NEXUS3_PASS}</password></server>
+        <server><id>custom-nexus3-thirdparty</id><username>${env.CI_OPT_CUSTOM_NEXUS3_USER}</username><password>${env.CI_OPT_CUSTOM_NEXUS3_PASS}</password></server>
         <!-- @formatter:on -->
     </servers>
 
