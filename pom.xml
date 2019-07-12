@@ -443,12 +443,13 @@
                                 <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
-                                        <echo message="rename ${project.basedir}/.mvn/wagonRepository/deferred/**/maven-metadata-nexus.xml"/>
+                                        <echo message="rename ${wagon.merge-maven-repos.source}/**/maven-metadata-nexus.xml"/>
+                                        <mkdir dir="${wagon.merge-maven-repos.source}"/>
                                         <move includeemptydirs="false"
                                               overwrite="true"
-                                              todir="${project.basedir}/.mvn/wagonRepository/deferred"
+                                              todir="${wagon.merge-maven-repos.source}"
                                               verbose="true">
-                                            <fileset dir="${project.basedir}/.mvn/wagonRepository/deferred">
+                                            <fileset dir="${wagon.merge-maven-repos.source}">
                                                 <include name="**/maven-metadata-nexus.*"/>
                                             </fileset>
                                             <filtermapper>
