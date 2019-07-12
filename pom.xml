@@ -9,7 +9,7 @@
     <name>topinfra-maven</name>
     <packaging>pom</packaging>
     <url>https://github.com/ci-and-cd/topinfra-maven</url>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.0.4</version>
 
     <developers>
         <developer>
