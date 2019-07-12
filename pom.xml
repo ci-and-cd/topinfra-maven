@@ -125,8 +125,8 @@
 
     <!-- @formatter:off -->
     <distributionManagement>
-        <repository><id>ossrh-staging</id><url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url></repository>
-        <snapshotRepository><id>ossrh-snapshots</id><url>https://oss.sonatype.org/content/repositories/snapshots</url></snapshotRepository>
+        <repository><id>ossrh-nexus2-staging</id><url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url></repository>
+        <snapshotRepository><id>ossrh-nexus2-snapshots</id><url>https://oss.sonatype.org/content/repositories/snapshots</url></snapshotRepository>
     </distributionManagement>
     <!-- @formatter:on -->
 
@@ -216,7 +216,7 @@
                             <autoReleaseAfterClose>false</autoReleaseAfterClose>
                             <detectBuildFailures>true</detectBuildFailures>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <serverId>ossrh-staging</serverId>
+                            <serverId>ossrh-nexus2-staging</serverId>
                             <!--<sslAllowAll>true</sslAllowAll>-->
                             <stagingProgressPauseDurationSeconds>30</stagingProgressPauseDurationSeconds>
                             <stagingProgressTimeoutMinutes>60</stagingProgressTimeoutMinutes>
@@ -382,11 +382,11 @@
     <!-- @formatter:off -->
     <repositories>
         <repository>
-            <id>ossrh-releases</id><name>central releases</name><url>https://oss.sonatype.org/content/repositories/releases/</url>
+            <id>ossrh-nexus2-releases</id><name>ossrh nexus2 releases</name><url>https://oss.sonatype.org/content/repositories/releases/</url>
             <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases><snapshots><enabled>false</enabled></snapshots>
         </repository>
         <repository>
-            <id>ossrh-snapshots</id><name>central snapshots</name><url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <id>ossrh-nexus2-snapshots</id><name>ossrh nexus2 snapshots</name><url>https://oss.sonatype.org/content/repositories/snapshots/</url>
             <releases><enabled>false</enabled></releases><snapshots><enabled>true</enabled><updatePolicy>daily</updatePolicy></snapshots>
         </repository>
     </repositories>

@@ -1,11 +1,13 @@
 package top.infra.maven.extension.main;
 
+import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toMap;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.extension.shared.Constants.PROP_MAVEN_PACKAGES_SKIP;
 import static top.infra.maven.extension.shared.Constants.PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY;
 import static top.infra.maven.utils.SupportFunction.isNotEmpty;
 import static top.infra.maven.utils.SupportFunction.newTuple;
@@ -197,7 +199,9 @@ public class MavenGoalEditor {
                 properties.setProperty(Constants.PROP_NEXUS2_STAGING, BOOL_STRING_FALSE);
             }
 
-            if (includes(resultPhases, MavenPhase.PACKAGE)) {
+            final boolean packagesSkip = MavenUtils.findInProperties(PROP_MAVEN_PACKAGES_SKIP, ciOptContext)
+                .map(Boolean::parseBoolean).orElse(FALSE);
+            if (includes(resultPhases, MavenPhase.PACKAGE) && !packagesSkip) {
                 properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_PACKAGE, BOOL_STRING_TRUE);
                 properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL, Constants.PHASE_PACKAGE);
             }
@@ -206,7 +210,9 @@ public class MavenGoalEditor {
             if ((requestedInstallGoal.isPresent() || includes(requestedPhases, MavenPhase.INSTALL))
                 && notIncludes(resultPhases, MavenPhase.DEPLOY)) {
                 properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_INSTALL, BOOL_STRING_TRUE);
-                properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_PACKAGE, BOOL_STRING_TRUE);
+                if (!packagesSkip) {
+                    properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_PACKAGE, BOOL_STRING_TRUE);
+                }
                 properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL, Constants.PHASE_INSTALL);
             }
 

@@ -190,6 +190,8 @@ public enum MavenBuildPomOption implements CiOption {
         }
     },
 
+    MAVEN_PACKAGES_SKIP(Constants.PROP_MAVEN_PACKAGES_SKIP),
+
     /**
      * Need to calculate this in extension for profile activation.
      */
