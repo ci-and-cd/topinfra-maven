@@ -368,14 +368,25 @@
                         <artifactId>build-helper-maven-plugin</artifactId>
                         <executions>
                             <execution>
+                                <id>gitRef-on-initialize</id>
+                                <phase>initialize</phase>
+                                <goals><goal>bsh-property</goal></goals>
+                                <configuration>
+                                    <source>
+                                        gitRef = session.getUserProperties().getProperty("git.branch", System.getProperty("git.branch", project.getProperties().getProperty("git.branch")));
+                                    </source>
+                                    <properties><property>gitRef</property></properties>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>targetId-on-initialize</id>
                                 <phase>initialize</phase>
                                 <goals><goal>bsh-property</goal></goals>
                                 <configuration>
                                     <source>
-                                        ref = project.getProperties().getProperty("git.branch", session.getUserProperties().getProperty("git.branch"));
-                                        releaseRef = ref == null || ref.equals("") ? false : ref.startsWith("hotfix/") || ref.startsWith("release/") || ref.startsWith("support/");
-                                        snapshotRef = ref == null || ref.equals("") ? false : ref.equals("develop") || ref.startsWith("feature/");
+                                        gitRef = project.getProperties().getProperty("gitRef");
+                                        releaseRef = gitRef == null || gitRef.equals("") ? false : gitRef.startsWith("hotfix/") || gitRef.startsWith("release/") || gitRef.startsWith("support/");
+                                        snapshotRef = gitRef == null || gitRef.equals("") ? false : gitRef.equals("develop") || gitRef.startsWith("feature/");
                                         channel = releaseRef ? "releases" : snapshotRef ? "snapshots" : "mixed";
 
                                         targetId = "custom-nexus3-" + channel;
@@ -393,9 +404,9 @@
                                 <goals><goal>bsh-property</goal></goals>
                                 <configuration>
                                     <source>
-                                        ref = project.getProperties().getProperty("git.branch", session.getUserProperties().getProperty("git.branch"));
-                                        releaseRef = ref == null || ref.equals("") ? false : ref.startsWith("hotfix/") || ref.startsWith("release/") || ref.startsWith("support/");
-                                        snapshotRef = ref == null || ref.equals("") ? false : ref.equals("develop") || ref.startsWith("feature/");
+                                        gitRef = project.getProperties().getProperty("gitRef");
+                                        releaseRef = gitRef == null || gitRef.equals("") ? false : gitRef.startsWith("hotfix/") || gitRef.startsWith("release/") || gitRef.startsWith("support/");
+                                        snapshotRef = gitRef == null || gitRef.equals("") ? false : gitRef.equals("develop") || gitRef.startsWith("feature/");
                                         channel = releaseRef ? "releases" : snapshotRef ? "snapshots" : "mixed";
 
                                         targetRepo = "${custom.nexus3}repository/maven-" + channel + "/";
@@ -418,6 +429,7 @@
                                 <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
+                                        <echo message="gitRef: ${gitRef}"/>
                                         <echo message="wagon.merge-maven-repos.source: ${wagon.merge-maven-repos.source}"/>
                                         <echo message="wagon.merge-maven-repos.target: ${wagon.merge-maven-repos.target}"/>
                                         <echo message="wagon.merge-maven-repos.targetId: ${wagon.merge-maven-repos.targetId}"/>

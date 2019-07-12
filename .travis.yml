@@ -38,7 +38,7 @@ before_install:
     gpg2 --use-agent --batch=true --list-secret-keys;
     gpg2 --use-agent --batch=true --list-keys;
     printf 'trust\n5\ny\n' | gpg2 --use-agent --batch=true --command-fd 0 --edit-key ${CI_OPT_GPG_KEYNAME};
-  - if [[ -z "${MAVEN_OPTS}" ]]; then export MAVEN_OPTS="-XX:TieredStopAtLevel=1 -XX:+UseParallelGC -Dprofile=title -DprofileFormat=JSON,HTML"; fi;
+  - if [[ -z "${MAVEN_OPTS}" ]]; then export MAVEN_OPTS="-XX:TieredStopAtLevel=1 -XX:+UseParallelGC -Dgit.branch=${TRAVIS_BRANCH} -Dprofile=title -DprofileFormat=JSON,HTML"; fi;
 #  # see: https://github.com/travis-ci/travis.rb
 #  - if [[ "${CLEAN_TRAVIS_LOGS}" == "true" ]]; then
 #      ruby -v; gem install travis -v 1.8.10 --no-rdoc --no-ri; travis version;
