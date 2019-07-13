@@ -42,7 +42,7 @@ see [homebrew-topinfra](https://github.com/ci-and-cd/homebrew-topinfra).
 ```bash
 ./mvnw -s settings.xml clean install
 
-CI_OPT_SONAR="true" CI_OPT_SONAR_ORGANIZATION="home1-oss-github" ./mvnw -Dgpg.executable=gpg -Dgpg.loopback=true -s settings.xml clean deploy
+CI_OPT_SONAR="true" ./mvnw -s settings.xml -Dgpg.executable=gpg -Dgpg.loopback=true -Dsonar.organization=home1-oss-github clean deploy
 
 ./mvnw dependency:tree
 ```
