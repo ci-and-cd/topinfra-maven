@@ -26,6 +26,8 @@ public final class Constants {
     public static final String PROP_NAME_SETTINGS_SECURITY = SYSTEM_PROPERTY_SEC_LOCATION;
     public static final String PROP_NAME_TOOLCHAINS = "toolchains";
 
+    public static final String PROP_MAVEN_PACKAGES_SKIP = "maven.packages.skip";
+
     public static final String PROP_NEXUS2_STAGING = "nexus2.staging";
 
     public static final String PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY = "mvn.deploy.publish.segregation.goal.deploy";

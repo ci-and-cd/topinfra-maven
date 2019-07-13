@@ -40,7 +40,7 @@ public class Gpg {
     private final Logger logger;
 
     private final Path homeDir;
-    private final Path workingDir;
+    private final Path executionRoot;
     private final String keyId;
     private final String keyName;
     private final String passphrase;
@@ -51,7 +51,7 @@ public class Gpg {
     public Gpg(
         final Logger logger,
         final Path homeDir,
-        final Path workingDir,
+        final Path executionRoot,
         final String executable,
         final String keyId,
         final String keyName,
@@ -59,7 +59,7 @@ public class Gpg {
     ) {
         this.logger = logger;
         this.homeDir = homeDir;
-        this.workingDir = workingDir;
+        this.executionRoot = executionRoot;
         this.keyId = keyId;
         this.keyName = keyName;
         this.passphrase = passphrase;
@@ -121,6 +121,10 @@ public class Gpg {
                     this.importPrivateKeys();
                 }
             });
+        } else {
+            logger.info(String.format(
+                "    Skip decrypting and importing keys. Encrypted keys %s absent.",
+                Arrays.asList(CODESIGNING_ASC_ENC, CODESIGNING_ASC_GPG)));
         }
     }
 
@@ -233,7 +237,7 @@ public class Gpg {
                     final List<String> exportKey = this.cmdGpgBatch("--keyring", "secring.gpg", "--export-secret-key", this.keyId);
                     final Entry<Integer, String> resultExportKey = this.exec("", exportKey);
                     if (resultExportKey.getKey() == 0) {
-                        final Path secringGpg = this.workingDir.resolve("secring.gpg");
+                        final Path secringGpg = this.executionRoot.resolve("secring.gpg");
                         FileUtils.writeFile(secringGpg, resultExportKey.getValue().getBytes(UTF_8), StandardOpenOption.SYNC);
                     }
                 }
@@ -265,8 +269,10 @@ public class Gpg {
     }
 
     private void decryptByOpenSSL(final String in, final String out, final String passphrase) {
-        if (!SupportFunction.isEmpty(this.passphrase) && this.isFilePresent(in)) {
-            logger.info("    decrypt private key by openssl");
+        final boolean passphraseEmpty = SupportFunction.isEmpty(this.passphrase);
+        final boolean inputFilePresent = this.isFilePresent(in);
+        if (!passphraseEmpty && inputFilePresent) {
+            logger.info(String.format("    Decrypting private key [%s] by openssl", in));
 
             final Entry<Integer, String> opensslVersion = this.exec(Arrays.asList("openssl", "version", "-a"));
             logger.info(opensslVersion.getValue());
@@ -282,6 +288,8 @@ public class Gpg {
                 "-out", out,
                 "-d", "-md", "md5"));
             logger.info(resultOpensslDecrypt.getValue());
+        } else {
+            logger.info(String.format("    Skip decrypting private key [%s] by openssl, passphraseEmpty [%s]", in, passphraseEmpty));
         }
     }
 
@@ -353,6 +361,6 @@ public class Gpg {
     }
 
     private boolean isFilePresent(final String file) {
-        return SupportFunction.exists(this.workingDir.resolve(file));
+        return SupportFunction.exists(this.executionRoot.resolve(file));
     }
 }
