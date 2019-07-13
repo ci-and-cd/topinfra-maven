@@ -8,6 +8,7 @@ import static top.infra.maven.extension.shared.GlobalOption.FAST;
 import static top.infra.maven.extension.shared.GlobalOption.getInfrastructureSpecificValue;
 import static top.infra.maven.extension.shared.GlobalOption.setInfrastructureSpecificValue;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
@@ -203,14 +204,14 @@ public enum MavenBuildPomOption implements CiOption {
                 .map(value -> value.substring(0, 8))
                 .orElse("unknown-commit");
 
-            final String executionRoot = MavenUtils.findInProperties(MavenUtils.PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY, context)
+            final String executionRoot = MavenUtils
+                .findInProperties(MavenUtils.PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY, context)
                 .orElse(SystemUtils.systemUserDir());
 
-            final String prefix = Paths.get(executionRoot, ".mvn", "wagonRepository").toString();
+            // final Path path = Paths.get(executionRoot, ".mvn", "wagonRepository", "deferred");
+            final Path path = Paths.get(executionRoot, ".mvn", "wagonRepository", "altDeployment", commitId);
 
-            result = Optional.of(Paths.get(prefix, commitId).toString());
-
-            return result;
+            return Optional.of(path.toString());
         }
 
         @Override
