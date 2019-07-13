@@ -23,13 +23,13 @@ see [homebrew-topinfra](https://github.com/ci-and-cd/homebrew-topinfra).
             xsi:schemaLocation="http://maven.apache.org/EXTENSIONS/1.0.0 http://maven.apache.org/xsd/core-extensions-1.0.0.xsd">
 
     <!-- @formatter:off -->
-    <extension><artifactId>topinfra-maven-extension</artifactId><groupId>top.infra.maven</groupId><version>1.0.3</version></extension>
-    <extension><artifactId>topinfra-mvnext-module-docker</artifactId><groupId>top.infra.maven</groupId><version>1.0.3</version></extension>
-    <extension><artifactId>topinfra-mvnext-module-gitflow-semver</artifactId><groupId>top.infra.maven</groupId><version>1.0.3</version></extension>
-    <extension><artifactId>topinfra-mvnext-module-gpg-key</artifactId><groupId>top.infra.maven</groupId><version>1.0.3</version></extension>
-    <extension><artifactId>topinfra-mvnext-module-infrastructure-settings</artifactId><groupId>top.infra.maven</groupId><version>1.0.3</version></extension>
-    <extension><artifactId>topinfra-mvnext-module-maven-build-pom</artifactId><groupId>top.infra.maven</groupId><version>1.0.3</version></extension>
-    <extension><artifactId>topinfra-mvnext-module-settings-security</artifactId><groupId>top.infra.maven</groupId><version>1.0.3</version></extension>
+    <extension><artifactId>topinfra-maven-extension</artifactId><groupId>top.infra.maven</groupId><version>1.0.6-SNAPSHOT</version></extension>
+    <extension><artifactId>topinfra-mvnext-module-docker</artifactId><groupId>top.infra.maven</groupId><version>1.0.6-SNAPSHOT</version></extension>
+    <extension><artifactId>topinfra-mvnext-module-gitflow-semver</artifactId><groupId>top.infra.maven</groupId><version>1.0.6-SNAPSHOT</version></extension>
+    <extension><artifactId>topinfra-mvnext-module-gpg-key</artifactId><groupId>top.infra.maven</groupId><version>1.0.6-SNAPSHOT</version></extension>
+    <extension><artifactId>topinfra-mvnext-module-infrastructure-settings</artifactId><groupId>top.infra.maven</groupId><version>1.0.6-SNAPSHOT</version></extension>
+    <extension><artifactId>topinfra-mvnext-module-maven-build-pom</artifactId><groupId>top.infra.maven</groupId><version>1.0.6-SNAPSHOT</version></extension>
+    <extension><artifactId>topinfra-mvnext-module-settings-security</artifactId><groupId>top.infra.maven</groupId><version>1.0.6-SNAPSHOT</version></extension>
     <!-- @formatter:on -->
 </extensions>
 ```
@@ -42,7 +42,7 @@ see [homebrew-topinfra](https://github.com/ci-and-cd/homebrew-topinfra).
 ```bash
 ./mvnw -s settings.xml clean install
 
-CI_OPT_SONAR="true" CI_OPT_SONAR_ORGANIZATION="home1-oss-github" ./mvnw -Dgpg.executable=gpg -Dgpg.loopback=true -s settings.xml clean deploy
+CI_OPT_SONAR="true" ./mvnw -s settings.xml -Dgpg.executable=gpg -Dgpg.loopback=true -Dsonar.organization=home1-oss-github clean deploy
 
 ./mvnw dependency:tree
 ```

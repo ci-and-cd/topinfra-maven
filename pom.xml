@@ -9,7 +9,7 @@
     <name>topinfra-maven</name>
     <packaging>pom</packaging>
     <url>https://github.com/ci-and-cd/topinfra-maven</url>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
 
     <developers>
         <developer>
@@ -42,16 +42,16 @@
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>sourceDir-on-initialize</id>
+                        <id>wagonRepository-on-initialize</id>
                         <phase>initialize</phase>
                         <goals><goal>bsh-property</goal></goals>
                         <configuration>
                             <source>
                                 multiModuleProjectDirectory = System.getProperty("maven.multiModuleProjectDirectory", "");
-                                sourceDir = multiModuleProjectDirectory + File.separator + ".mvn" + File.separator + "wagonRepository";
+                                wagonRepository = multiModuleProjectDirectory + File.separator + ".mvn" + File.separator + "wagonRepository";
 
-                                deferred = sourceDir + File.separator + "deferred";
-                                altDeployment = sourceDir + File.separator + "altDeployment";
+                                deferred = wagonRepository + File.separator + "deferred";
+                                altDeployment = wagonRepository + File.separator + "altDeployment";
 
                                 System.setProperty("wagon.merge-maven-repos.source", altDeployment);
                                 session.getUserProperties().setProperty("wagon.merge-maven-repos.source", altDeployment);
@@ -60,7 +60,7 @@
                                 System.setProperty("altDeploymentRepository", altDeploymentRepository);
                                 session.getUserProperties().setProperty("altDeploymentRepository", altDeploymentRepository);
                             </source>
-                            <properties><property>sourceDir</property></properties>
+                            <properties><property>wagonRepository</property></properties>
                         </configuration>
                     </execution>
                 </executions>
@@ -493,6 +493,35 @@
             <id>nexus2_staging</id>
             <activation><property><name>nexus2.staging</name><value>true</value></property></activation>
             <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.sonatype.plugins</groupId>
+                            <artifactId>nexus-staging-maven-plugin</artifactId>
+                            <configuration>
+                                <altStagingDirectory>${wagonRepository}</altStagingDirectory>
+                                <autoDropAfterRelease>true</autoDropAfterRelease>
+                                <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                                <detectBuildFailures>true</detectBuildFailures>
+                                <keepStagingRepositoryOnFailure>false</keepStagingRepositoryOnFailure>
+                                <keepStagingRepositoryOnCloseRuleFailure>false</keepStagingRepositoryOnCloseRuleFailure>
+                                <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                                <serverId>ossrh-nexus2-staging</serverId>
+                                <!--<sslAllowAll>true</sslAllowAll>-->
+                                <stagingProgressPauseDurationSeconds>30</stagingProgressPauseDurationSeconds>
+                                <stagingProgressTimeoutMinutes>60</stagingProgressTimeoutMinutes>
+
+                                <!--
+                                <skipLocalStaging>${snapshotRef}</skipLocalStaging>
+                                <skipNexusStagingDeployMojo>${snapshotRef}</skipNexusStagingDeployMojo>
+                                <skipRemoteStaging>${snapshotRef}</skipRemoteStaging>
+                                <skipStaging>${snapshotRef}</skipStaging>
+                                <skipStagingRepositoryClose>${snapshotRef}</skipStagingRepositoryClose>
+                                -->
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
                 <plugins>
                     <plugin>
                         <artifactId>maven-deploy-plugin</artifactId>
@@ -508,19 +537,6 @@
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
                         <!--<extensions>true</extensions>-->
-                        <configuration>
-                            <altStagingDirectory>${sourceDir}</altStagingDirectory>
-                            <autoDropAfterRelease>true</autoDropAfterRelease>
-                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
-                            <detectBuildFailures>true</detectBuildFailures>
-                            <keepStagingRepositoryOnFailure>false</keepStagingRepositoryOnFailure>
-                            <keepStagingRepositoryOnCloseRuleFailure>false</keepStagingRepositoryOnCloseRuleFailure>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <serverId>ossrh-nexus2-staging</serverId>
-                            <!--<sslAllowAll>true</sslAllowAll>-->
-                            <stagingProgressPauseDurationSeconds>30</stagingProgressPauseDurationSeconds>
-                            <stagingProgressTimeoutMinutes>60</stagingProgressTimeoutMinutes>
-                        </configuration>
                         <executions>
                             <execution>
                                 <id>default-deploy</id>
@@ -533,7 +549,7 @@
                                 <phase>deploy</phase>
                                 <goals><goal>deploy-staged-repository</goal></goals>
                                 <configuration>
-                                    <repositoryDirectory>${sourceDir}</repositoryDirectory>
+                                    <repositoryDirectory>${wagonRepository}</repositoryDirectory>
                                 </configuration>
                             </execution>
                             -->
