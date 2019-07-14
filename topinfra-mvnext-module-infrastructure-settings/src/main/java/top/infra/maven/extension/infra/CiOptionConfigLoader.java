@@ -1,8 +1,8 @@
 package top.infra.maven.extension.infra;
 
-import static top.infra.maven.extension.shared.Constants.SRC_CI_OPTS_PROPERTIES;
 import static top.infra.maven.extension.infra.InfraOption.CACHE_SETTINGS_PATH;
 import static top.infra.maven.extension.infra.InfraOption.GIT_AUTH_TOKEN;
+import static top.infra.maven.extension.shared.Constants.SRC_CI_OPTS_PROPERTIES;
 import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 import static top.infra.maven.utils.PropertiesUtils.logProperties;
 import static top.infra.maven.utils.SupportFunction.isEmpty;
@@ -76,7 +76,8 @@ public class CiOptionConfigLoader implements MavenEventAware {
 
         loadedProperties.ifPresent(props -> logProperties(logger, "    ci_opts.properties", props, null));
 
-        ciOptionContext.updateSystemProperties(loadedProperties.orElse(null));
+        ciOptionContext.setSystemPropertiesIfAbsent(loadedProperties.orElse(null));
+        CiOptionContext.setSystemPropertiesIfAbsent(System.getProperties(), loadedProperties.orElse(null));
     }
 
     private static void checkGitAuthToken(final Logger logger, final CiOptionContext ciOptContext) {

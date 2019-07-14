@@ -1,9 +1,9 @@
 package top.infra.maven.extension.infra;
 
 import static java.lang.Boolean.FALSE;
+import static top.infra.maven.extension.infra.InfraOption.CACHE_SETTINGS_PATH;
 import static top.infra.maven.extension.shared.CiOptions.systemPropertyName;
 import static top.infra.maven.extension.shared.Constants.SETTINGS_SECURITY_XML;
-import static top.infra.maven.extension.infra.InfraOption.CACHE_SETTINGS_PATH;
 import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 import static top.infra.maven.utils.SupportFunction.logEnd;
 import static top.infra.maven.utils.SupportFunction.logStart;

@@ -100,10 +100,10 @@ public class GitRepository {
             ));
     }
 
-    public void download(
+    public boolean download(
         final String sourceFile,
         final Path targetFile,
-        final boolean reThrowException,
+        final boolean exceptionOnError,
         final boolean offline,
         final boolean update
     ) {
@@ -120,8 +120,9 @@ public class GitRepository {
             }
         }
 
+        final boolean ok;
         if (doDownload) {
-            this.download(sourceFile, targetFile, reThrowException);
+            ok = this.download(sourceFile, targetFile, exceptionOnError);
         } else {
             if (targetFileExists) {
                 logger.info(String.format(
@@ -132,7 +133,9 @@ public class GitRepository {
                 logger.error(errorMsg);
                 throw new IllegalStateException(errorMsg);
             }
+            ok = true;
         }
+        return ok;
     }
 
     /**
@@ -141,12 +144,13 @@ public class GitRepository {
      *
      * @param sourceFile       relative path in git repository
      * @param targetFile       target local file
-     * @param reThrowException re-throw exception
+     * @param exceptionOnError throw exception on download error or not found
+     * @return ok
      */
-    public void download(
+    public boolean download(
         final String sourceFile,
         final Path targetFile,
-        final boolean reThrowException
+        final boolean exceptionOnError
     ) {
         if (logger.isInfoEnabled()) {
             logger.info(String.format("    Download from [%s] to [%s]", sourceFile, targetFile));
@@ -160,24 +164,34 @@ public class GitRepository {
         final boolean is2xxStatus = status.map(DownloadUtils::is2xxStatus).orElse(FALSE);
         final boolean is404Status = status.map(DownloadUtils::is404Status).orElse(FALSE);
 
+        final boolean ok;
         if (error.isPresent() || !is2xxStatus) {
-            if (!is404Status) {
-                final String errorMsg = String.format(
+            final String errorMsg;
+            final RuntimeException ex;
+            if (is404Status) {
+                errorMsg = String.format("    Resource [%s] not found.", result.getKey().orElse(null));
+                ex = new DownloadException(errorMsg);
+            } else {
+                errorMsg = String.format(
                     "    Download error. From [%s], to [%s], error [%s].",
                     result.getKey().orElse(null),
                     targetFile,
                     error.map(Throwable::getMessage).orElseGet(() -> status.map(Object::toString).orElse(null))
                 );
-                if (reThrowException) {
-                    logger.error(errorMsg);
-                    throw new DownloadException(errorMsg, error.orElse(null));
-                } else {
-                    logger.warn(errorMsg);
-                }
-            } else {
-                logger.warn(String.format("    Resource [%s] not found.", result.getKey().orElse(null)));
+                ex = new DownloadException(errorMsg, error.orElse(null));
             }
+
+            if (exceptionOnError) {
+                logger.error(errorMsg);
+                throw ex;
+            } else {
+                logger.warn(errorMsg);
+            }
+            ok = false;
+        } else {
+            ok = true;
         }
+        return ok;
     }
 
     /**
@@ -198,15 +212,23 @@ public class GitRepository {
         if (isNotEmpty(this.repo)) {
             final Map<String, String> headers = new LinkedHashMap<>();
             if (isNotEmpty(this.token)) {
-                headers.put("PRIVATE-TOKEN", this.token);
+                if (this.repo.contains("raw.githubusercontent.com") || this.repo.contains("github.com")) {
+                    headers.put("Authorization", "token " + this.token); // github
+                    logger.info("    token send in header 'Authorization'.");
+                } else {
+                    headers.put("PRIVATE-TOKEN", this.token); // gitlab
+                    logger.info("    token send in header 'PRIVATE-TOKEN'.");
+                }
+            } else {
+                logger.info("    token absent.");
             }
 
             final String sourceFilePath = sourceFile.startsWith("/") ? sourceFile.substring(1) : sourceFile;
 
+            final String urlPrefix = this.repo.endsWith("/") ? this.repo : this.repo + "/";
             final Optional<Integer> status;
             if (PATTERN_GITLAB_URL.matcher(this.repo).matches()) {
-                fromUrl = (this.repo.endsWith("/") ? this.repo : this.repo + "/")
-                    + sourceFilePath.replaceAll("/", "%2F") + "?ref=" + this.repoRef;
+                fromUrl = urlPrefix + sourceFilePath.replaceAll("/", "%2F") + "?ref=" + this.repoRef;
                 final Path saveToFile = targetFile.resolveSibling(targetFile.getFileName() + ".json");
                 statusOrException = DownloadUtils.download(logger, fromUrl, saveToFile, headers, 3);
                 status = statusOrException.getKey();
@@ -232,8 +254,10 @@ public class GitRepository {
                     }
                 }
             } else {
-                fromUrl = (this.repo.endsWith("/") ? this.repo.substring(0, this.repo.length() - 1) : this.repo)
-                    + "/raw/" + this.repoRef + "/" + sourceFilePath;
+                final String path = this.repo.contains("raw.githubusercontent.com")
+                    ? this.repoRef + "/" + sourceFilePath
+                    : "raw/" + this.repoRef + "/" + sourceFilePath;
+                fromUrl = urlPrefix + path;
                 statusOrException = DownloadUtils.download(logger, fromUrl, targetFile, headers, 3);
                 status = statusOrException.getKey();
             }

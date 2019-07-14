@@ -37,8 +37,7 @@ public enum InfraOption implements CiOption {
             if (optsFilePath.toFile().exists()) {
                 result = Optional.of(optsFilePath.toString());
             } else {
-                final String cacheDirectory = CACHE_SETTINGS_PATH.getValue(context)
-                    .orElse(systemJavaIoTmp());
+                final String cacheDirectory = CACHE_SETTINGS_PATH.getValue(context).orElse(systemJavaIoTmp());
                 final String cachedCiOptsProperties = Paths.get(cacheDirectory, optsFilePath.toFile().getName()).toString();
                 result = Optional.of(cachedCiOptsProperties);
             }

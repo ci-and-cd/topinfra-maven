@@ -37,7 +37,7 @@ public class DockerOptionTests {
 
         final Properties loadedProperties = new Properties();
         loadedProperties.setProperty(DOCKER_REGISTRY_URL.getEnvVariableName(), "https://docker.io/v2/");
-        ciOptContext.updateSystemProperties(loadedProperties);
+        ciOptContext.setSystemPropertiesIfAbsent(loadedProperties);
 
         // ciOptContext.githubSiteRepoOwner().ifPresent(githubSiteRepoOwner ->
         //     ciOptContext.setSystemProperty(GITHUB_GLOBAL_REPOSITORYOWNER, githubSiteRepoOwner));
