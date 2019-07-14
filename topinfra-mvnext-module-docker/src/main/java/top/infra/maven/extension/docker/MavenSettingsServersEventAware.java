@@ -82,6 +82,8 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
                     .distinct()
                     .collect(Collectors.toList());
 
+                final Properties systemProperties = session.getSystemProperties();
+
                 if (!envVars.isEmpty()) {
                     final Optional<String> blankString = this.getEncryptedBlankString();
                     if (blankString.isPresent()) {
@@ -89,7 +91,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
                             logger.info(String.format(
                                 "    Write blank value for env variable [%s] (in settings.xml), to avoid passphrase decrypt error.",
                                 envVar));
-                            session.getSystemProperties().setProperty(envVar, blankString.get());
+                            systemProperties.setProperty(envVar, blankString.get());
                         });
                     } else {
                         logger.info(String.format(
@@ -98,7 +100,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
                     }
                 }
 
-                this.checkServers(settings.getServers());
+                this.checkServers(settings.getServers(), systemProperties);
             }
         }
     }
@@ -138,7 +140,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         )
             .ifPresent(settingsXml -> {
                 final Properties systemProperties = ciOptContext.getSystemProperties();
-                final List<String> envVars = absentVarsInSettingsXml(Paths.get(settingsXml), systemProperties);
+                final List<String> envVars = envVarsInSettingsXml(Paths.get(settingsXml));
                 envVars.forEach(envVar -> {
                     if (!systemProperties.containsKey(envVar)) {
                         logger.warn(String.format(
@@ -169,7 +171,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         final Optional<MavenSettingsSecurity> settingsSecurity = settingsSecurityXml
             .map(xml -> new MavenSettingsSecurity(xml, false));
         this.encryptedBlankString = settingsSecurity.map(ss -> ss.encodeText(" ")).orElse(null);
-        this.checkServers(request.getServers());
+        this.checkServers(request.getServers(), ciOptContext.getSystemProperties());
     }
 
     private List<String> absentEnvVars(final Server server) {
@@ -186,18 +188,18 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         return found.stream().map(line -> line.substring(2, line.length() - 1)).distinct().collect(Collectors.toList());
     }
 
-    private void checkServers(final List<Server> servers) {
+    private void checkServers(final List<Server> servers, final Properties systemProperties) {
         // see: https://github.com/shyiko/servers-maven-extension/blob/master/src/main/java/com/github/shyiko/sme/ServersExtension.java
         for (final Server server : servers) {
 
             if (server.getPassphrase() != null) {
-                this.serverPassphrase(server);
+                this.serverPassphrase(server, systemProperties);
             }
             if (server.getPassword() != null) {
-                this.serverPassword(server);
+                this.serverPassword(server, systemProperties);
             }
             if (server.getUsername() != null) {
-                this.serverUsername(server);
+                this.serverUsername(server, systemProperties);
             }
 
             // final SettingsDecryptionRequest decryptionRequest = new DefaultSettingsDecryptionRequest(server);
@@ -214,7 +216,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         return !isEmpty(str) && PATTERN_ENV_VAR.matcher(str).matches();
     }
 
-    private String replaceEmptyValue(final String value) {
+    private String replaceEmptyValue(final String value, final Properties systemProperties) {
         final String result;
         if (value == null) {
             result = null; // not a field
@@ -222,7 +224,13 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
             result = this.encryptedBlankString;
         } else {
             if (isSystemPropertyNameOfEnvVar(value)) {
-                result = this.encryptedBlankString;
+                final List<String> envVars = envVars(value);
+                if (envVars.isEmpty()) {
+                    result = this.encryptedBlankString;
+                } else {
+                    // TODO move this into topinfra-maven-dist
+                    result = systemProperties.getProperty(envVars.get(0), this.encryptedBlankString);
+                }
             } else {
                 result = value;
             }
@@ -230,54 +238,64 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         return result;
     }
 
-    private void serverPassphrase(final Server server) {
-        final String passphrase = this.replaceEmptyValue(server.getPassphrase());
+    private void serverPassphrase(final Server server, final Properties systemProperties) {
+        final String passphrase = this.replaceEmptyValue(server.getPassphrase(), systemProperties);
         if (passphrase != null && !passphrase.equals(server.getPassphrase())) {
-            logger.warn(String.format("    server [%s] has a empty passphrase [%s]", server.getId(), server.getPassphrase()));
+            if (passphrase.equals(this.encryptedBlankString)) {
+                logger.warn(String.format("    server [%s] has a empty passphrase [%s]", server.getId(), server.getPassphrase()));
+            } else {
+                logger.info(String.format("    server [%s] passphrase [%s] found in properties.", server.getId(), server.getPassphrase()));
+            }
             server.setPassphrase(passphrase);
         }
     }
 
-    private void serverPassword(final Server server) {
-        final String password = this.replaceEmptyValue(server.getPassword());
+    private void serverPassword(final Server server, final Properties systemProperties) {
+        final String password = this.replaceEmptyValue(server.getPassword(), systemProperties);
         if (password != null && !password.equals(server.getPassword())) {
-            logger.warn(String.format("    server [%s] has a empty password [%s]", server.getId(), server.getPassword()));
+            if (password.equals(this.encryptedBlankString)) {
+                logger.warn(String.format("    server [%s] has a empty password [%s]", server.getId(), server.getPassword()));
+            } else {
+                logger.info(String.format("    server [%s] password [%s] found in properties.", server.getId(), server.getPassword()));
+            }
             server.setPassword(password);
         }
     }
 
-    private void serverUsername(final Server server) {
-        final String username = this.replaceEmptyValue(server.getUsername());
+    private void serverUsername(final Server server, final Properties systemProperties) {
+        final String username = this.replaceEmptyValue(server.getUsername(), systemProperties);
         if (username != null && !username.equals(server.getUsername())) {
-            logger.warn(String.format("    server [%s] has a empty username [%s]", server.getId(), server.getUsername()));
+            if (username.equals(this.encryptedBlankString)) {
+                logger.warn(String.format("    server [%s] has a empty username [%s]", server.getId(), server.getUsername()));
+            } else {
+                logger.info(String.format("    server [%s] username [%s] found in properties.", server.getId(), server.getUsername()));
+            }
             server.setUsername(username);
         }
+    }
+
+    private static List<String> envVars(final String text) {
+        final Matcher matcher = PATTERN_ENV_VAR.matcher(text);
+        final List<String> matches = new LinkedList<>();
+        while (matcher.find()) {
+            final String matched = matcher.group(0);
+            matches.add(matched.substring(2, matched.length() - 1));
+        }
+        return matches;
     }
 
     /**
      * Find properties that absent in systemProperties but used in settings.xml.
      *
-     * @param settingsXml      settings.xml
-     * @param systemProperties systemProperties of current maven session
+     * @param settingsXml settings.xml
      * @return variables absent in systemProperties but used in settings.xml
      */
-    private static List<String> absentVarsInSettingsXml(
-        final Path settingsXml,
-        final Properties systemProperties
-    ) {
+    private static List<String> envVarsInSettingsXml(final Path settingsXml) {
         return settingsXml != null
             ? SupportFunction.lines(Unix4j.cat(settingsXml.toFile()).toStringResult())
             .stream()
-            .flatMap(line -> {
-                final Matcher matcher = PATTERN_ENV_VAR.matcher(line);
-                final List<String> matches = new LinkedList<>();
-                while (matcher.find()) {
-                    matches.add(matcher.group(0));
-                }
-                return matches.stream();
-            })
+            .flatMap(line -> envVars(line).stream())
             .distinct()
-            .map(line -> line.substring(2, line.length() - 1))
             .collect(Collectors.toList())
             : Collections.emptyList();
     }

@@ -39,7 +39,7 @@ public class PublishToRepoTest {
         );
 
         final Properties loadedProperties = new Properties();
-        ciOptContext.updateSystemProperties(loadedProperties);
+        ciOptContext.setSystemPropertiesIfAbsent(loadedProperties);
 
         final Properties newProperties = ciOptContext.setCiOptPropertiesInto(OptionCollections.optionCollections(), userProperties);
 
@@ -67,7 +67,7 @@ public class PublishToRepoTest {
         );
 
         final Properties loadedProperties = new Properties();
-        ciOptContext.updateSystemProperties(loadedProperties);
+        ciOptContext.setSystemPropertiesIfAbsent(loadedProperties);
 
         final Properties newProperties = ciOptContext.setCiOptPropertiesInto(OptionCollections.optionCollections(), userProperties);
 

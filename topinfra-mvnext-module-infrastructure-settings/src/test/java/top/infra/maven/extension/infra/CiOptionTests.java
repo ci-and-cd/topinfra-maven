@@ -41,7 +41,7 @@ public class CiOptionTests {
 
         final String remoteOriginUrl = GIT_REMOTE_ORIGIN_URL.getValue(ciOptContext).orElse(null);
         CiOptionConfigLoader.ciOptContextFromFile(ciOptContext, logger(), remoteOriginUrl, false, true)
-            .ifPresent(ciOptContext::updateSystemProperties);
+            .ifPresent(ciOptContext::setSystemPropertiesIfAbsent);
 
         slf4jLogger.info("generateReports {}", GENERATEREPORTS.getValue(ciOptContext).orElse(null));
         assertEquals(TRUE.toString(), GENERATEREPORTS.getValue(ciOptContext).orElse(null));
@@ -72,7 +72,7 @@ public class CiOptionTests {
 
         final Properties loadedProperties = new Properties();
         loadedProperties.setProperty(SONAR_HOST_URL.getEnvVariableName(), expectedSonarHostUrl);
-        ciOptContext.updateSystemProperties(loadedProperties);
+        ciOptContext.setSystemPropertiesIfAbsent(loadedProperties);
 
         final Properties newProperties = ciOptContext.setCiOptPropertiesInto(OptionCollections.optionCollections(), userProperties);
 

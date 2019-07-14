@@ -58,7 +58,7 @@ public class ProjectVersionTest {
         );
 
         final Properties loadedProperties = new Properties();
-        ciOptContext.updateSystemProperties(loadedProperties);
+        ciOptContext.setSystemPropertiesIfAbsent(loadedProperties);
 
         final Properties newProperties = ciOptContext.setCiOptPropertiesInto(OptionCollections.optionCollections(), userProperties);
 
@@ -87,7 +87,7 @@ public class ProjectVersionTest {
         );
 
         final Properties loadedProperties = new Properties();
-        ciOptContext.updateSystemProperties(loadedProperties);
+        ciOptContext.setSystemPropertiesIfAbsent(loadedProperties);
 
         final Properties newProperties = ciOptContext.setCiOptPropertiesInto(OptionCollections.optionCollections(), userProperties);
 

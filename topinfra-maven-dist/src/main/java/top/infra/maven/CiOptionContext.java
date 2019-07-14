@@ -54,13 +54,17 @@ public class CiOptionContext {
         return properties;
     }
 
-    public void updateSystemProperties(final Properties externalProperties) {
-        if (externalProperties != null) {
-            for (final String name : externalProperties.stringPropertyNames()) {
+    public void setSystemPropertiesIfAbsent(final Properties externalProperties) {
+        CiOptionContext.setSystemPropertiesIfAbsent(this.systemProperties, externalProperties);
+    }
+
+    public static void setSystemPropertiesIfAbsent(final Properties systemProperties, final Properties input) {
+        if (input != null) {
+            for (final String name : input.stringPropertyNames()) {
                 final String key = CiOptions.systemPropertyName(name);
-                final String value = externalProperties.getProperty(name);
-                if (value != null && !this.systemProperties.containsKey(key)) {
-                    this.systemProperties.setProperty(key, value);
+                final String value = input.getProperty(name);
+                if (value != null && !systemProperties.containsKey(key)) {
+                    systemProperties.setProperty(key, value);
                 }
             }
         }

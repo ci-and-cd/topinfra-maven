@@ -31,7 +31,7 @@ public class CiOptionTests {
         );
 
         final Properties loadedProperties = new Properties();
-        ciOptContext.updateSystemProperties(loadedProperties);
+        ciOptContext.setSystemPropertiesIfAbsent(loadedProperties);
 
         // final Optional<String> owner = GITHUB_GLOBAL_REPOSITORYOWNER);
         slf4jLogger.info("{} {}",
