@@ -204,6 +204,16 @@ public enum MavenOption implements CiOption {
         }
     },
     /**
+     * Skip tests when `./mvnw gitflow:release-finish`.
+     * see: https://github.com/aleksandr-m/gitflow-maven-plugin
+     */
+    SKIPTESTPROJECT("skipTestProject") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return FAST.getValue(context);
+        }
+    },
+    /**
      * Keep test-compile but do not run tests.
      * <p/>
      * see: https://maven.apache.org/surefire/maven-surefire-plugin/examples/skipping-tests.html
