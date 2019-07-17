@@ -1,4 +1,4 @@
-package top.infra.maven.extension.shared;
+package top.infra.maven.extension.internal;
 
 import static java.util.stream.Collectors.toMap;
 import static top.infra.maven.extension.shared.CiOptions.PATTERN_VARS_ENV_DOT_CI;
@@ -23,6 +23,7 @@ import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.CiOptionFactoryBean;
 import top.infra.maven.extension.MavenEventAware;
+import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.PropertiesUtils;

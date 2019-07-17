@@ -6,7 +6,7 @@
     <parent>
         <groupId>top.infra.maven</groupId>
         <artifactId>topinfra-maven</artifactId>
-        <version>1.0.7</version>
+        <version>1.0.8</version>
     </parent>
     <artifactId>topinfra-mvnext-module-settings-security</artifactId>
     <packaging>jar</packaging>
@@ -30,6 +30,8 @@
 
     <!-- @formatter:off -->
     <dependencies>
+        <dependency><groupId>cn.home1.tools</groupId><artifactId>maven-settings-decoder-core</artifactId></dependency>
+
         <dependency><groupId>org.apache.maven</groupId><artifactId>maven-embedder</artifactId><scope>provided</scope></dependency>
         <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><classifier>shaded</classifier><scope>provided</scope></dependency>
 

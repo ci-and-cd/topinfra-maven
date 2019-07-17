@@ -93,6 +93,10 @@ public abstract class SystemUtils {
         return result;
     }
 
+    public static boolean isWindows() {
+        return "windows".equalsIgnoreCase(SystemUtils.os());
+    }
+
     public static String systemJavaIoTmp() {
         return System.getProperty("java.io.tmpdir");
     }

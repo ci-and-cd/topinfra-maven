@@ -7,10 +7,12 @@ import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.extension.shared.GlobalOption.FAST;
 
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
+import top.infra.maven.utils.SystemUtils;
 
 /**
  * Maven official (include official plugin) options.
@@ -92,6 +94,17 @@ public enum MavenOption implements CiOption {
     // },
     MAVEN_CLEAN_SKIP("maven.clean.skip", BOOL_STRING_TRUE),
     MAVEN_COMPILER_ENCODING("maven.compiler.encoding", UTF_8.name()),
+    /**
+     * See "https://github.com/aleksandr-m/gitflow-maven-plugin".
+     */
+    MVNEXECUTABLE("mvnExecutable") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            final String mvn = SystemUtils.isWindows() ? "mvn.cmd" : "mvn";
+            return Optional.ofNullable(context.getSystemProperties().getProperty("maven.home"))
+                .map(mvnHome -> Paths.get(mvnHome, "bin", mvn).toString());
+        }
+    },
     MAVEN_INSTALL_SKIP("maven.install.skip"),
     MAVEN_JAVADOC_SKIP("maven.javadoc.skip") {
         @Override
@@ -198,6 +211,16 @@ public enum MavenOption implements CiOption {
      * see: https://maven.apache.org/surefire/maven-failsafe-plugin/examples/skipping-tests.html
      */
     SKIPITS("skipITs") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return FAST.getValue(context);
+        }
+    },
+    /**
+     * Skip tests when `./mvnw gitflow:release-finish`.
+     * see: https://github.com/aleksandr-m/gitflow-maven-plugin
+     */
+    SKIPTESTPROJECT("skipTestProject") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             return FAST.getValue(context);

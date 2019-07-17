@@ -242,7 +242,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         final String passphrase = this.replaceEmptyValue(server.getPassphrase(), systemProperties);
         if (passphrase != null && !passphrase.equals(server.getPassphrase())) {
             if (passphrase.equals(this.encryptedBlankString)) {
-                logger.warn(String.format("    server [%s] has a empty passphrase [%s]", server.getId(), server.getPassphrase()));
+                logger.warn(String.format("    server [%s] has an empty passphrase [%s]", server.getId(), server.getPassphrase()));
             } else {
                 logger.info(String.format("    server [%s] passphrase [%s] found in properties.", server.getId(), server.getPassphrase()));
             }
@@ -254,7 +254,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         final String password = this.replaceEmptyValue(server.getPassword(), systemProperties);
         if (password != null && !password.equals(server.getPassword())) {
             if (password.equals(this.encryptedBlankString)) {
-                logger.warn(String.format("    server [%s] has a empty password [%s]", server.getId(), server.getPassword()));
+                logger.warn(String.format("    server [%s] has an empty password [%s]", server.getId(), server.getPassword()));
             } else {
                 logger.info(String.format("    server [%s] password [%s] found in properties.", server.getId(), server.getPassword()));
             }
@@ -266,7 +266,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         final String username = this.replaceEmptyValue(server.getUsername(), systemProperties);
         if (username != null && !username.equals(server.getUsername())) {
             if (username.equals(this.encryptedBlankString)) {
-                logger.warn(String.format("    server [%s] has a empty username [%s]", server.getId(), server.getUsername()));
+                logger.warn(String.format("    server [%s] has an empty username [%s]", server.getId(), server.getUsername()));
             } else {
                 logger.info(String.format("    server [%s] username [%s] found in properties.", server.getId(), server.getUsername()));
             }

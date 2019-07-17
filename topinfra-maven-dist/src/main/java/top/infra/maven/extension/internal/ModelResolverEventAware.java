@@ -1,4 +1,4 @@
-package top.infra.maven.extension.shared;
+package top.infra.maven.extension.internal;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -11,6 +11,7 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.activator.model.ProjectBuilderActivatorModelResolver;
+import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 

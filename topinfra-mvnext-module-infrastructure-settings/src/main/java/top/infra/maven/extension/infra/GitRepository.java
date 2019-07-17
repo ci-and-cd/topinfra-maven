@@ -9,6 +9,7 @@ import static top.infra.maven.extension.infra.InfraOption.GIT_AUTH_TOKEN;
 import static top.infra.maven.extension.infra.InfraOption.MAVEN_BUILD_OPTS_REPO;
 import static top.infra.maven.extension.infra.InfraOption.MAVEN_BUILD_OPTS_REPO_REF;
 import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_MASTER;
+import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 import static top.infra.maven.utils.FileUtils.readFile;
 import static top.infra.maven.utils.FileUtils.writeFile;
 import static top.infra.maven.utils.SupportFunction.isEmpty;
@@ -80,6 +81,14 @@ public class GitRepository {
                 final String repoName = String.format("maven-build-opts-%s", infra);
                 return gitPrefix.map(prefix -> String.format("%s/%s/%s", prefix, repoOwner, repoName)).orElse(null);
             });
+    }
+
+    public static Optional<GitRepository> newGitRepository(
+        final CiOptionContext ciOptContext,
+        final Logger logger
+    ) {
+        final String remoteOriginUrl = GIT_REMOTE_ORIGIN_URL.getValue(ciOptContext).orElse(null);
+        return GitRepository.newGitRepository(ciOptContext, logger, remoteOriginUrl);
     }
 
     public static Optional<GitRepository> newGitRepository(

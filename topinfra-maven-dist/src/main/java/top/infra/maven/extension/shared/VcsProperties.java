@@ -16,6 +16,7 @@ import top.infra.maven.CiOptionContext;
 import top.infra.maven.cienv.AppveyorVariables;
 import top.infra.maven.cienv.GitlabCiVariables;
 import top.infra.maven.cienv.TravisCiVariables;
+import top.infra.maven.logging.Logger;
 
 public enum VcsProperties implements CiOption {
 
@@ -76,6 +77,13 @@ public enum VcsProperties implements CiOption {
         this.propertyName = propertyName;
     }
 
+    public static void info(final Logger logger, final CiOptionContext context) {
+        final Properties systemProperties = context.getSystemProperties();
+        logger.info(String.format("    AppVeyor variables: %s", new AppveyorVariables(systemProperties)));
+        logger.info(String.format("    GitLabCI variables: %s", new GitlabCiVariables(systemProperties)));
+        logger.info(String.format("    TravisCI variables: %s", new TravisCiVariables(systemProperties)));
+    }
+
     public static boolean isSnapshotRef(final String gitRef) {
         return gitRef != null && !gitRef.isEmpty()
             && (GIT_REF_NAME_DEVELOP.equals(gitRef)
@@ -89,15 +97,21 @@ public enum VcsProperties implements CiOption {
             || gitRef.startsWith(GIT_REF_PREFIX_SUPPORT));
     }
 
+    public static boolean isPullRequest(final CiOptionContext ciOptionContext) {
+        final Properties systemProperties = ciOptionContext.getSystemProperties();
+        final AppveyorVariables appveyor = new AppveyorVariables(systemProperties);
+        // TODO gitlab-ci
+        final TravisCiVariables travisCi = new TravisCiVariables(systemProperties);
+        return appveyor.isPullRequest() || travisCi.isPullRequestEvent();
+    }
+
     /**
      * Get slug info of current repository (directory).
      *
      * @param ciOptionContext ciOptionContext
      * @return 'group/project' or 'owner/project'
      */
-    public static Optional<String> gitRepoSlug(
-        final CiOptionContext ciOptionContext
-    ) {
+    public static Optional<String> gitRepoSlug(final CiOptionContext ciOptionContext) {
         final Properties systemProperties = ciOptionContext.getSystemProperties();
         final Optional<String> appveyorRepoSlug = new AppveyorVariables(systemProperties).repoSlug();
         final Optional<String> gitlabCiRepoSlug = new GitlabCiVariables(systemProperties).repoSlug();

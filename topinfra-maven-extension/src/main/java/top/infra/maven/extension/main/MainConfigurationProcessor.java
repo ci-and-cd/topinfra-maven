@@ -30,14 +30,12 @@ import top.infra.maven.logging.LoggerPlexusImpl;
 @Singleton
 public class MainConfigurationProcessor implements ConfigurationProcessor {
 
-    private Logger logger;
+    private final Logger logger;
 
-    private List<OrderedConfigurationProcessor> processors;
+    private final List<OrderedConfigurationProcessor> processors;
 
     // @Requirement(role = ConfigurationProcessor.class, hint = SettingsXmlConfigurationProcessor.HINT)
-    private ConfigurationProcessor settingsXmlConfigurationProcessor;
-
-    private CliRequest cliRequest;
+    private final ConfigurationProcessor settingsXmlConfigurationProcessor;
 
     @Inject
     public MainConfigurationProcessor(
@@ -50,7 +48,7 @@ public class MainConfigurationProcessor implements ConfigurationProcessor {
         this.logger = new LoggerPlexusImpl(logger);
         this.processors = processors.stream().sorted().collect(toList());
         this.settingsXmlConfigurationProcessor = settingsXmlConfigurationProcessor;
-        
+
         IntStream
             .range(0, this.processors.size())
             .forEach(idx -> {
@@ -65,15 +63,9 @@ public class MainConfigurationProcessor implements ConfigurationProcessor {
         logger.info(logEnd(this, "constructor", Void.TYPE));
     }
 
-    public CliRequest getCliRequest() {
-        return this.cliRequest;
-    }
-
     @Override
     public void process(final CliRequest cliRequest) throws Exception {
         logger.info(logStart(this, "process"));
-
-        this.cliRequest = cliRequest;
 
         for (final OrderedConfigurationProcessor processor : this.processors) {
             processor.process(cliRequest);
