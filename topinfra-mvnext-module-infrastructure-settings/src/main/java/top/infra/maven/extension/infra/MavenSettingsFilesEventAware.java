@@ -3,6 +3,7 @@ package top.infra.maven.extension.infra;
 import static java.lang.Boolean.FALSE;
 import static top.infra.maven.extension.infra.InfraOption.CACHE_SETTINGS_PATH;
 import static top.infra.maven.extension.shared.CiOptions.systemPropertyName;
+import static top.infra.maven.extension.shared.Constants.PROP_NAME_SETTINGS_SECURITY;
 import static top.infra.maven.extension.shared.Constants.SETTINGS_SECURITY_XML;
 import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 import static top.infra.maven.utils.SupportFunction.logEnd;
@@ -48,6 +49,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
 
     private GitRepository gitRepository;
 
+    private Path settingsSecurityXml;
     private Path settingsXml;
     private Path toolchainsXml;
 
@@ -89,23 +91,34 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
             SETTINGS_XML,
             false
         ).orElse(null);
+        if (this.settingsXml != null) {
+            if (logger.isInfoEnabled()) {
+                logger.info(String.format("    Setting file [%s], using [%s]. (override userSettingsFile [%s])",
+                    SETTINGS_XML, this.settingsXml, request.getUserSettingsFile()));
+            }
+            request.setUserSettingsFile(this.settingsXml.toFile());
+        }
 
-        this.findOrDownload(
+        this.settingsSecurityXml = this.findOrDownload(
             cliRequest,
             ciOptContext,
             Constants.PROP_NAME_SETTINGS_SECURITY,
             SRC_MAIN_MAVEN + "/" + SETTINGS_SECURITY_XML,
             SETTINGS_SECURITY_XML,
             true
-        );
-
-        if (this.settingsXml != null) {
+        ).orElse(null);
+        if (this.settingsSecurityXml != null) {
             if (logger.isInfoEnabled()) {
-                logger.info(String.format("    Setting file [%s], using [%s]. (override userSettingsFile [%s])",
-                    SETTINGS_XML, this.settingsXml, request.getUserSettingsFile()));
+                logger.info(String.format(
+                    "    Setting security file [%s], using [%s]. (override system property [%s])",
+                    SETTINGS_SECURITY_XML,
+                    this.settingsSecurityXml,
+                    cliRequest.getSystemProperties().getProperty(PROP_NAME_SETTINGS_SECURITY)));
             }
-
-            request.setUserSettingsFile(this.settingsXml.toFile());
+            cliRequest.getSystemProperties()
+                .setProperty(PROP_NAME_SETTINGS_SECURITY, this.settingsSecurityXml.toAbsolutePath().toString());
+            ciOptContext.getSystemProperties()
+                .setProperty(PROP_NAME_SETTINGS_SECURITY, this.settingsSecurityXml.toAbsolutePath().toString());
         }
     }
 
