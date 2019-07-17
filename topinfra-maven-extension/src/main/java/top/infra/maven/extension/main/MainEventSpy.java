@@ -26,6 +26,7 @@ import javax.inject.Singleton;
 
 import org.apache.maven.cli.CliRequest;
 import org.apache.maven.eventspy.AbstractEventSpy;
+import org.apache.maven.eventspy.EventSpy;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
@@ -34,7 +35,9 @@ import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
 import org.apache.maven.toolchain.building.ToolchainsBuildingResult;
 
 import top.infra.maven.CiOptionContext;
+import top.infra.maven.Ordered;
 import top.infra.maven.extension.MavenEventAware;
+import top.infra.maven.extension.OrderedConfigurationProcessor;
 import top.infra.maven.extension.shared.CiOptionContextBeanFactory;
 import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
@@ -52,16 +55,17 @@ import top.infra.maven.utils.SupportFunction;
 // @org.codehaus.plexus.component.annotations.Component(role = org.apache.maven.eventspy.EventSpy.class)
 @Named
 @Singleton
-public class MainBuildEventSpy extends AbstractEventSpy {
+public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurationProcessor {
 
     private final Logger logger;
 
     private final CiOptionContextBeanFactory ciOptContextFactory;
-    private final MainConfigurationProcessor cliRequestFactory;
 
     private final Map<String, List<MavenEventAware>> eventAwares;
 
     private CiOptionContext ciOptContext;
+
+    private CliRequest cliRequest;
 
     /**
      * Constructor.
@@ -71,17 +75,15 @@ public class MainBuildEventSpy extends AbstractEventSpy {
      * @param eventAwares         inject eventAwares
      */
     @Inject
-    public MainBuildEventSpy(
+    public MainEventSpy(
         final org.codehaus.plexus.logging.Logger logger,
         final CiOptionContextBeanFactory ciOptContextFactory,
-        final MainConfigurationProcessor cliRequestFactory,
         final List<MavenEventAware> eventAwares
     ) {
         logger.info(logStart(this, "constructor"));
 
         this.logger = new LoggerPlexusImpl(logger);
         this.ciOptContextFactory = ciOptContextFactory;
-        this.cliRequestFactory = cliRequestFactory;
 
         this.ciOptContext = null;
 
@@ -159,36 +161,30 @@ public class MainBuildEventSpy extends AbstractEventSpy {
     public void onEvent(final Object event) throws Exception {
 
         try {
-            final CliRequest cliRequest = this.cliRequestFactory.getCliRequest();
-
             if (event instanceof SettingsBuildingRequest) {
-                logger.info(logStart(this, "afterInit"));
-                this.afterInit(cliRequest, this.ciOptContext);
-                logger.info(logEnd(this, "afterInit", Void.TYPE));
-
                 final SettingsBuildingRequest request = (SettingsBuildingRequest) event;
                 logger.info(logStart(this, "onSettingsBuildingRequest", request));
-                this.onSettingsBuildingRequest(cliRequest, request, this.ciOptContext);
+                this.onSettingsBuildingRequest(this.cliRequest, request, this.ciOptContext);
                 logger.info(logEnd(this, "onSettingsBuildingRequest", Void.TYPE, request));
             } else if (event instanceof SettingsBuildingResult) {
                 final SettingsBuildingResult result = (SettingsBuildingResult) event;
                 logger.info(logStart(this, "onSettingsBuildingResult", result));
-                this.onSettingsBuildingResult(cliRequest, result, this.ciOptContext);
+                this.onSettingsBuildingResult(this.cliRequest, result, this.ciOptContext);
                 logger.info(logEnd(this, "onSettingsBuildingResult", Void.TYPE, result));
             } else if (event instanceof ToolchainsBuildingRequest) {
                 final ToolchainsBuildingRequest request = (ToolchainsBuildingRequest) event;
                 logger.info(logStart(this, "onToolchainsBuildingRequest", request));
-                this.onToolchainsBuildingRequest(cliRequest, request, this.ciOptContext);
+                this.onToolchainsBuildingRequest(this.cliRequest, request, this.ciOptContext);
                 logger.info(logEnd(this, "onToolchainsBuildingRequest", Void.TYPE, request));
             } else if (event instanceof ToolchainsBuildingResult) {
                 final ToolchainsBuildingResult result = (ToolchainsBuildingResult) event;
                 logger.info(logStart(this, "onToolchainsBuildingResult", result));
-                this.onToolchainsBuildingResult(cliRequest, result, this.ciOptContext);
+                this.onToolchainsBuildingResult(this.cliRequest, result, this.ciOptContext);
                 logger.info(logEnd(this, "onToolchainsBuildingResult", Void.TYPE, result));
             } else if (event instanceof MavenExecutionRequest) {
                 final MavenExecutionRequest request = (MavenExecutionRequest) event;
                 logger.info(logStart(this, "onMavenExecutionRequest", request));
-                this.onMavenExecutionRequest(cliRequest, request, this.ciOptContext);
+                this.onMavenExecutionRequest(this.cliRequest, request, this.ciOptContext);
                 logger.info(logEnd(this, "onMavenExecutionRequest", Void.TYPE, request));
             } else {
                 if (logger.isDebugEnabled()) {
@@ -203,6 +199,13 @@ public class MainBuildEventSpy extends AbstractEventSpy {
         super.onEvent(event);
     }
 
+    /**
+     * After {@link EventSpy#init(Context)}, before {@link EventSpy#onEvent(Object)}.
+     * Actually called by {@link MainConfigurationProcessor#process(CliRequest)}.
+     *
+     * @param cliRequest      cliRequest
+     * @param ciOptionContext ciOptionContext
+     */
     public void afterInit(
         final CliRequest cliRequest,
         final CiOptionContext ciOptionContext
@@ -214,6 +217,7 @@ public class MainBuildEventSpy extends AbstractEventSpy {
         assert Orders.ORDER_GIT_PROPERTIES < Orders.ORDER_CI_OPTION_CONFIG_LOADER;
         assert Orders.ORDER_CI_OPTION_CONFIG_LOADER < Orders.ORDER_CI_OPTION_INIT;
         assert Orders.ORDER_CI_OPTION_INIT < Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
+        assert Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SECURITY_XML;
 
         this.eventAwares.get("afterInit")
             .forEach(it -> it.afterInit(cliRequest, ciOptionContext));
@@ -356,5 +360,24 @@ public class MainBuildEventSpy extends AbstractEventSpy {
             .forEach(it -> it.onInit(context));
 
         this.ciOptContext = this.ciOptContextFactory.getCiOpts();
+    }
+
+    @Override
+    public void process(final CliRequest cliRequest) throws Exception {
+        this.cliRequest = cliRequest;
+
+        logger.info(logStart(this, "afterInit"));
+        this.afterInit(cliRequest, this.ciOptContext);
+        logger.info(logEnd(this, "afterInit", Void.TYPE));
+    }
+
+    /**
+     * {@link OrderedConfigurationProcessor#getOrder()}.
+     *
+     * @return order
+     */
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE;
     }
 }

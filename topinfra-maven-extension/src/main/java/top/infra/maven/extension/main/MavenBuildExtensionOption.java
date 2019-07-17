@@ -13,8 +13,6 @@ import static top.infra.maven.utils.SystemUtils.systemUserHome;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import top.infra.maven.cienv.AppveyorVariables;
-import top.infra.maven.cienv.TravisCiVariables;
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.shared.VcsProperties;
@@ -47,15 +45,12 @@ public enum MavenBuildExtensionOption implements CiOption {
     ORIGIN_REPO("origin.repo") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            final AppveyorVariables appveyor = new AppveyorVariables(context.getSystemProperties());
             final Optional<String> gitRepoSlug = VcsProperties.gitRepoSlug(context);
             final Optional<String> originRepoSlug = ORIGIN_REPO_SLUG.getValue(context);
-            final TravisCiVariables travisCi = new TravisCiVariables(context.getSystemProperties());
 
             return Optional.of(
                 originRepoSlug.isPresent() && gitRepoSlug.isPresent() && gitRepoSlug.get().equals(originRepoSlug.get())
-                    && !travisCi.isPullRequestEvent()
-                    && !appveyor.isPullRequest()
+                    && !VcsProperties.isPullRequest(context)
                     ? BOOL_STRING_TRUE
                     : BOOL_STRING_FALSE
             );

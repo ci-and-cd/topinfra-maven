@@ -19,9 +19,6 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.cienv.AppveyorVariables;
-import top.infra.maven.cienv.GitlabCiVariables;
-import top.infra.maven.cienv.TravisCiVariables;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.shared.MavenOption;
 import top.infra.maven.extension.shared.Orders;
@@ -79,9 +76,7 @@ public class MavenGoalEditorEventAware implements MavenEventAware {
         final CiOptionContext ciOptContext
     ) {
         logger.info(logStart(this, "editGoals", request.getGoals()));
-        logger.info(String.format("    AppVeyor variables: %s", new AppveyorVariables(ciOptContext.getSystemProperties())));
-        logger.info(String.format("    GitLabCI variables: %s", new GitlabCiVariables(ciOptContext.getSystemProperties())));
-        logger.info(String.format("    TravisCI variables: %s", new TravisCiVariables(ciOptContext.getSystemProperties())));
+        VcsProperties.info(logger, ciOptContext);
 
         final MavenGoalEditor goalEditor = new MavenGoalEditor(
             logger,

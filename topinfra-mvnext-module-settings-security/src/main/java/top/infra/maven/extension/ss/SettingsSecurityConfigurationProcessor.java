@@ -2,17 +2,22 @@ package top.infra.maven.extension.ss;
 
 import static top.infra.maven.extension.shared.Constants.SETTINGS_SECURITY_XML;
 
+import cn.home1.tools.maven.MavenSettingsSecurity;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 import org.apache.maven.cli.CliRequest;
+import org.apache.maven.cli.configuration.ConfigurationProcessor;
+import org.apache.maven.eventspy.EventSpy;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
+import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
 import top.infra.maven.extension.OrderedConfigurationProcessor;
 import top.infra.maven.extension.shared.Constants;
@@ -21,23 +26,25 @@ import top.infra.maven.logging.Logger;
 import top.infra.maven.logging.LoggerPlexusImpl;
 import top.infra.maven.utils.MavenUtils;
 
-// @Component(role = OrderedConfigurationProcessor.class, hint = "settings-security")
-@Named
-@Singleton
+/**
+ * {@link ConfigurationProcessor#process(CliRequest)} is called after {@link org.apache.maven.eventspy.EventSpy#init(EventSpy.Context)}.
+ */
+@Component(role = OrderedConfigurationProcessor.class, hint = "SettingsSecurityConfigurationProcessor")
+// @Named
+// @Singleton
 public class SettingsSecurityConfigurationProcessor implements OrderedConfigurationProcessor {
 
     private Logger logger;
 
-    // @Requirement
+    @Requirement(hint = "maven")
     private SecDispatcher secDispatcher;
 
     @Inject
     public SettingsSecurityConfigurationProcessor(
-        final org.codehaus.plexus.logging.Logger logger,
-        final SecDispatcher secDispatcher
+        final org.codehaus.plexus.logging.Logger logger
     ) {
         this.logger = new LoggerPlexusImpl(logger);
-        this.secDispatcher = secDispatcher;
+        // this.secDispatcher = secDispatcher;
     }
 
     @Override
@@ -47,19 +54,38 @@ public class SettingsSecurityConfigurationProcessor implements OrderedConfigurat
 
     @Override
     public void process(final CliRequest cliRequest) throws Exception {
-        final Optional<Path> settingsSecurity = MavenUtils.findInProperties(
+        final Optional<Path> settingsSecurityXml = MavenUtils.findInProperties(
             Constants.PROP_NAME_SETTINGS_SECURITY, cliRequest.getSystemProperties(), cliRequest.getUserProperties())
-            .map(Paths::get);
+            .map(Paths::get)
+            .map(Path::toAbsolutePath);
 
         if (logger.isInfoEnabled()) {
             logger.info(String.format("    Setting file [%s], using [%s].",
                 SETTINGS_SECURITY_XML,
-                settingsSecurity.map(Path::toString).orElse("not found")));
+                settingsSecurityXml.map(Path::toString).orElse("not found")));
         }
 
-        settingsSecurity.ifPresent(ss -> {
+        settingsSecurityXml.ifPresent(ss -> {
             final DefaultSecDispatcher defaultSecDispatcher = (DefaultSecDispatcher) this.secDispatcher;
-            defaultSecDispatcher.setConfigurationFile(ss.toAbsolutePath().toString());
+            defaultSecDispatcher.setConfigurationFile(ss.toString());
+
+            testSecDispatcher(this.secDispatcher, ss.toString());
         });
+    }
+
+    public static void testSecDispatcher(final SecDispatcher secDispatcher, final String settingsSecurityXml) {
+        final MavenSettingsSecurity settingsSecurity = new MavenSettingsSecurity(settingsSecurityXml, false);
+        final String plainText = " ";
+        final String encrypted = settingsSecurity.encodeText(plainText);
+        try {
+            final String decrypted = secDispatcher.decrypt(encrypted);
+            if (!plainText.equals(decrypted)) {
+                throw new IllegalStateException(
+                    String.format("    Failed on testing SecDispatcher, expected [%s], got [%s].", plainText, decrypted)
+                );
+            }
+        } catch (final SecDispatcherException ex) {
+            throw new IllegalStateException("    Error on testing SecDispatcher.", ex);
+        }
     }
 }
