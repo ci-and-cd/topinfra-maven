@@ -1,7 +1,7 @@
 package top.infra.maven.extension.infra;
 
 import static top.infra.maven.extension.infra.SettingFiles.SRC_MAIN_MAVEN;
-import static top.infra.maven.utils.SystemUtils.os;
+import static top.infra.maven.shared.utils.SystemUtils.os;
 
 import java.nio.file.Path;
 
@@ -16,10 +16,10 @@ import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
 
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.shared.Constants;
-import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.shared.extension.Constants;
+import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
 
 @Named
 @Singleton
@@ -66,7 +66,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         this.settingsXml = this.settingFiles.findOrDownload(
             cliRequest,
             ciOptContext,
-            Constants.PROP_NAME_SETTINGS,
+            Constants.PROP_SETTINGS,
             SRC_MAIN_MAVEN + "/" + SETTINGS_XML,
             SETTINGS_XML,
             false
@@ -94,7 +94,7 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         this.toolchainsXml = this.settingFiles.findOrDownload(
             cliRequest,
             ciOptContext,
-            Constants.PROP_NAME_TOOLCHAINS,
+            Constants.PROP_TOOLCHAINS,
             SRC_MAIN_MAVEN + "/" + TOOLCHAINS_XML,
             TOOLCHAINS_XML,
             false

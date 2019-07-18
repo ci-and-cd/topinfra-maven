@@ -1,7 +1,7 @@
 package top.infra.maven.extension.docker;
 
 import static org.junit.Assert.assertEquals;
-import static top.infra.maven.utils.SupportFunction.lines;
+import static top.infra.maven.shared.utils.SupportFunction.lines;
 
 import java.util.List;
 

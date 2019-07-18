@@ -1,12 +1,12 @@
 package top.infra.maven.extension.infra;
 
-import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_MASTER;
-import static top.infra.maven.extension.shared.Constants.SRC_CI_OPTS_PROPERTIES;
-import static top.infra.maven.extension.shared.GlobalOption.INFRASTRUCTURE;
-import static top.infra.maven.extension.shared.GlobalOption.getInfrastructureSpecificValue;
-import static top.infra.maven.extension.shared.GlobalOption.setInfrastructureSpecificValue;
-import static top.infra.maven.utils.SystemUtils.systemJavaIoTmp;
-import static top.infra.maven.utils.SystemUtils.systemUserHome;
+import static top.infra.maven.shared.extension.Constants.GIT_REF_NAME_MASTER;
+import static top.infra.maven.shared.extension.Constants.SRC_CI_OPTS_PROPERTIES;
+import static top.infra.maven.shared.extension.GlobalOption.INFRASTRUCTURE;
+import static top.infra.maven.shared.extension.GlobalOption.getInfrastructureSpecificValue;
+import static top.infra.maven.shared.extension.GlobalOption.setInfrastructureSpecificValue;
+import static top.infra.maven.shared.utils.SystemUtils.systemJavaIoTmp;
+import static top.infra.maven.shared.utils.SystemUtils.systemUserHome;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,7 +15,7 @@ import java.util.Properties;
 
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.utils.MavenUtils;
+import top.infra.maven.shared.utils.MavenUtils;
 
 public enum InfraOption implements CiOption {
     //

@@ -1,23 +1,24 @@
 package top.infra.maven.extension.main;
 
 import static java.lang.Boolean.FALSE;
-import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
-import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_FEATURE;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_HOTFIX;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_RELEASE;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_SUPPORT;
-import static top.infra.maven.utils.SystemUtils.systemUserHome;
+import static top.infra.maven.shared.extension.Constants.BOOL_STRING_FALSE;
+import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.shared.extension.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_FEATURE;
+import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_HOTFIX;
+import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_RELEASE;
+import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_SUPPORT;
+import static top.infra.maven.shared.utils.SystemUtils.systemUserHome;
 
 import java.nio.file.Paths;
 import java.util.Optional;
 
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.shared.VcsProperties;
-import top.infra.maven.utils.FileUtils;
-import top.infra.maven.utils.SupportFunction;
+import top.infra.maven.shared.extension.Constants;
+import top.infra.maven.shared.extension.VcsProperties;
+import top.infra.maven.shared.utils.FileUtils;
+import top.infra.maven.shared.utils.SupportFunction;
 
 public enum MavenBuildExtensionOption implements CiOption {
     CACHE_SESSION_PATH("cache.session.path") {
@@ -38,7 +39,7 @@ public enum MavenBuildExtensionOption implements CiOption {
             return result;
         }
     },
-    MVN_DEPLOY_PUBLISH_SEGREGATION("mvn.deploy.publish.segregation"),
+    MVN_DEPLOY_PUBLISH_SEGREGATION(Constants.PROP_MVN_DEPLOY_PUBLISH_SEGREGATION),
     /**
      * Determine current is origin (original) or forked.
      */

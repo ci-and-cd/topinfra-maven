@@ -3,6 +3,8 @@
 Maven core extensions run before maven plugins help you logging into docker registry, decrypting gpg key 
 or customizing settings files etc...
 
+These extension need to be run before any maven plugins (so they have to be extensions not plugins).
+
 
 ### 1. Install topinfra-maven
 

@@ -2,10 +2,10 @@ package top.infra.maven.extension.infra;
 
 import static top.infra.maven.extension.infra.InfraOption.CACHE_SETTINGS_PATH;
 import static top.infra.maven.extension.infra.InfraOption.GIT_AUTH_TOKEN;
-import static top.infra.maven.extension.shared.Constants.SRC_CI_OPTS_PROPERTIES;
-import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
-import static top.infra.maven.utils.PropertiesUtils.logProperties;
-import static top.infra.maven.utils.SupportFunction.isEmpty;
+import static top.infra.maven.shared.extension.Constants.SRC_CI_OPTS_PROPERTIES;
+import static top.infra.maven.shared.extension.VcsProperties.GIT_REMOTE_ORIGIN_URL;
+import static top.infra.maven.shared.utils.PropertiesUtils.logProperties;
+import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -20,13 +20,14 @@ import javax.inject.Singleton;
 import org.apache.maven.cli.CliRequest;
 
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.exception.RuntimeIOException;
+import top.infra.maven.shared.exception.RuntimeIOException;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
-import top.infra.maven.utils.FileUtils;
-import top.infra.maven.utils.MavenUtils;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.utils.FileUtils;
+import top.infra.maven.shared.utils.MavenUtils;
+import top.infra.maven.shared.utils.PropertiesUtils;
 
 @Named
 @Singleton
@@ -69,15 +70,13 @@ public class CiOptionConfigLoader implements MavenEventAware {
         // ci options from file
         final boolean offline = MavenUtils.cmdArgOffline(cliRequest);
         final boolean update = MavenUtils.cmdArgUpdateSnapshots(cliRequest);
-        final String remoteOriginUrl = GIT_REMOTE_ORIGIN_URL
-            .findInProperties(ciOptionContext.getSystemProperties(), ciOptionContext.getUserProperties())
-            .orElse(null);
+        final String remoteOriginUrl = GIT_REMOTE_ORIGIN_URL.findInProperties(ciOptionContext).orElse(null);
         final Optional<Properties> loadedProperties = ciOptContextFromFile(ciOptionContext, logger, remoteOriginUrl, offline, update);
 
         loadedProperties.ifPresent(props -> logProperties(logger, "    ci_opts.properties", props, null));
-
-        ciOptionContext.setSystemPropertiesIfAbsent(loadedProperties.orElse(null));
-        CiOptionContext.setSystemPropertiesIfAbsent(System.getProperties(), loadedProperties.orElse(null));
+        
+        PropertiesUtils.setSystemPropertiesIfAbsent(ciOptionContext.getSystemProperties(), loadedProperties.orElse(null));
+        PropertiesUtils.setSystemPropertiesIfAbsent(System.getProperties(), loadedProperties.orElse(null));
     }
 
     private static void checkGitAuthToken(final Logger logger, final CiOptionContext ciOptContext) {

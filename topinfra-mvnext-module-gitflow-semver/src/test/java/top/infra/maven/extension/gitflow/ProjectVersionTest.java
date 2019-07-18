@@ -2,14 +2,14 @@ package top.infra.maven.extension.gitflow;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
-import static top.infra.maven.extension.shared.MavenOption.GENERATEREPORTS;
-import static top.infra.maven.extension.shared.VcsProperties.GIT_REF_NAME;
 import static top.infra.maven.extension.gitflow.GitFlowSemanticVersionChecker.checkProjectVersion;
 import static top.infra.maven.extension.gitflow.GitFlowSemanticVersionChecker.isSemFeature;
 import static top.infra.maven.extension.gitflow.GitFlowSemanticVersionChecker.isSemRelease;
 import static top.infra.maven.extension.gitflow.GitFlowSemanticVersionChecker.isSemSnapshot;
+import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.shared.extension.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.shared.extension.MavenOption.GENERATEREPORTS;
+import static top.infra.maven.shared.extension.VcsProperties.GIT_REF_NAME;
 
 import java.util.Map;
 import java.util.Properties;
@@ -18,7 +18,9 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.OptionCollections;
+import top.infra.maven.shared.DefaultCiOptionContext;
+import top.infra.maven.test.extension.OptionCollections;
+import top.infra.maven.shared.utils.PropertiesUtils;
 
 public class ProjectVersionTest {
 
@@ -52,13 +54,13 @@ public class ProjectVersionTest {
 
         // gitProperties if needed
 
-        final CiOptionContext ciOptContext = new CiOptionContext(
+        final CiOptionContext ciOptContext = new DefaultCiOptionContext(
             systemProperties,
             userProperties
         );
 
         final Properties loadedProperties = new Properties();
-        ciOptContext.setSystemPropertiesIfAbsent(loadedProperties);
+        PropertiesUtils.setSystemPropertiesIfAbsent(ciOptContext.getSystemProperties(), loadedProperties);
 
         final Properties newProperties = ciOptContext.setCiOptPropertiesInto(OptionCollections.optionCollections(), userProperties);
 
@@ -81,13 +83,13 @@ public class ProjectVersionTest {
 
         // gitProperties if needed
 
-        final CiOptionContext ciOptContext = new CiOptionContext(
+        final CiOptionContext ciOptContext = new DefaultCiOptionContext(
             systemProperties,
             userProperties
         );
 
         final Properties loadedProperties = new Properties();
-        ciOptContext.setSystemPropertiesIfAbsent(loadedProperties);
+        PropertiesUtils.setSystemPropertiesIfAbsent(ciOptContext.getSystemProperties(), loadedProperties);
 
         final Properties newProperties = ciOptContext.setCiOptPropertiesInto(OptionCollections.optionCollections(), userProperties);
 

@@ -8,14 +8,14 @@ import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static top.infra.maven.extension.infra.InfraOption.GIT_AUTH_TOKEN;
 import static top.infra.maven.extension.infra.InfraOption.MAVEN_BUILD_OPTS_REPO;
 import static top.infra.maven.extension.infra.InfraOption.MAVEN_BUILD_OPTS_REPO_REF;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_MASTER;
-import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
-import static top.infra.maven.utils.FileUtils.readFile;
-import static top.infra.maven.utils.FileUtils.writeFile;
-import static top.infra.maven.utils.SupportFunction.isEmpty;
-import static top.infra.maven.utils.SupportFunction.isNotEmpty;
-import static top.infra.maven.utils.SupportFunction.newTuple;
-import static top.infra.maven.utils.SupportFunction.newTupleOptional;
+import static top.infra.maven.shared.extension.Constants.GIT_REF_NAME_MASTER;
+import static top.infra.maven.shared.extension.VcsProperties.GIT_REMOTE_ORIGIN_URL;
+import static top.infra.maven.shared.utils.FileUtils.readFile;
+import static top.infra.maven.shared.utils.FileUtils.writeFile;
+import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
+import static top.infra.maven.shared.utils.SupportFunction.isNotEmpty;
+import static top.infra.maven.shared.utils.SupportFunction.newTuple;
+import static top.infra.maven.shared.utils.SupportFunction.newTupleOptional;
 
 import java.nio.file.Path;
 import java.util.Base64;
@@ -29,12 +29,12 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.shared.GlobalOption;
+import top.infra.maven.shared.extension.GlobalOption;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.utils.DownloadUtils;
-import top.infra.maven.utils.DownloadUtils.DownloadException;
-import top.infra.maven.utils.Optionals;
-import top.infra.maven.utils.UrlUtils;
+import top.infra.maven.shared.utils.DownloadUtils;
+import top.infra.maven.shared.utils.DownloadUtils.DownloadException;
+import top.infra.maven.shared.utils.Optionals;
+import top.infra.maven.shared.utils.UrlUtils;
 
 public class GitRepository {
 

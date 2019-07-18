@@ -7,8 +7,8 @@ import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY;
 import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY_PASS;
 import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY_URL;
 import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY_USER;
-import static top.infra.maven.utils.SupportFunction.logEnd;
-import static top.infra.maven.utils.SupportFunction.logStart;
+import static top.infra.maven.shared.utils.SupportFunction.logEnd;
+import static top.infra.maven.shared.utils.SupportFunction.logStart;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,15 +21,15 @@ import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
-import top.infra.maven.extension.shared.Constants;
+import top.infra.maven.shared.extension.Constants;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.shared.GlobalOption;
+import top.infra.maven.shared.extension.GlobalOption;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
-import top.infra.maven.utils.SupportFunction;
-import top.infra.maven.utils.SystemUtils;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.utils.SupportFunction;
+import top.infra.maven.shared.utils.SystemUtils;
 
 @Named
 @Singleton

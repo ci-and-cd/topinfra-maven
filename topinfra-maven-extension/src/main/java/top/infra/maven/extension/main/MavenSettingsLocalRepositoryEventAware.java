@@ -1,7 +1,7 @@
 package top.infra.maven.extension.main;
 
 import static top.infra.maven.extension.main.SystemToUserPropertiesEventAware.copyOrSetDefaultToUserProps;
-import static top.infra.maven.utils.SupportFunction.isEmpty;
+import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -13,9 +13,9 @@ import org.apache.maven.settings.building.SettingsBuildingResult;
 
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
 
 /**
  * Support specify maven local repository by user property settings.localRepository.

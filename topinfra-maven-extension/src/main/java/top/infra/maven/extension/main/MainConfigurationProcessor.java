@@ -1,8 +1,8 @@
 package top.infra.maven.extension.main;
 
 import static java.util.stream.Collectors.toList;
-import static top.infra.maven.utils.SupportFunction.logEnd;
-import static top.infra.maven.utils.SupportFunction.logStart;
+import static top.infra.maven.shared.utils.SupportFunction.logEnd;
+import static top.infra.maven.shared.utils.SupportFunction.logStart;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -18,7 +18,7 @@ import org.apache.maven.settings.building.SettingsBuildingRequest;
 
 import top.infra.maven.extension.OrderedConfigurationProcessor;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
 
 /**
  * See {@link org.apache.maven.cli.MavenCli}.

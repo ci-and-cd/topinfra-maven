@@ -42,7 +42,8 @@
             </exclusions>
         </dependency>
 
-        <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><classifier>shaded</classifier><scope>provided</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-core</artifactId><scope>provided</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-shared</artifactId></dependency>
 
         <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-test</artifactId><scope>test</scope></dependency>
 

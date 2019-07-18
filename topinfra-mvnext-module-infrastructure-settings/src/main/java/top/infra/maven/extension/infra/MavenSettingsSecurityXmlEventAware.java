@@ -1,8 +1,8 @@
 package top.infra.maven.extension.infra;
 
 import static top.infra.maven.extension.infra.SettingFiles.SRC_MAIN_MAVEN;
-import static top.infra.maven.extension.shared.Constants.PROP_NAME_SETTINGS_SECURITY;
-import static top.infra.maven.extension.shared.Constants.SETTINGS_SECURITY_XML;
+import static top.infra.maven.shared.extension.Constants.PROP_SETTINGS_SECURITY;
+import static top.infra.maven.shared.extension.Constants.SETTINGS_SECURITY_XML;
 
 import java.nio.file.Path;
 
@@ -14,10 +14,10 @@ import org.apache.maven.cli.CliRequest;
 
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.shared.Constants;
-import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.shared.extension.Constants;
+import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
 
 @Named
 @Singleton
@@ -59,7 +59,7 @@ public class MavenSettingsSecurityXmlEventAware implements MavenEventAware {
         this.settingsSecurityXml = this.settingFiles.findOrDownload(
             cliRequest,
             ciOptContext,
-            Constants.PROP_NAME_SETTINGS_SECURITY,
+            Constants.PROP_SETTINGS_SECURITY,
             SRC_MAIN_MAVEN + "/" + SETTINGS_SECURITY_XML,
             SETTINGS_SECURITY_XML,
             true
@@ -70,12 +70,12 @@ public class MavenSettingsSecurityXmlEventAware implements MavenEventAware {
                     "    Setting file [%s], using [%s]. (override system property [%s])",
                     SETTINGS_SECURITY_XML,
                     this.settingsSecurityXml,
-                    cliRequest.getSystemProperties().getProperty(PROP_NAME_SETTINGS_SECURITY)));
+                    cliRequest.getSystemProperties().getProperty(PROP_SETTINGS_SECURITY)));
             }
             cliRequest.getSystemProperties()
-                .setProperty(PROP_NAME_SETTINGS_SECURITY, this.settingsSecurityXml.toAbsolutePath().toString());
+                .setProperty(PROP_SETTINGS_SECURITY, this.settingsSecurityXml.toAbsolutePath().toString());
             ciOptContext.getSystemProperties()
-                .setProperty(PROP_NAME_SETTINGS_SECURITY, this.settingsSecurityXml.toAbsolutePath().toString());
+                .setProperty(PROP_SETTINGS_SECURITY, this.settingsSecurityXml.toAbsolutePath().toString());
         }
     }
 }

@@ -9,7 +9,7 @@ import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
 
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
 
 /**
  * see: https://maven.apache.org/examples/maven-3-lifecycle-extensions.html

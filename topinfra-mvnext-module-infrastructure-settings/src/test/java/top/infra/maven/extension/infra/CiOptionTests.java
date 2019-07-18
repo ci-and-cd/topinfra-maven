@@ -2,11 +2,11 @@ package top.infra.maven.extension.infra;
 
 import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.assertEquals;
-import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.extension.infra.InfraOption.SONAR_HOST_URL;
 import static top.infra.maven.extension.infra.InfraOption.SONAR_ORGANIZATION;
-import static top.infra.maven.extension.shared.MavenOption.GENERATEREPORTS;
-import static top.infra.maven.extension.shared.VcsProperties.GIT_REMOTE_ORIGIN_URL;
+import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.shared.extension.MavenOption.GENERATEREPORTS;
+import static top.infra.maven.shared.extension.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 
 import java.util.Properties;
 
@@ -14,9 +14,11 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.OptionCollections;
+import top.infra.maven.shared.DefaultCiOptionContext;
+import top.infra.maven.test.extension.OptionCollections;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerSlf4jImpl;
+import top.infra.maven.test.logging.LoggerSlf4jImpl;
+import top.infra.maven.shared.utils.PropertiesUtils;
 
 public class CiOptionTests {
 
@@ -31,7 +33,7 @@ public class CiOptionTests {
 
         // gitProperties if needed
 
-        final CiOptionContext ciOptContext = new CiOptionContext(
+        final CiOptionContext ciOptContext = new DefaultCiOptionContext(
             systemProperties,
             userProperties
         );
@@ -41,7 +43,8 @@ public class CiOptionTests {
 
         final String remoteOriginUrl = GIT_REMOTE_ORIGIN_URL.getValue(ciOptContext).orElse(null);
         CiOptionConfigLoader.ciOptContextFromFile(ciOptContext, logger(), remoteOriginUrl, false, true)
-            .ifPresent(ciOptContext::setSystemPropertiesIfAbsent);
+            .ifPresent(loadedProperties ->
+                PropertiesUtils.setSystemPropertiesIfAbsent(ciOptContext.getSystemProperties(), loadedProperties));
 
         slf4jLogger.info("generateReports {}", GENERATEREPORTS.getValue(ciOptContext).orElse(null));
         assertEquals(TRUE.toString(), GENERATEREPORTS.getValue(ciOptContext).orElse(null));
@@ -65,14 +68,14 @@ public class CiOptionTests {
 
         // gitProperties if needed
 
-        final CiOptionContext ciOptContext = new CiOptionContext(
+        final CiOptionContext ciOptContext = new DefaultCiOptionContext(
             systemProperties,
             userProperties
         );
 
         final Properties loadedProperties = new Properties();
         loadedProperties.setProperty(SONAR_HOST_URL.getEnvVariableName(), expectedSonarHostUrl);
-        ciOptContext.setSystemPropertiesIfAbsent(loadedProperties);
+        PropertiesUtils.setSystemPropertiesIfAbsent(ciOptContext.getSystemProperties(), loadedProperties);
 
         final Properties newProperties = ciOptContext.setCiOptPropertiesInto(OptionCollections.optionCollections(), userProperties);
 

@@ -2,9 +2,9 @@ package top.infra.maven.extension.infra;
 
 import static java.lang.Boolean.FALSE;
 import static top.infra.maven.extension.infra.InfraOption.CACHE_SETTINGS_PATH;
-import static top.infra.maven.extension.shared.CiOptions.systemPropertyName;
-import static top.infra.maven.utils.SupportFunction.logEnd;
-import static top.infra.maven.utils.SupportFunction.logStart;
+import static top.infra.maven.shared.extension.CiOptions.systemPropertyName;
+import static top.infra.maven.shared.utils.SupportFunction.logEnd;
+import static top.infra.maven.shared.utils.SupportFunction.logStart;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,8 +19,8 @@ import org.apache.maven.cli.CliRequest;
 
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.utils.FileUtils;
-import top.infra.maven.utils.MavenUtils;
+import top.infra.maven.shared.utils.FileUtils;
+import top.infra.maven.shared.utils.MavenUtils;
 
 public class SettingFiles {
 

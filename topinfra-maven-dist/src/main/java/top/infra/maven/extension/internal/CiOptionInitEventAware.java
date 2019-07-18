@@ -1,10 +1,10 @@
 package top.infra.maven.extension.internal;
 
 import static java.util.stream.Collectors.toMap;
-import static top.infra.maven.extension.shared.CiOptions.PATTERN_VARS_ENV_DOT_CI;
-import static top.infra.maven.utils.PropertiesUtils.logProperties;
-import static top.infra.maven.utils.SupportFunction.logEnd;
-import static top.infra.maven.utils.SupportFunction.logStart;
+import static top.infra.maven.shared.utils.PropertiesUtils.PATTERN_VARS_ENV_DOT_CI;
+import static top.infra.maven.shared.utils.PropertiesUtils.logProperties;
+import static top.infra.maven.shared.utils.SupportFunction.logEnd;
+import static top.infra.maven.shared.utils.SupportFunction.logStart;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -23,10 +23,10 @@ import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.CiOptionFactoryBean;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
-import top.infra.maven.utils.PropertiesUtils;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.utils.PropertiesUtils;
 
 @Named
 @Singleton

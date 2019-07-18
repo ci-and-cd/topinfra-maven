@@ -1,9 +1,9 @@
 package top.infra.maven.extension.mavenbuild;
 
 import static org.junit.Assert.assertEquals;
-import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.extension.mavenbuild.MavenBuildPomOption.GITHUB_GLOBAL_REPOSITORYOWNER;
-import static top.infra.maven.extension.shared.MavenOption.GENERATEREPORTS;
+import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.shared.extension.MavenOption.GENERATEREPORTS;
 
 import java.util.Properties;
 
@@ -11,6 +11,8 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import top.infra.maven.CiOptionContext;
+import top.infra.maven.shared.DefaultCiOptionContext;
+import top.infra.maven.shared.utils.PropertiesUtils;
 
 public class CiOptionTests {
 
@@ -19,19 +21,20 @@ public class CiOptionTests {
     @Test
     public void testGithubSiteRepoOwner() {
         final Properties systemProperties = new Properties();
+        systemProperties.setProperty("env.CI_PROJECT_PATH", "ci-and-cd/topinfra-maven");
 
         final Properties userProperties = new Properties();
         userProperties.setProperty(GENERATEREPORTS.getPropertyName(), BOOL_STRING_TRUE);
 
         // gitProperties if needed
 
-        final CiOptionContext ciOptContext = new CiOptionContext(
+        final CiOptionContext ciOptContext = new DefaultCiOptionContext(
             systemProperties,
             userProperties
         );
 
         final Properties loadedProperties = new Properties();
-        ciOptContext.setSystemPropertiesIfAbsent(loadedProperties);
+        PropertiesUtils.setSystemPropertiesIfAbsent(ciOptContext.getSystemProperties(), loadedProperties);
 
         // final Optional<String> owner = GITHUB_GLOBAL_REPOSITORYOWNER);
         slf4jLogger.info("{} {}",

@@ -15,8 +15,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import top.infra.maven.utils.SupportFunction;
-import top.infra.maven.utils.SystemUtils;
+import top.infra.maven.shared.utils.SupportFunction;
+import top.infra.maven.shared.utils.SystemUtils;
 
 /**
  * TODO use a java docker client ?

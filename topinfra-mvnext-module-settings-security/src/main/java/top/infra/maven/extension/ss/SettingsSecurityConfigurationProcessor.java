@@ -1,6 +1,6 @@
 package top.infra.maven.extension.ss;
 
-import static top.infra.maven.extension.shared.Constants.SETTINGS_SECURITY_XML;
+import static top.infra.maven.shared.extension.Constants.SETTINGS_SECURITY_XML;
 
 import cn.home1.tools.maven.MavenSettingsSecurity;
 
@@ -20,11 +20,11 @@ import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
 import top.infra.maven.extension.OrderedConfigurationProcessor;
-import top.infra.maven.extension.shared.Constants;
-import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.shared.extension.Constants;
+import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
-import top.infra.maven.utils.MavenUtils;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.utils.MavenUtils;
 
 /**
  * {@link ConfigurationProcessor#process(CliRequest)} is called after {@link org.apache.maven.eventspy.EventSpy#init(EventSpy.Context)}.
@@ -55,7 +55,7 @@ public class SettingsSecurityConfigurationProcessor implements OrderedConfigurat
     @Override
     public void process(final CliRequest cliRequest) throws Exception {
         final Optional<Path> settingsSecurityXml = MavenUtils.findInProperties(
-            Constants.PROP_NAME_SETTINGS_SECURITY, cliRequest.getSystemProperties(), cliRequest.getUserProperties())
+            Constants.PROP_SETTINGS_SECURITY, cliRequest.getSystemProperties(), cliRequest.getUserProperties())
             .map(Paths::get)
             .map(Path::toAbsolutePath);
 

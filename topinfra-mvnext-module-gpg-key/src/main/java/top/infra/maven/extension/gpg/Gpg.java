@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import top.infra.maven.logging.Logger;
-import top.infra.maven.utils.FileUtils;
-import top.infra.maven.utils.SupportFunction;
-import top.infra.maven.utils.SystemUtils;
+import top.infra.maven.shared.utils.FileUtils;
+import top.infra.maven.shared.utils.SupportFunction;
+import top.infra.maven.shared.utils.SystemUtils;
 
 public class Gpg {
 

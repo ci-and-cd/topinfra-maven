@@ -1,13 +1,13 @@
 package top.infra.maven.extension.main;
 
 import static java.util.stream.Collectors.toList;
-import static top.infra.maven.extension.shared.CiOptions.PATTERN_VARS_ENV_DOT_CI;
-import static top.infra.maven.extension.shared.VcsProperties.GIT_REF_NAME;
-import static top.infra.maven.utils.PropertiesUtils.logProperties;
-import static top.infra.maven.utils.SupportFunction.isEmpty;
-import static top.infra.maven.utils.SupportFunction.logEnd;
-import static top.infra.maven.utils.SupportFunction.logStart;
-import static top.infra.maven.utils.SupportFunction.newTuple;
+import static top.infra.maven.shared.extension.VcsProperties.GIT_REF_NAME;
+import static top.infra.maven.shared.utils.PropertiesUtils.PATTERN_VARS_ENV_DOT_CI;
+import static top.infra.maven.shared.utils.PropertiesUtils.logProperties;
+import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
+import static top.infra.maven.shared.utils.SupportFunction.logEnd;
+import static top.infra.maven.shared.utils.SupportFunction.logStart;
+import static top.infra.maven.shared.utils.SupportFunction.newTuple;
 
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -36,15 +36,15 @@ import org.apache.maven.toolchain.building.ToolchainsBuildingResult;
 
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.Ordered;
+import top.infra.maven.extension.CiOptionContextFactoryBean;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.OrderedConfigurationProcessor;
-import top.infra.maven.extension.shared.CiOptionContextBeanFactory;
-import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
-import top.infra.maven.utils.MavenUtils;
-import top.infra.maven.utils.PropertiesUtils;
-import top.infra.maven.utils.SupportFunction;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.utils.MavenUtils;
+import top.infra.maven.shared.utils.PropertiesUtils;
+import top.infra.maven.shared.utils.SupportFunction;
 
 /**
  * Main entry point. Reads properties and exposes them as user properties.
@@ -59,7 +59,7 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
 
     private final Logger logger;
 
-    private final CiOptionContextBeanFactory ciOptContextFactory;
+    private final CiOptionContextFactoryBean ciOptContextFactory;
 
     private final Map<String, List<MavenEventAware>> eventAwares;
 
@@ -77,7 +77,7 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
     @Inject
     public MainEventSpy(
         final org.codehaus.plexus.logging.Logger logger,
-        final CiOptionContextBeanFactory ciOptContextFactory,
+        final CiOptionContextFactoryBean ciOptContextFactory,
         final List<MavenEventAware> eventAwares
     ) {
         logger.info(logStart(this, "constructor"));
@@ -359,7 +359,7 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
         this.eventAwares.get("onInit")
             .forEach(it -> it.onInit(context));
 
-        this.ciOptContext = this.ciOptContextFactory.getCiOpts();
+        this.ciOptContext = this.ciOptContextFactory.getObject();
     }
 
     @Override

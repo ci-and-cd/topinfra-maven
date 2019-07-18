@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static top.infra.maven.extension.main.JavaVersionActivator.isJavaVersionRelatedProfile;
 import static top.infra.maven.extension.main.JavaVersionActivator.profileJavaVersion;
-import static top.infra.maven.utils.SystemUtils.parseJavaVersion;
+import static top.infra.maven.shared.utils.SystemUtils.parseJavaVersion;
 
 import org.junit.Test;
 

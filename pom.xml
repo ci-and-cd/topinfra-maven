@@ -160,17 +160,19 @@
     </dependencies>
     <dependencyManagement>
         <dependencies>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-core</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><classifier>mvn${version.maven}</classifier><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><classifier>shaded</classifier><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-extension</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-test</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-docker</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-gitflow-semver</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-gpg-key</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-infrastructure-settings</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-extension</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-maven-build-pom</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-mvnext-module-settings-security</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-shared</artifactId><version>${project.version}</version></dependency>
 
             <dependency><groupId>cn.home1.tools</groupId><artifactId>maven-settings-decoder-core</artifactId><version>1.1.0</version></dependency>
             <dependency><groupId>com.google.code.findbugs</groupId><artifactId>annotations</artifactId><version>3.0.1u2</version></dependency>
@@ -201,15 +203,17 @@
     <!-- @formatter:on -->
 
     <modules>
-        <module>topinfra-maven-dist</module>
-        <module>topinfra-maven-extension</module>
+        <module>topinfra-maven-core</module>
+        <module>topinfra-maven-shared</module>
         <module>topinfra-maven-test</module>
+        <module>topinfra-maven-dist</module>
         <module>topinfra-mvnext-module-docker</module>
         <module>topinfra-mvnext-module-gitflow-semver</module>
         <module>topinfra-mvnext-module-gpg-key</module>
         <module>topinfra-mvnext-module-infrastructure-settings</module>
         <module>topinfra-mvnext-module-maven-build-pom</module>
         <module>topinfra-mvnext-module-settings-security</module>
+        <module>topinfra-maven-extension</module>
     </modules>
 
     <!-- @formatter:off -->
@@ -643,23 +647,32 @@
                             <artifactId>maven-surefire-plugin</artifactId>
                             <version>${version.maven.testing}</version>
                             <dependencies>
-                                <dependency>
-                                    <groupId>org.junit.jupiter</groupId>
-                                    <artifactId>junit-jupiter-engine</artifactId>
-                                    <version>${version.junit.jupiter}</version>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.junit.vintage</groupId>
-                                    <artifactId>junit-vintage-engine</artifactId>
-                                    <version>${version.junit.vintage}</version>
-                                </dependency>
+                                <dependency><groupId>org.ow2.asm</groupId><artifactId>asm</artifactId><version>${version.asm}</version></dependency>
+                                <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter-engine</artifactId><version>${version.junit.jupiter}</version></dependency>
+                                <dependency><groupId>org.junit.vintage</groupId><artifactId>junit-vintage-engine</artifactId><version>${version.junit.vintage}</version></dependency>
                             </dependencies>
                             <configuration>
+                                <argLine>${jacoco.agent.ut.arg} ${argLine}</argLine>
+                                <forkCount>${surefire.fork.count}</forkCount>
+                                <reuseForks>${surefire.fork.reuse}</reuseForks>
                                 <runOrder>alphabetical</runOrder>
                                 <includes>
-                                    <include>**/*Test.class</include>
                                     <include>**/*Suite.class</include>
+                                    <include>**/*Test.java</include>
+                                    <include>**/*Tests.java</include>
+                                    <include>**/Test*.java</include>
+                                    <include>**/*TestCase.java</include>
+                                    <include>**/*Documentation.java</include>
                                 </includes>
+                                <excludes>
+                                    <exclude>**/Abstract*.java</exclude>
+                                    <exclude>**/Base*.java</exclude>
+                                    <exclude>**/deprecated/*.java</exclude>
+                                    <exclude>**/Deprecated*.java</exclude>
+                                    <exclude>**/*IT.java</exclude>
+                                    <include>**/*Verify.java</include>
+                                </excludes>
+                                <useSystemClassLoader>false</useSystemClassLoader>
                             </configuration>
                         </plugin>
 
@@ -667,22 +680,28 @@
                             <artifactId>maven-failsafe-plugin</artifactId>
                             <version>${version.maven.testing}</version>
                             <dependencies>
-                                <dependency>
-                                    <groupId>org.junit.jupiter</groupId>
-                                    <artifactId>junit-jupiter-engine</artifactId>
-                                    <version>${version.junit.jupiter}</version>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.junit.vintage</groupId>
-                                    <artifactId>junit-vintage-engine</artifactId>
-                                    <version>${version.junit.vintage}</version>
-                                </dependency>
+                                <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter-engine</artifactId><version>${version.junit.jupiter}</version></dependency>
+                                <dependency><groupId>org.junit.vintage</groupId><artifactId>junit-vintage-engine</artifactId><version>${version.junit.vintage}</version></dependency>
                             </dependencies>
                             <configuration>
+                                <argLine>${jacoco.agent.it.arg} ${argLine}</argLine>
+                                <skip>${skipITs}</skip>
                                 <includes>
                                     <include>**/*IT.java</include>
                                     <include>**/*Verify.java</include>
                                 </includes>
+                                <excludes>
+                                    <exclude>**/Abstract*.java</exclude>
+                                    <exclude>**/Base*.java</exclude>
+                                    <exclude>**/deprecated/*.java</exclude>
+                                    <exclude>**/Deprecated*.java</exclude>
+                                    <include>**/*Suite.class</include>
+                                    <exclude>**/*Test.java</exclude>
+                                    <exclude>**/*Tests.java</exclude>
+                                    <exclude>**/Test*.java</exclude>
+                                    <exclude>**/*TestCase.java</exclude>
+                                    <exclude>**/*Documentation.java</exclude>
+                                </excludes>
                             </configuration>
                         </plugin>
                     </plugins>
@@ -726,10 +745,134 @@
                 </plugins>
             </build>
         </profile>
+
+        <!-- http://www.eclemma.org/jacoco/trunk/doc/maven.html -->
+        <!-- see: https://github.com/timp/juice -->
+        <!-- see: https://github.com/jacoco/jacoco/issues/409 -->
+        <!-- https://www.petrikainulainen.net/programming/maven/creating-code-coverage-reports-for-unit-and-integration-tests-with-the-jacoco-maven-plugin/ -->
+        <profile>
+            <id>jacoco-build</id>
+            <activation><property><name>jacoco</name><value>true</value></property></activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin><groupId>org.jacoco</groupId><artifactId>jacoco-maven-plugin</artifactId><version>${version.org.jacoco_jacoco}</version></plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-prepare-agent</id>
+                                <goals><goal>prepare-agent</goal></goals>
+                                <phase>test-compile</phase>
+                                <!--<phase>process-test-classes</phase>-->
+                                <configuration><propertyName>jacoco.agent.ut.arg</propertyName><skip>${maven.test.skip}</skip><!--<destFile>${project.build.directory}/jacoco.exec</destFile>--></configuration>
+                            </execution>
+                            <execution>
+                                <id>default-prepare-agent-integration</id>
+                                <goals><goal>prepare-agent-integration</goal></goals>
+                                <phase>pre-integration-test</phase>
+                                <configuration><append>true</append><propertyName>jacoco.agent.it.arg</propertyName><skip>${skipITs}</skip><!--<destFile>${project.build.directory}/jacoco-it.exec</destFile>--></configuration>
+                            </execution>
+                            <!--<execution><id>default-report</id><goals><goal>report</goal></goals><phase>test</phase></execution>-->
+                            <!--<execution><id>default-report-integration</id><goals><goal>report-integration</goal></goals><phase>post-integration-test</phase></execution>-->
+                            <execution>
+                                <id>merge</id>
+                                <phase>pre-site</phase>
+                                <goals><goal>merge</goal></goals>
+                                <configuration>
+                                    <destFile>${project.build.directory}/jacoco-combined.exec</destFile>
+                                    <fileSets>
+                                        <fileSet>
+                                            <directory>${project.build.directory}</directory>
+                                            <includes><include>jacoco.exec</include><include>jacoco-it.exec</include></includes>
+                                        </fileSet>
+                                    </fileSets>
+                                    <skip>${skipITs}</skip>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>composite</id>
+                                <phase>pre-site</phase>
+                                <goals><goal>report</goal></goals>
+                                <configuration>
+                                    <dataFile>${project.build.directory}/jacoco-combined.exec</dataFile>
+                                    <outputDirectory>${project.reporting.outputDirectory}/jacoco-combined</outputDirectory>
+                                    <skip>${skipITs}</skip>
+                                    <title>Combined</title>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>default-check</id>
+                                <goals><goal>check</goal></goals>
+                                <configuration>
+                                    <haltOnFailure>false</haltOnFailure>
+                                    <rules>
+                                        <rule implementation="org.jacoco.maven.RuleConfiguration">
+                                            <element>BUNDLE</element>
+                                            <limits>
+                                                <limit implementation="org.jacoco.report.check.Limit"><counter>COMPLEXITY</counter><value>COVEREDRATIO</value><minimum>0.60</minimum></limit>
+                                            </limits>
+                                        </rule>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+            <dependencies>
+                <dependency><groupId>org.jacoco</groupId><artifactId>org.jacoco.agent</artifactId><classifier>runtime</classifier><scope>test</scope><version>${version.org.jacoco_jacoco}</version></dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>jacoco-report</id>
+            <activation><property><name>jacoco</name><value>true</value></property></activation>
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId><artifactId>jacoco-maven-plugin</artifactId>
+                        <reportSets>
+                            <reportSet><reports><report>report</report><report>report-integration</report><!--<report>report-aggregate</report>--></reports></reportSet>
+                        </reportSets>
+                    </plugin>
+                </plugins>
+            </reporting>
+        </profile>
+
+        <profile>
+            <id>java11-argLine</id>
+            <activation>
+                <jdk>[11,)</jdk>
+                <property><name>jacoco</name><value>true</value></property>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <argLine>${jacoco.agent.ut.arg} --illegal-access=permit ${argLine}</argLine>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <artifactId>maven-failsafe-plugin</artifactId>
+                            <configuration>
+                                <argLine>${jacoco.agent.it.arg} --illegal-access=permit ${argLine}</argLine>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
     </profiles>
     <!-- @formatter:on -->
 
     <properties>
+        <argLine></argLine>
         <custom.nexus3>https://nexus3.infra.top/nexus/</custom.nexus3>
 
         <java.version>8</java.version>
@@ -741,12 +884,19 @@
         <!-- mvn install -Dprofile="profile name" -DprofileFormat=JSON,HTML -->
         <maven-profiler-report-directory>${project.basedir}/.mvn/profiler-report</maven-profiler-report-directory>
 
+        <maven.test.skip>false</maven.test.skip>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+        <skipITs>false</skipITs>
+
         <version.ant-contrib>20020829</version.ant-contrib>
+        <version.asm>6.2</version.asm>
         <version.build-helper-maven-plugin>3.0.0</version.build-helper-maven-plugin>
         <version.git-commit-id-plugin>2.2.6</version.git-commit-id-plugin>
+        <version.org.jacoco_jacoco>0.8.3</version.org.jacoco_jacoco>
+
         <version.maven-antrun-plugin>1.8</version.maven-antrun-plugin>
         <version.maven-deploy-plugin>3.0.0-M1</version.maven-deploy-plugin>
         <version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
@@ -760,7 +910,7 @@
         <version.junit.legacy>4.12</version.junit.legacy>
         <version.junit.vintage>5.4.2</version.junit.vintage>
         <version.logback>1.2.3</version.logback>
-        <version.lombok>1.16.14</version.lombok>
+        <version.lombok>1.18.8</version.lombok>
         <version.maven>3.6.1</version.maven>
         <md5.maven>fd43b329dcf4c837f4951ff9834f0e6f</md5.maven>
         <version.maven-jar-plugin>3.1.2</version.maven-jar-plugin>

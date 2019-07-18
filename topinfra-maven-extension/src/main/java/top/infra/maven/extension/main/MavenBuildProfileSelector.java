@@ -3,7 +3,7 @@ package top.infra.maven.extension.main;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static top.infra.maven.utils.SupportFunction.newTuple;
+import static top.infra.maven.shared.utils.SupportFunction.newTuple;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

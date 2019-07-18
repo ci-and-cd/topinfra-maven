@@ -8,7 +8,7 @@ import javax.inject.Singleton;
 
 import top.infra.maven.CiOption;
 import top.infra.maven.extension.CiOptionFactoryBean;
-import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.shared.extension.Orders;
 
 @Named
 @Singleton
