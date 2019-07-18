@@ -129,10 +129,46 @@
                 <plugin><artifactId>maven-jar-plugin</artifactId><version>${version.maven-jar-plugin}</version></plugin>
                 <plugin><artifactId>maven-gpg-plugin</artifactId><version>${version.maven-gpg-plugin}</version></plugin>
                 <plugin><artifactId>maven-javadoc-plugin</artifactId><version>${version.maven-javadoc-plugin}</version></plugin>
+                <plugin><artifactId>maven-project-info-reports-plugin</artifactId><version>${version.maven-project-info-reports-plugin}</version></plugin>
                 <plugin><artifactId>maven-resources-plugin</artifactId><version>${version.maven-resources-plugin}</version></plugin>
                 <plugin><artifactId>maven-shade-plugin</artifactId><version>3.2.1</version></plugin>
                 <plugin><artifactId>maven-source-plugin</artifactId><version>${version.maven-source-plugin}</version></plugin>
                 <plugin><artifactId>nexus-staging-maven-plugin</artifactId><groupId>org.sonatype.plugins</groupId><version>${version.nexus-staging-maven-plugin}</version></plugin>
+
+                <plugin>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>${version.maven-site-plugin}</version>
+                    <configuration>
+                        <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+                        <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
+                    </configuration>
+                    <dependencies>
+                        <dependency><groupId>org.apache.maven.doxia</groupId><artifactId>doxia-module-markdown</artifactId><version>${version.doxia-module-markdown}</version></dependency>
+                        <dependency><groupId>org.pegdown</groupId><artifactId>pegdown</artifactId><version>${version.pegdown}</version></dependency>
+                        <dependency><groupId>org.apache.maven.wagon</groupId><artifactId>wagon-webdav-jackrabbit</artifactId><version>${version.wagon-webdav-jackrabbit}</version></dependency>
+                        <!-- org.apache.maven.wagon:wagon-ssh support ssh/scp and password only -->
+                        <dependency>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-ssh</artifactId>
+                            <version>${version.wagon-ssh}</version>
+                            <exclusions>
+                                <exclusion><groupId>com.jcraft</groupId><artifactId>jsch</artifactId></exclusion>
+                            </exclusions>
+                        </dependency>
+                        <dependency><groupId>com.jcraft</groupId><artifactId>jsch</artifactId><version>${version.jsch}</version></dependency>
+                        <!-- support for sshexe/scpexe and privateKey -->
+                        <dependency><groupId>org.apache.maven.wagon</groupId><artifactId>wagon-ssh-external</artifactId><version>${version.wagon-ssh}</version></dependency>
+                        <!-- provide org.apache.maven.wagon.providers.ssh.knownhost.NullKnownHostProvider -->
+                        <dependency>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-ssh-common</artifactId>
+                            <version>${version.wagon-ssh}</version>
+                            <exclusions>
+                                <exclusion><groupId>org.codehaus.plexus</groupId><artifactId>plexus-utils</artifactId></exclusion>
+                            </exclusions>
+                        </dependency>
+                    </dependencies>
+                </plugin>
 
                 <plugin><groupId>org.codehaus.mojo</groupId><artifactId>build-helper-maven-plugin</artifactId><version>${version.build-helper-maven-plugin}</version></plugin>
                 <plugin><groupId>org.codehaus.mojo</groupId><artifactId>wagon-maven-plugin</artifactId><version>${version.wagon-maven-plugin}</version></plugin>
@@ -652,7 +688,6 @@
                                 <dependency><groupId>org.junit.vintage</groupId><artifactId>junit-vintage-engine</artifactId><version>${version.junit.vintage}</version></dependency>
                             </dependencies>
                             <configuration>
-                                <argLine>${jacoco.agent.ut.arg} ${argLine}</argLine>
                                 <forkCount>${surefire.fork.count}</forkCount>
                                 <reuseForks>${surefire.fork.reuse}</reuseForks>
                                 <runOrder>alphabetical</runOrder>
@@ -684,7 +719,6 @@
                                 <dependency><groupId>org.junit.vintage</groupId><artifactId>junit-vintage-engine</artifactId><version>${version.junit.vintage}</version></dependency>
                             </dependencies>
                             <configuration>
-                                <argLine>${jacoco.agent.it.arg} ${argLine}</argLine>
                                 <skip>${skipITs}</skip>
                                 <includes>
                                     <include>**/*IT.java</include>
@@ -757,6 +791,25 @@
                 <pluginManagement>
                     <plugins>
                         <plugin><groupId>org.jacoco</groupId><artifactId>jacoco-maven-plugin</artifactId><version>${version.org.jacoco_jacoco}</version></plugin>
+                        <plugin>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <argLine>${jacoco.agent.ut.arg} ${argLine}</argLine>
+                            </configuration>
+                        </plugin>
+
+                        <plugin>
+                            <artifactId>maven-failsafe-plugin</artifactId>
+                            <configuration>
+                                <argLine>${jacoco.agent.it.arg} ${argLine}</argLine>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <artifactId>maven-invoker-plugin</artifactId>
+                            <configuration>
+                                <mavenOpts>${jacoco.agent.it.arg} ${invoker.mavenOpts}</mavenOpts>
+                            </configuration>
+                        </plugin>
                     </plugins>
                 </pluginManagement>
                 <plugins>
@@ -777,8 +830,16 @@
                                 <phase>pre-integration-test</phase>
                                 <configuration><append>true</append><propertyName>jacoco.agent.it.arg</propertyName><skip>${skipITs}</skip><!--<destFile>${project.build.directory}/jacoco-it.exec</destFile>--></configuration>
                             </execution>
-                            <!--<execution><id>default-report</id><goals><goal>report</goal></goals><phase>test</phase></execution>-->
-                            <!--<execution><id>default-report-integration</id><goals><goal>report-integration</goal></goals><phase>post-integration-test</phase></execution>-->
+                            <!--
+                            <execution>
+                                <id>prepare-agent-integration-for-maven_invoker_plugin</id>
+                                <goals><goal>prepare-agent-integration</goal></goals>
+                                <phase>pre-integration-test</phase>
+                                <configuration><append>true</append><propertyName>invoker.mavenOpts</propertyName><skip>${skipITs}</skip></configuration>
+                            </execution>
+                            -->
+                            <execution><id>default-report</id><goals><goal>report</goal></goals><phase>test</phase></execution>
+                            <execution><id>default-report-integration</id><goals><goal>report-integration</goal></goals><phase>post-integration-test</phase></execution>
                             <execution>
                                 <id>merge</id>
                                 <phase>pre-site</phase>
@@ -874,6 +935,7 @@
     <properties>
         <argLine></argLine>
         <custom.nexus3>https://nexus3.infra.top/nexus/</custom.nexus3>
+        <invoker.mavenOpts></invoker.mavenOpts>
 
         <java.version>8</java.version>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -891,9 +953,13 @@
 
         <skipITs>false</skipITs>
 
+        <surefire.fork.count>1</surefire.fork.count>
+        <surefire.fork.reuse>false</surefire.fork.reuse>
+
         <version.ant-contrib>20020829</version.ant-contrib>
         <version.asm>6.2</version.asm>
         <version.build-helper-maven-plugin>3.0.0</version.build-helper-maven-plugin>
+        <version.doxia-module-markdown>1.8</version.doxia-module-markdown>
         <version.git-commit-id-plugin>2.2.6</version.git-commit-id-plugin>
         <version.org.jacoco_jacoco>0.8.3</version.org.jacoco_jacoco>
 
@@ -901,11 +967,14 @@
         <version.maven-deploy-plugin>3.0.0-M1</version.maven-deploy-plugin>
         <version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
         <version.maven-javadoc-plugin>3.1.0</version.maven-javadoc-plugin>
+        <version.maven-project-info-reports-plugin>3.0.0</version.maven-project-info-reports-plugin>
         <version.maven-resources-plugin>3.1.0</version.maven-resources-plugin>
+        <version.maven-site-plugin>3.7.1</version.maven-site-plugin>
         <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
 
         <version.commons-lang3>3.8.1</version.commons-lang3>
         <version.guava>27.1-jre</version.guava>
+        <version.jsch>0.1.54</version.jsch>
         <version.junit.jupiter>5.4.2</version.junit.jupiter>
         <version.junit.legacy>4.12</version.junit.legacy>
         <version.junit.vintage>5.4.2</version.junit.vintage>
@@ -916,10 +985,13 @@
         <version.maven-jar-plugin>3.1.2</version.maven-jar-plugin>
         <version.maven.testing>2.22.2</version.maven.testing>
         <version.nexus-staging-maven-plugin>1.6.8</version.nexus-staging-maven-plugin>
+        <version.pegdown>1.6.0</version.pegdown>
         <version.plexus-cipher>1.7</version.plexus-cipher>
         <version.spring-context>5.1.6.RELEASE</version.spring-context>
 
         <version.wagon-maven-plugin>wagon-maven-plugin-2.0.1-snapshot-chshawkn-1.6</version.wagon-maven-plugin>
+        <version.wagon-ssh>3.0.0</version.wagon-ssh>
+        <version.wagon-webdav-jackrabbit>3.0.0</version.wagon-webdav-jackrabbit>
     </properties>
 
     <!-- @formatter:off -->
@@ -944,4 +1016,41 @@
         </repository>
     </repositories>
     <!-- @formatter:on -->
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <!--
+                Plugin maven-project-info-reports-plugin must in project's top level reporting plugins tag,
+                if not, selective reports will not work.
+                -->
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <!--<inherited>true</inherited>-->
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>ci-management</report>
+                            <!-- dependencies, dependency-management reports are too slow, disable by default -->
+                            <!--<report>dependencies</report>-->
+                            <report>dependency-convergence</report>
+                            <report>dependency-info</report>
+                            <!--<report>dependency-management</report>-->
+                            <report>distribution-management</report>
+                            <!---->
+                            <report>index</report>
+                            <report>issue-management</report>
+                            <report>licenses</report>
+                            <report>mailing-lists</report>
+                            <report>modules</report>
+                            <!--<report>plugin-management</report>-->
+                            <report>plugins</report>
+                            <report>scm</report>
+                            <report>summary</report>
+                            <report>team</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>
