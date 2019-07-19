@@ -73,7 +73,7 @@ public class Docker {
         return org.unix4j.Unix4j.find(".", "*Docker*")
             .toStringList()
             .stream()
-            .filter(line -> !line.contains("/target/classes/")) // TODO windows ?
+            .filter(line -> !line.contains("/target/classes/") && !line.contains("\\target\\classes\\"))
             .filter(line -> !PATTERN_FILE_WITH_EXT.matcher(line).matches())
             .collect(Collectors.toList());
     }
@@ -81,13 +81,24 @@ public class Docker {
     public List<String> imageIdsToClean() {
         final Entry<Integer, String> returnCodeAndStdout = this.docker("images");
 
-        final List<String> imageIds;
+        final List<String> result;
         if (returnCodeAndStdout.getKey() == 0) {
-            imageIds = imagesToClean(SupportFunction.lines(returnCodeAndStdout.getValue()));
+            result = imagesToClean(SupportFunction.lines(returnCodeAndStdout.getValue()));
         } else {
-            imageIds = Collections.emptyList();
+            result = Collections.emptyList();
         }
-        return imageIds;
+        return result;
+    }
+
+    /**
+     * docker images --format '{{.Repository}}:{{.Tag}}'
+     *
+     * @return list of {{.Repository}}:{{.Tag}}
+     */
+    public List<String> imageRepositoryColonTags() {
+        //
+        final Entry<Integer, String> returnCodeAndStdout = this.docker("images", "--format", "'{{.Repository}}:{{.Tag}}'");
+        return returnCodeAndStdout.getKey() == 0 ? SupportFunction.lines(returnCodeAndStdout.getValue()) : Collections.emptyList();
     }
 
     private Entry<Integer, String> docker(final String... options) {
@@ -129,18 +140,16 @@ public class Docker {
         }
     }
 
-    /**
-     * Pull base images found in Dockerfiles.
-     *
-     * @param dockerfiles Dockerfiles to find base images in.
-     * @return base images found / pulled
-     */
-    public List<String> pullBaseImages(final List<String> dockerfiles) {
-        final List<String> baseImages = baseImages(dockerfiles);
-        baseImages.forEach(image -> this.docker("pull", image));
-        return baseImages;
+    public void pullImage(final String image) {
+        this.docker("pull", image);
     }
 
+    /**
+     * Find base images in Dockerfiles.
+     *
+     * @param dockerfiles Dockerfiles to find base images in.
+     * @return base images found (--format '{{.Repository}}:{{.Tag}}')
+     */
     static List<String> baseImages(final List<String> dockerfiles) {
         return dockerfiles
             .stream()
