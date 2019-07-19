@@ -19,6 +19,7 @@
                     <configuration>
                         <artifactSet>
                             <excludes>
+                                <exclude>org.apache.maven</exclude>
                                 <exclude>org.jetbrains:annotations</exclude>
                                 <exclude>org.slf4j:*</exclude>
                             </excludes>
