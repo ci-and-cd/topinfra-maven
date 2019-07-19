@@ -7,15 +7,15 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import top.infra.maven.CiOption;
-import top.infra.maven.extension.CiOptionFactoryBean;
+import top.infra.maven.extension.CiOptionFactory;
 import top.infra.maven.shared.extension.Orders;
 
 @Named
 @Singleton
-public class GpgOptionFactoryBean implements CiOptionFactoryBean {
+public class GpgOptionFactory implements CiOptionFactory {
 
     @Override
-    public List<CiOption> getOptions() {
+    public List<CiOption> getObjects() {
         return Arrays.asList(GpgOption.values());
     }
 

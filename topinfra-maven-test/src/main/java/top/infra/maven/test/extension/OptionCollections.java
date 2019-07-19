@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import top.infra.maven.CiOption;
-import top.infra.maven.extension.CiOptionFactoryBean;
+import top.infra.maven.extension.CiOptionFactory;
 import top.infra.maven.test.utils.ClassPathUtils;
 
 public abstract class OptionCollections {
@@ -16,9 +16,9 @@ public abstract class OptionCollections {
     }
 
     public static List<List<CiOption>> optionCollections() {
-        final Set<Class<CiOptionFactoryBean>> factories = ClassPathUtils.scan(
+        final Set<Class<CiOptionFactory>> factories = ClassPathUtils.scan(
             "top.infra.maven",
-            new ClassPathUtils.InterfaceFilter(CiOptionFactoryBean.class)
+            new ClassPathUtils.InterfaceFilter(CiOptionFactory.class)
         );
 
         return factories
@@ -32,7 +32,7 @@ public abstract class OptionCollections {
             })
             .filter(Objects::nonNull)
             .sorted()
-            .map(CiOptionFactoryBean::getOptions)
+            .map(CiOptionFactory::getObjects)
             .collect(toList());
     }
 }

@@ -2,7 +2,7 @@ package top.infra.maven.extension;
 
 import top.infra.maven.CiOptionContext;
 
-public interface CiOptionContextFactoryBean {
+public interface CiOptionContextFactory {
 
     CiOptionContext getObject();
 }

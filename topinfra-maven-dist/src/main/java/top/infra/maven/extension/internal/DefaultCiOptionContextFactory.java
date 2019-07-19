@@ -7,8 +7,8 @@ import javax.inject.Singleton;
 import org.apache.maven.eventspy.EventSpy.Context;
 
 import top.infra.maven.CiOptionContext;
+import top.infra.maven.extension.CiOptionContextFactory;
 import top.infra.maven.shared.DefaultCiOptionContext;
-import top.infra.maven.extension.CiOptionContextFactoryBean;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.logging.Logger;
@@ -17,14 +17,14 @@ import top.infra.maven.shared.utils.MavenUtils;
 
 @Named
 @Singleton
-public class DefaultCiOptionContextFactoryBean implements CiOptionContextFactoryBean, MavenEventAware {
+public class DefaultCiOptionContextFactory implements CiOptionContextFactory, MavenEventAware {
 
     private final Logger logger;
 
     private CiOptionContext ciOptContext;
 
     @Inject
-    public DefaultCiOptionContextFactoryBean(
+    public DefaultCiOptionContextFactory(
         final org.codehaus.plexus.logging.Logger logger
     ) {
         this.logger = new LoggerPlexusImpl(logger);

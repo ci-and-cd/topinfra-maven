@@ -36,7 +36,7 @@ import org.apache.maven.toolchain.building.ToolchainsBuildingResult;
 
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.Ordered;
-import top.infra.maven.extension.CiOptionContextFactoryBean;
+import top.infra.maven.extension.CiOptionContextFactory;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.OrderedConfigurationProcessor;
 import top.infra.maven.shared.extension.Orders;
@@ -59,7 +59,7 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
 
     private final Logger logger;
 
-    private final CiOptionContextFactoryBean ciOptContextFactory;
+    private final CiOptionContextFactory ciOptContextFactory;
 
     private final Map<String, List<MavenEventAware>> eventAwares;
 
@@ -77,7 +77,7 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
     @Inject
     public MainEventSpy(
         final org.codehaus.plexus.logging.Logger logger,
-        final CiOptionContextFactoryBean ciOptContextFactory,
+        final CiOptionContextFactory ciOptContextFactory,
         final List<MavenEventAware> eventAwares
     ) {
         logger.info(logStart(this, "constructor"));

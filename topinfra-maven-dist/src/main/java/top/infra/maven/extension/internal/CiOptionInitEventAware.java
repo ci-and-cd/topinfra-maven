@@ -21,7 +21,7 @@ import org.apache.maven.cli.CliRequest;
 
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.CiOptionFactoryBean;
+import top.infra.maven.extension.CiOptionFactory;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.logging.Logger;
@@ -39,15 +39,15 @@ public class CiOptionInitEventAware implements MavenEventAware {
     @Inject
     public CiOptionInitEventAware(
         final org.codehaus.plexus.logging.Logger logger,
-        final List<CiOptionFactoryBean> optionFactoryBeans
+        final List<CiOptionFactory> optionFactoryBeans
     ) {
         this.logger = new LoggerPlexusImpl(logger);
         this.optionCollections = optionFactoryBeans
             .stream()
             .sorted()
             .collect(toMap(
-                CiOptionFactoryBean::getType,
-                CiOptionFactoryBean::getOptions,
+                CiOptionFactory::getType,
+                CiOptionFactory::getObjects,
                 (e1, e2) -> e1,
                 LinkedHashMap::new
             ));

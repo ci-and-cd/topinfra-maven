@@ -20,7 +20,7 @@ import org.apache.maven.model.profile.ProfileActivationContext;
 import org.apache.maven.model.profile.activation.ProfileActivator;
 
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.CiOptionContextFactoryBean;
+import top.infra.maven.extension.CiOptionContextFactory;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.shared.extension.activator.AbstractCustomActivator;
 import top.infra.maven.extension.activator.CustomActivator;
@@ -35,7 +35,7 @@ public class InfrastructureActivator extends AbstractCustomActivator implements 
 
     private static final Pattern PATTERN_INFRASTRUCTURE_PROFILE = Pattern.compile(".*infrastructure_(\\w+)[-]?.*");
 
-    private final CiOptionContextFactoryBean ciOptContextFactory;
+    private final CiOptionContextFactory ciOptContextFactory;
 
     private CiOptionContext ciOptContext;
 
@@ -43,7 +43,7 @@ public class InfrastructureActivator extends AbstractCustomActivator implements 
     public InfrastructureActivator(
         final org.codehaus.plexus.logging.Logger logger,
         final ActivatorModelResolver resolver,
-        final CiOptionContextFactoryBean ciOptContextFactory
+        final CiOptionContextFactory ciOptContextFactory
     ) {
         super(logger, resolver);
 

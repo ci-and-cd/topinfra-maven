@@ -7,13 +7,13 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import top.infra.maven.CiOption;
-import top.infra.maven.extension.CiOptionFactoryBean;
+import top.infra.maven.extension.CiOptionFactory;
 import top.infra.maven.shared.extension.MavenOption;
 import top.infra.maven.shared.extension.Orders;
 
 @Named
 @Singleton
-public class MavenOptionFactoryBean implements CiOptionFactoryBean {
+public class MavenOptionFactory implements CiOptionFactory {
 
     @Override
     public int getOrder() {
@@ -26,7 +26,7 @@ public class MavenOptionFactoryBean implements CiOptionFactoryBean {
     }
 
     @Override
-    public List<CiOption> getOptions() {
+    public List<CiOption> getObjects() {
         return Arrays.asList(MavenOption.values());
     }
 }
