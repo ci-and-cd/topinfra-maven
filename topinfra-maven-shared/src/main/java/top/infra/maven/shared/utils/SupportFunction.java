@@ -72,7 +72,7 @@ public abstract class SupportFunction {
     }
 
     public static boolean isNotEmpty(final String str) {
-        return str != null && !str.isEmpty();
+        return !isEmpty(str);
     }
 
     public static List<Entry<String, List<String>>> commonPrefixes(final List<String> names) {

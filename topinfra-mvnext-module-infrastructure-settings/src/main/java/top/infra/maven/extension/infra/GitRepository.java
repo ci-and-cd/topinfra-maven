@@ -13,7 +13,6 @@ import static top.infra.maven.shared.extension.VcsProperties.GIT_REMOTE_ORIGIN_U
 import static top.infra.maven.shared.utils.FileUtils.readFile;
 import static top.infra.maven.shared.utils.FileUtils.writeFile;
 import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
-import static top.infra.maven.shared.utils.SupportFunction.isNotEmpty;
 import static top.infra.maven.shared.utils.SupportFunction.newTuple;
 import static top.infra.maven.shared.utils.SupportFunction.newTupleOptional;
 
@@ -29,8 +28,8 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.shared.extension.GlobalOption;
 import top.infra.maven.logging.Logger;
+import top.infra.maven.shared.extension.GlobalOption;
 import top.infra.maven.shared.utils.DownloadUtils;
 import top.infra.maven.shared.utils.DownloadUtils.DownloadException;
 import top.infra.maven.shared.utils.Optionals;
@@ -218,9 +217,9 @@ public class GitRepository {
 
         final String fromUrl;
 
-        if (isNotEmpty(this.repo)) {
+        if (!isEmpty(this.repo)) {
             final Map<String, String> headers = new LinkedHashMap<>();
-            if (isNotEmpty(this.token)) {
+            if (!isEmpty(this.token)) {
                 if (this.repo.contains("raw.githubusercontent.com") || this.repo.contains("github.com")) {
                     headers.put("Authorization", "token " + this.token); // github
                     logger.info("    token send in header 'Authorization'.");

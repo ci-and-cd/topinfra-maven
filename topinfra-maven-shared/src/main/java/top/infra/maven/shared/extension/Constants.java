@@ -39,6 +39,7 @@ public final class Constants {
 
     public static final String PROP_MAVEN_CLEAN_SKIP = "maven.clean.skip";
     public static final String PROP_MAVEN_JAVADOC_SKIP = "maven.javadoc.skip";
+    public static final String PROP_MAVEN_INSTALL_SKIP = "maven.install.skip";
     public static final String PROP_MAVEN_PACKAGES_SKIP = "maven.packages.skip";
     public static final String PROP_MAVEN_SOURCE_SKIP = "maven.source.skip";
 

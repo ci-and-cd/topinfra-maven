@@ -1,5 +1,7 @@
 package top.infra.maven.extension.docker;
 
+import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -173,12 +175,12 @@ public class Docker {
     }
 
     public String getLoginTarget() {
-        return SupportFunction.isNotEmpty(this.registry) ? this.registry : this.registryUrl;
+        return !isEmpty(this.registry) ? this.registry : this.registryUrl;
     }
 
     public Optional<Integer> login(final String target) {
         final Optional<Integer> result;
-        if (SupportFunction.isNotEmpty(target) && !shouldSkipDockerLogin()) {
+        if (!isEmpty(target) && !shouldSkipDockerLogin()) {
             final List<String> command = dockerCommand("login", "--password-stdin", "-u=" + this.registryUser, target);
             result = Optional.of(SystemUtils.exec(this.environment, this.registryPass, command).getKey());
         } else {
@@ -188,6 +190,6 @@ public class Docker {
     }
 
     public boolean shouldSkipDockerLogin() {
-        return SupportFunction.isEmpty(this.registryPass) || SupportFunction.isEmpty(this.registryUser);
+        return isEmpty(this.registryPass) || isEmpty(this.registryUser);
     }
 }

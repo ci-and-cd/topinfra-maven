@@ -102,7 +102,7 @@ public enum MavenOption implements CiOption {
                 .map(mvnHome -> Paths.get(mvnHome, "bin", mvn).toString());
         }
     },
-    MAVEN_INSTALL_SKIP("maven.install.skip"),
+    MAVEN_INSTALL_SKIP(Constants.PROP_MAVEN_INSTALL_SKIP),
     MAVEN_JAVADOC_SKIP(Constants.PROP_MAVEN_JAVADOC_SKIP) {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {

@@ -10,6 +10,9 @@ import static top.infra.maven.extension.main.MavenBuildExtensionOption.PUBLISH_T
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.shared.extension.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.shared.extension.Constants.PHASE_CLEAN;
+import static top.infra.maven.shared.extension.Constants.PHASE_PACKAGE;
+import static top.infra.maven.shared.extension.Constants.PHASE_VERIFY;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_CLEAN_SKIP;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_JAVADOC_SKIP;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_PACKAGES_SKIP;
@@ -17,7 +20,7 @@ import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_SOURCE_SKIP;
 import static top.infra.maven.shared.extension.Constants.PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY;
 import static top.infra.maven.shared.extension.Constants.PROP_NEXUS2_STAGING;
 import static top.infra.maven.shared.utils.MavenUtils.findInProperties;
-import static top.infra.maven.shared.utils.SupportFunction.isNotEmpty;
+import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
 import static top.infra.maven.shared.utils.SupportFunction.newTuple;
 
 import java.nio.file.Path;
@@ -52,6 +55,7 @@ public class MavenGoalEditor {
             .collect(toMap(MavenPhase::getPhase, Function.identity()))
     );
     private final Logger logger;
+    private final Path altDeployRepoPath;
     private final Boolean generateReports;
     private final String gitRefName;
     private final Boolean mvnDeployPublishSegregation;
@@ -60,6 +64,7 @@ public class MavenGoalEditor {
 
     public MavenGoalEditor(
         final Logger logger,
+        final Path altDeployRepoPath,
         final Boolean generateReports,
         final String gitRefName,
         final Boolean mvnDeployPublishSegregation,
@@ -68,6 +73,7 @@ public class MavenGoalEditor {
     ) {
         this.logger = logger;
 
+        this.altDeployRepoPath = altDeployRepoPath;
         this.generateReports = generateReports;
         this.gitRefName = gitRefName;
         this.mvnDeployPublishSegregation = mvnDeployPublishSegregation;
@@ -81,6 +87,7 @@ public class MavenGoalEditor {
     ) {
         return new MavenGoalEditor(
             logger,
+            MavenBuildPomUtils.altDeploymentRepositoryPath(ciOptContext),
             MavenOption.GENERATEREPORTS.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null),
             VcsProperties.GIT_REF_NAME.getValue(ciOptContext).orElse(null),
             MVN_DEPLOY_PUBLISH_SEGREGATION.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(FALSE),
@@ -90,15 +97,15 @@ public class MavenGoalEditor {
     }
 
     private static boolean isSiteGoal(final String goal) {
-        return isNotEmpty(goal) && goal.contains(Constants.PHASE_SITE);
+        return !isEmpty(goal) && goal.contains(Constants.PHASE_SITE);
     }
 
     private static boolean isDeployGoal(final String goal) {
-        return isNotEmpty(goal) && goal.endsWith(Constants.PHASE_DEPLOY) && !isSiteGoal(goal);
+        return !isEmpty(goal) && goal.endsWith(Constants.PHASE_DEPLOY) && !isSiteGoal(goal);
     }
 
     private static boolean isInstallGoal(final String goal) {
-        return isNotEmpty(goal) && !isDeployGoal(goal) && !isSiteGoal(goal) && goal.endsWith(Constants.PHASE_INSTALL);
+        return !isEmpty(goal) && !isDeployGoal(goal) && !isSiteGoal(goal) && goal.endsWith(Constants.PHASE_INSTALL);
     }
 
     private static Collection<String> pluginExecution(final Collection<String> in) {
@@ -138,39 +145,37 @@ public class MavenGoalEditor {
         return newTuple(new ArrayList<>(resultGoals), additionalUserProperties);
     }
 
-    public Collection<String> editGoals(final List<String> requestedGoals) {
+    public Collection<String> editGoals(
+        final List<String> requestedGoals
+    ) {
         final Collection<String> resultGoals = new LinkedHashSet<>();
+        final Collection<MavenPhase> requestedPhases = phases(requestedGoals);
+
         for (final String goal : requestedGoals) {
             if (isDeployGoal(goal)) {
                 // deploy, site-deploy
                 if (this.publishToRepo == null || this.publishToRepo) {
                     resultGoals.add(goal);
                 } else {
-                    if (logger.isInfoEnabled()) {
-                        logger.info(String.format("    onMavenExecutionRequest skip goal %s (%s: %s)",
-                            goal, MavenBuildExtensionOption.PUBLISH_TO_REPO.getEnvVariableName(), this.publishToRepo));
-                    }
+                    logger.info(String.format("    editGoals skip [%s] (%s: %s)",
+                        goal, MavenBuildExtensionOption.PUBLISH_TO_REPO.getEnvVariableName(), this.publishToRepo));
                 }
             } else if (isSiteGoal(goal)) {
                 if (this.generateReports == null || this.generateReports) {
                     resultGoals.add(goal);
                 } else {
-                    if (logger.isInfoEnabled()) {
-                        logger.info(String.format("    onMavenExecutionRequest skip goal %s (%s: %s)",
-                            goal, MavenOption.GENERATEREPORTS.getEnvVariableName(), this.generateReports));
-                    }
+                    logger.info(String.format("    editGoals skip [%s] (%s: %s)",
+                        goal, MavenOption.GENERATEREPORTS.getEnvVariableName(), this.generateReports));
                 }
-            } else if (Constants.PHASE_PACKAGE.equals(goal) || Constants.PHASE_VERIFY.equals(goal) || isInstallGoal(goal)) {
+            } else if (PHASE_PACKAGE.equals(goal) || PHASE_VERIFY.equals(goal) || isInstallGoal(goal)) {
                 // goals need to alter
                 if (this.mvnDeployPublishSegregation) {
                     // In multiple stage build, user should not request goal 'deploy' manually at first stage of build
                     resultGoals.add(Constants.PHASE_DEPLOY); // deploy artifacts into -DaltDeploymentRepository=wagonRepository
-                    if (logger.isInfoEnabled()) {
-                        logger.info(String.format("    onMavenExecutionRequest replace goal %s to %s (%s: %s)",
-                            goal, Constants.PHASE_DEPLOY,
-                            MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION.getEnvVariableName(),
-                            this.mvnDeployPublishSegregation.toString()));
-                    }
+                    logger.info(String.format("    editGoals replace [%s] to %s (%s: %s)",
+                        goal, Constants.PHASE_DEPLOY,
+                        MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION.getEnvVariableName(),
+                        this.mvnDeployPublishSegregation.toString()));
                 } else {
                     resultGoals.add(goal);
                 }
@@ -180,15 +185,23 @@ public class MavenGoalEditor {
                 if (this.originRepo != null && this.originRepo && isRefNameDevelop) {
                     resultGoals.add(goal);
                 } else {
-                    if (logger.isInfoEnabled()) {
-                        logger.info(String.format("    onMavenExecutionRequest skip goal %s (%s: %s, %s: %s)",
-                            goal,
-                            MavenBuildExtensionOption.ORIGIN_REPO.getEnvVariableName(), this.originRepo,
-                            VcsProperties.GIT_REF_NAME.getEnvVariableName(), this.gitRefName));
-                    }
+                    logger.info(String.format("    editGoals skip [%s] (%s: %s, %s: %s)",
+                        goal,
+                        MavenBuildExtensionOption.ORIGIN_REPO.getEnvVariableName(), this.originRepo,
+                        VcsProperties.GIT_REF_NAME.getEnvVariableName(), this.gitRefName));
                 }
             } else {
                 resultGoals.add(goal);
+            }
+        }
+
+        if (this.mvnDeployPublishSegregation) {
+            if (this.altDeployRepoPath.toFile().exists()
+                && requestedPhases.contains(MavenPhase.CLEAN)
+                && requestedPhases.contains(MavenPhase.DEPLOY)
+            ) {
+                logger.warn(String.format(
+                    "    editGoals remove [%s], Do not request clean and deploy simultaneously in a multi stage build.", PHASE_CLEAN));
             }
         }
         return resultGoals;
@@ -223,8 +236,8 @@ public class MavenGoalEditor {
             }
         }
 
-        if (this.mvnDeployPublishSegregation) { // TODO if request clean deploy then remove clean
-            if (notIncludes(requestedPhases, MavenPhase.INSTALL) && notIncludes(resultPhases, MavenPhase.INSTALL)) {
+        if (this.mvnDeployPublishSegregation) {
+            if (notIncludes(requestedPhases, MavenPhase.INSTALL) && includes(resultPhases, MavenPhase.INSTALL)) {
                 properties.setProperty(MavenOption.MAVEN_INSTALL_SKIP.getPropertyName(), BOOL_STRING_TRUE);
             }
 
@@ -232,8 +245,10 @@ public class MavenGoalEditor {
                 final Optional<Boolean> nexus2Staging = findInProperties(PROP_NEXUS2_STAGING, ciOptContext)
                     .map(Boolean::parseBoolean);
 
-                if (notIncludes(requestedPhases, MavenPhase.DEPLOY) // deploy added
-                    || !nexus2Staging.isPresent()) {
+                if (notIncludes(requestedPhases, MavenPhase.DEPLOY)) { // deploy added
+                    properties.setProperty(PROP_NEXUS2_STAGING, BOOL_STRING_FALSE);
+                }
+                if (!nexus2Staging.isPresent()) {
                     properties.setProperty(PROP_NEXUS2_STAGING, BOOL_STRING_FALSE);
                 }
             }
@@ -241,7 +256,7 @@ public class MavenGoalEditor {
             final boolean packagesSkip = findInProperties(PROP_MAVEN_PACKAGES_SKIP, ciOptContext).map(Boolean::parseBoolean).orElse(FALSE);
             if (includes(resultPhases, MavenPhase.PACKAGE) && !packagesSkip) {
                 properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_PACKAGE, BOOL_STRING_TRUE);
-                properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL, Constants.PHASE_PACKAGE);
+                properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL, PHASE_PACKAGE);
             }
 
             final Optional<String> installGoalRequested = requestedGoals.stream().filter(MavenGoalEditor::isInstallGoal).findAny();
@@ -256,10 +271,10 @@ public class MavenGoalEditor {
             }
 
             if (this.publishToRepo) {
-                final Path altDeployRepoPath = MavenBuildPomUtils.altDeploymentRepositoryPath(ciOptContext);
-                final boolean altDeployRepoPresent = altDeployRepoPath.toFile().exists() && !resultPhases.contains(MavenPhase.CLEAN);
+                final boolean altDeployRepoPresent = this.altDeployRepoPath.toFile().exists();
                 final Optional<String> deployGoalRequested = requestedGoals.stream().filter(MavenGoalEditor::isDeployGoal).findAny();
                 if (altDeployRepoPresent
+                    && !resultPhases.contains(MavenPhase.CLEAN)
                     && (deployGoalRequested.isPresent() || includes(requestedPhases, MavenPhase.DEPLOY))
                     && dpsDeploy.orElse(TRUE) // dpsDeploy true or absent
                 ) {

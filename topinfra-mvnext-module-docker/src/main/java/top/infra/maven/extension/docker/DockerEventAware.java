@@ -10,6 +10,7 @@ import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY_USER
 import static top.infra.maven.shared.extension.GlobalOption.FAST;
 import static top.infra.maven.shared.utils.MavenUtils.cmdArgOffline;
 import static top.infra.maven.shared.utils.MavenUtils.cmdArgUpdateSnapshots;
+import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
 import static top.infra.maven.shared.utils.SupportFunction.logEnd;
 import static top.infra.maven.shared.utils.SupportFunction.logStart;
 
@@ -30,7 +31,6 @@ import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.extension.Constants;
 import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
-import top.infra.maven.shared.utils.SupportFunction;
 import top.infra.maven.shared.utils.SystemUtils;
 
 @Named
@@ -123,7 +123,7 @@ public class DockerEventAware implements MavenEventAware {
 
     private void login(final Docker docker) {
         final String target = docker.getLoginTarget();
-        if (SupportFunction.isNotEmpty(target) && target.startsWith("https://")) {
+        if (!isEmpty(target) && target.startsWith("https://")) {
             logger.info(String.format("    docker logging into secure registry %s", target));
         } else {
             logger.info(String.format("    docker logging into insecure registry %s", target));
