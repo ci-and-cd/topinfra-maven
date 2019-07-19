@@ -3,7 +3,6 @@ package top.infra.maven.extension.main;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static top.infra.maven.extension.main.MavenGoalEditorTest.blankCiOptCtx;
 import static top.infra.maven.extension.main.MavenGoalEditorTest.goalsAndUserProps;
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
@@ -11,6 +10,7 @@ import static top.infra.maven.shared.extension.Constants.PHASE_CLEAN;
 import static top.infra.maven.shared.extension.Constants.PHASE_DEPLOY;
 import static top.infra.maven.shared.extension.Constants.PHASE_SITE_DEPLOY;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_CLEAN_SKIP;
+import static top.infra.maven.test.utils.TestUtils.blankCiOptCtx;
 
 import java.util.Arrays;
 import java.util.Collection;

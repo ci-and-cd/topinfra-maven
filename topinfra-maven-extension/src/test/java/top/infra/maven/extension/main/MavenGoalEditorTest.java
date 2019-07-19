@@ -22,6 +22,7 @@ import static top.infra.maven.shared.extension.Constants.PROP_NEXUS2_STAGING;
 import static top.infra.maven.shared.extension.Constants.PROP_PUBLISH_TO_REPO;
 import static top.infra.maven.shared.extension.MavenOption.GENERATEREPORTS;
 import static top.infra.maven.shared.extension.VcsProperties.GIT_REF_NAME;
+import static top.infra.maven.test.utils.TestUtils.blankCiOptCtx;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.shared.DefaultCiOptionContext;
 import top.infra.maven.test.logging.LoggerSlf4jImpl;
 
 public class MavenGoalEditorTest {
@@ -127,12 +127,6 @@ public class MavenGoalEditorTest {
         assertTrue(resultGoals.contains(PHASE_DEPLOY));
         assertEquals(2, resultGoals.size());
         assertEquals(BOOL_STRING_FALSE, additionalUserProperties.getProperty(PROP_MAVEN_CLEAN_SKIP));
-    }
-
-    static CiOptionContext blankCiOptCtx() {
-        final Properties systemProperties = new Properties();
-        final Properties userProperties = new Properties();
-        return new DefaultCiOptionContext(systemProperties, userProperties);
     }
 
     static Entry<List<String>, Properties> goalsAndUserProps(

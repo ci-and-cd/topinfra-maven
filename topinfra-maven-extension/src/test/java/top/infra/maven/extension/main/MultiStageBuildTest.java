@@ -9,7 +9,6 @@ import static org.junit.Assert.assertTrue;
 import static top.infra.maven.extension.main.MavenGoalEditor.PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL;
 import static top.infra.maven.extension.main.MavenGoalEditor.PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_INSTALL;
 import static top.infra.maven.extension.main.MavenGoalEditor.PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_PACKAGE;
-import static top.infra.maven.extension.main.MavenGoalEditorTest.blankCiOptCtx;
 import static top.infra.maven.extension.main.MavenGoalEditorTest.goalsAndUserProps;
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
@@ -24,6 +23,7 @@ import static top.infra.maven.shared.extension.Constants.PROP_MVN_DEPLOY_PUBLISH
 import static top.infra.maven.shared.extension.Constants.PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY;
 import static top.infra.maven.shared.extension.Constants.PROP_NEXUS2_STAGING;
 import static top.infra.maven.shared.extension.Constants.PROP_PUBLISH_TO_REPO;
+import static top.infra.maven.test.utils.TestUtils.blankCiOptCtx;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -7,6 +7,7 @@ import static top.infra.maven.shared.extension.Constants.PROP_MVN_DEPLOY_PUBLISH
 import static top.infra.maven.shared.extension.GlobalOption.FAST;
 import static top.infra.maven.shared.extension.GlobalOption.getInfrastructureSpecificValue;
 import static top.infra.maven.shared.extension.GlobalOption.setInfrastructureSpecificValue;
+import static top.infra.maven.shared.extension.MavenOption.GENERATEREPORTS;
 
 import java.util.Optional;
 import java.util.Properties;
@@ -14,7 +15,6 @@ import java.util.Properties;
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.shared.extension.Constants;
-import top.infra.maven.shared.extension.MavenOption;
 import top.infra.maven.shared.extension.VcsProperties;
 import top.infra.maven.shared.utils.MavenBuildPomUtils;
 
@@ -51,7 +51,7 @@ public enum MavenBuildPomOption implements CiOption {
     GITHUB_GLOBAL_REPOSITORYOWNER("github.global.repositoryOwner") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            final boolean generateReports = MavenOption.GENERATEREPORTS.getValue(context)
+            final boolean generateReports = GENERATEREPORTS.getValue(context)
                 .map(Boolean::parseBoolean).orElse(FALSE);
 
             return generateReports
@@ -83,13 +83,10 @@ public enum MavenBuildPomOption implements CiOption {
      */
     GITHUB_SITE_PUBLISH("github.site.publish", BOOL_STRING_FALSE) {
         @Override
-        public Optional<String> getValue(final CiOptionContext context) {
-            final boolean generateReports = MavenOption.GENERATEREPORTS.getValue(context)
-                .map(Boolean::parseBoolean).orElse(FALSE);
-
-            return generateReports
-                ? this.findInProperties(context)
-                : Optional.of(BOOL_STRING_FALSE);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return GENERATEREPORTS.getValue(context).map(Boolean::parseBoolean)
+                .filter(reports -> !reports)
+                .map(reports -> BOOL_STRING_FALSE);
         }
     },
 
@@ -118,7 +115,7 @@ public enum MavenBuildPomOption implements CiOption {
     NOTGENERATEREPORTS("notGenerateReports") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            final Optional<String> generateReports = MavenOption.GENERATEREPORTS.getValue(context);
+            final Optional<String> generateReports = GENERATEREPORTS.getValue(context);
             return Optional.of(String.valueOf(generateReports.map(generate -> !Boolean.parseBoolean(generate)).orElse(FALSE)));
         }
     },
