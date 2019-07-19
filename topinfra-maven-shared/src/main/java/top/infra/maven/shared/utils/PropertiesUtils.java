@@ -6,12 +6,11 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
-import top.infra.maven.shared.extension.CiOptions;
 import top.infra.maven.logging.Logger;
+import top.infra.maven.shared.extension.CiOptions;
 
 public class PropertiesUtils {
 
-    @Deprecated
     public static Properties toProperties(final Map<String, String> map) {
         final Properties result;
         if (map != null) {

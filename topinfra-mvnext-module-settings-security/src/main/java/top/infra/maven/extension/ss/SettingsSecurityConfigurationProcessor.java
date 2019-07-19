@@ -20,9 +20,9 @@ import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
 import top.infra.maven.extension.OrderedConfigurationProcessor;
+import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.extension.Constants;
 import top.infra.maven.shared.extension.Orders;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 import top.infra.maven.shared.utils.MavenUtils;
 

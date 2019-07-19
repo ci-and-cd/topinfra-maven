@@ -1,5 +1,8 @@
 package top.infra.maven.shared.utils;
 
+import static java.lang.Boolean.parseBoolean;
+import static top.infra.maven.shared.extension.Constants.BOOL_STRING_FALSE;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -30,6 +33,22 @@ public abstract class SupportFunction {
 
     public static List<String> asList(final String[] array1, final String... array2) {
         return Arrays.asList(concat(array1, array2));
+    }
+
+    public static String componentName(final Class<?> clazz) {
+        // see: https://stackoverflow.com/questions/1591132/how-can-i-add-an-underscore-before-each-capital-letter-inside-a-java-string
+        return clazz.getSimpleName().replaceAll("(.)(\\p{Lu})", "$1_$2").toUpperCase();
+    }
+
+    public static boolean componentDisabled(
+        final Class<?> clazz,
+        final Properties systemProperties,
+        final Properties userProperties
+    ) {
+        final String name = componentName(clazz);
+        final String envVar = "env.CI_OPT_" + name + "_DISABLED";
+        final String propName = name.toLowerCase().replace('_', '-') + ".disabled";
+        return parseBoolean(systemProperties.getProperty(envVar, userProperties.getProperty(propName, BOOL_STRING_FALSE)));
     }
 
     public static String[] concat(final String[] array1, final String... array2) {
