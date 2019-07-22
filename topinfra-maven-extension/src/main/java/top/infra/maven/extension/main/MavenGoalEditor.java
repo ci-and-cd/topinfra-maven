@@ -4,7 +4,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toMap;
-import static top.infra.maven.extension.main.MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION;
+import static top.infra.maven.extension.main.MavenBuildExtensionOption.MVN_MULTI_STAGE_BUILD;
 import static top.infra.maven.extension.main.MavenBuildExtensionOption.ORIGIN_REPO;
 import static top.infra.maven.extension.main.MavenBuildExtensionOption.PUBLISH_TO_REPO;
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_FALSE;
@@ -20,7 +20,7 @@ import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_INSTALL_SKIP
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_JAVADOC_SKIP;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_PACKAGES_SKIP;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_SOURCE_SKIP;
-import static top.infra.maven.shared.extension.Constants.PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY;
+import static top.infra.maven.shared.extension.Constants.PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY;
 import static top.infra.maven.shared.extension.Constants.PROP_NEXUS2_STAGING;
 import static top.infra.maven.shared.utils.MavenUtils.findInProperties;
 import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
@@ -50,9 +50,9 @@ import top.infra.maven.shared.utils.MavenBuildPomUtils;
 
 public class MavenGoalEditor {
 
-    static final String PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL = "mvn.deploy.publish.segregation.goal";
-    static final String PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_INSTALL = "mvn.deploy.publish.segregation.goal.install";
-    static final String PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_PACKAGE = "mvn.deploy.publish.segregation.goal.package";
+    static final String PROP_MVN_MULTI_STAGE_BUILD_GOAL = "mvn.multi.stage.build.goal";
+    static final String PROP_MVN_MULTI_STAGE_BUILD_GOAL_INSTALL = "mvn.multi.stage.build.goal.install";
+    static final String PROP_MVN_MULTI_STAGE_BUILD_GOAL_PACKAGE = "mvn.multi.stage.build.goal.package";
     private static final Map<String, MavenPhase> phaseMap = Collections.unmodifiableMap(
         Arrays.stream(MavenPhase.values())
             .collect(toMap(MavenPhase::getPhase, Function.identity()))
@@ -61,7 +61,7 @@ public class MavenGoalEditor {
     private final Path altDeployRepoPath;
     private final Boolean generateReports;
     private final String gitRefName;
-    private final Boolean mvnDeployPublishSegregation;
+    private final Boolean mvnMultiStageBuild;
     private final Boolean originRepo;
     private final Boolean publishToRepo;
 
@@ -70,7 +70,7 @@ public class MavenGoalEditor {
         final Path altDeployRepoPath,
         final Boolean generateReports,
         final String gitRefName,
-        final Boolean mvnDeployPublishSegregation,
+        final Boolean mvnMultiStageBuild,
         final Boolean originRepo,
         final Boolean publishToRepo
     ) {
@@ -79,7 +79,7 @@ public class MavenGoalEditor {
         this.altDeployRepoPath = altDeployRepoPath;
         this.generateReports = generateReports;
         this.gitRefName = gitRefName;
-        this.mvnDeployPublishSegregation = mvnDeployPublishSegregation;
+        this.mvnMultiStageBuild = mvnMultiStageBuild;
         this.originRepo = originRepo;
         this.publishToRepo = publishToRepo;
     }
@@ -93,7 +93,7 @@ public class MavenGoalEditor {
             MavenBuildPomUtils.altDeploymentRepositoryPath(ciOptContext),
             MavenOption.GENERATEREPORTS.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null),
             VcsProperties.GIT_REF_NAME.getValue(ciOptContext).orElse(null),
-            MVN_DEPLOY_PUBLISH_SEGREGATION.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(FALSE),
+            MVN_MULTI_STAGE_BUILD.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(FALSE),
             ORIGIN_REPO.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null),
             PUBLISH_TO_REPO.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null) // make sure version is valid too
         );
@@ -172,13 +172,13 @@ public class MavenGoalEditor {
                 }
             } else if (PHASE_PACKAGE.equals(goal) || PHASE_VERIFY.equals(goal) || isInstallGoal(goal)) {
                 // goals need to alter
-                if (this.mvnDeployPublishSegregation) {
+                if (this.mvnMultiStageBuild) {
                     // In multiple stage build, user should not request goal 'deploy' manually at first stage of build
                     resultGoals.add(Constants.PHASE_DEPLOY); // deploy artifacts into -DaltDeploymentRepository=wagonRepository
                     logger.info(String.format("    editGoals replace [%s] to %s (%s: %s)",
                         goal, Constants.PHASE_DEPLOY,
-                        MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION.getEnvVariableName(),
-                        this.mvnDeployPublishSegregation.toString()));
+                        MavenBuildExtensionOption.MVN_MULTI_STAGE_BUILD.getEnvVariableName(),
+                        this.mvnMultiStageBuild.toString()));
                 } else {
                     resultGoals.add(goal);
                 }
@@ -198,7 +198,7 @@ public class MavenGoalEditor {
             }
         }
 
-        if (this.mvnDeployPublishSegregation) {
+        if (this.mvnMultiStageBuild) {
             if (this.altDeployRepoPath.toFile().exists()
                 && requestedPhases.contains(MavenPhase.CLEAN)
                 && requestedPhases.contains(MavenPhase.DEPLOY)
@@ -218,15 +218,15 @@ public class MavenGoalEditor {
         final Collection<MavenPhase> requestedPhases = phases(requestedGoals);
         final Collection<MavenPhase> resultPhases = phases(result);
 
-        final Optional<Boolean> dpsDeploy = findInProperties(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY, ciOptContext)
+        final Optional<Boolean> dpsDeploy = findInProperties(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY, ciOptContext)
             .map(Boolean::parseBoolean);
 
         final Properties properties = new Properties();
         if (!dpsDeploy.isPresent()) {
-            properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY, BOOL_STRING_FALSE);
+            properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY, BOOL_STRING_FALSE);
         }
-        properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_INSTALL, BOOL_STRING_FALSE);
-        properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_PACKAGE, BOOL_STRING_FALSE);
+        properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_INSTALL, BOOL_STRING_FALSE);
+        properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_PACKAGE, BOOL_STRING_FALSE);
         if (!findInProperties(PROP_MAVEN_CLEAN_SKIP, ciOptContext).isPresent()) {
             if (requestedPhases.contains(MavenPhase.CLEAN)) { // phase clean present
                 properties.setProperty(PROP_MAVEN_CLEAN_SKIP, BOOL_STRING_FALSE);
@@ -239,7 +239,7 @@ public class MavenGoalEditor {
             }
         }
 
-        if (this.mvnDeployPublishSegregation) {
+        if (this.mvnMultiStageBuild) {
             if (notIncludes(requestedPhases, MavenPhase.INSTALL) && includes(resultPhases, MavenPhase.INSTALL)) {
                 properties.setProperty(MavenOption.MAVEN_INSTALL_SKIP.getPropertyName(), BOOL_STRING_TRUE);
             }
@@ -254,7 +254,7 @@ public class MavenGoalEditor {
                     properties.setProperty(PROP_NEXUS2_STAGING, BOOL_STRING_FALSE);
                 } else if (!nexus2Staging.get()
                     && includes(requestedPhases, MavenPhase.DEPLOY)
-                ) { // TODO test this
+                ) {
                     if (Collections.disjoint(requestedGoals, PHASES_AFTER_PREPARE_PACKAGE)) {
                         properties.setProperty(PROP_MAVEN_PACKAGES_SKIP, BOOL_STRING_TRUE);
                     }
@@ -266,19 +266,19 @@ public class MavenGoalEditor {
 
             final Optional<Boolean> packagesSkip = findInProperties(PROP_MAVEN_PACKAGES_SKIP, ciOptContext).map(Boolean::parseBoolean);
             if (includes(resultPhases, MavenPhase.PACKAGE) && !packagesSkip.orElse(FALSE)) {
-                properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_PACKAGE, BOOL_STRING_TRUE);
-                properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL, PHASE_PACKAGE);
+                properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_PACKAGE, BOOL_STRING_TRUE);
+                properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL, PHASE_PACKAGE);
             }
 
             final Optional<String> installGoalRequested = requestedGoals.stream().filter(MavenGoalEditor::isInstallGoal).findAny();
             if ((installGoalRequested.isPresent() || includes(requestedPhases, MavenPhase.INSTALL))
                 && notIncludes(requestedPhases, MavenPhase.DEPLOY)
                 && includes(resultPhases, MavenPhase.DEPLOY)) {
-                properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_INSTALL, BOOL_STRING_TRUE);
+                properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_INSTALL, BOOL_STRING_TRUE);
                 if (!packagesSkip.orElse(FALSE)) {
-                    properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_PACKAGE, BOOL_STRING_TRUE);
+                    properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_PACKAGE, BOOL_STRING_TRUE);
                 }
-                properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL, Constants.PHASE_INSTALL);
+                properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL, Constants.PHASE_INSTALL);
             }
 
             if (this.publishToRepo) {
@@ -289,8 +289,8 @@ public class MavenGoalEditor {
                     && (deployGoalRequested.isPresent() || includes(requestedPhases, MavenPhase.DEPLOY))
                     && dpsDeploy.orElse(TRUE) // dpsDeploy true or absent
                 ) {
-                    properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY, BOOL_STRING_TRUE);
-                    properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL, Constants.PHASE_DEPLOY);
+                    properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY, BOOL_STRING_TRUE);
+                    properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL, Constants.PHASE_DEPLOY);
                 }
             }
         } else {

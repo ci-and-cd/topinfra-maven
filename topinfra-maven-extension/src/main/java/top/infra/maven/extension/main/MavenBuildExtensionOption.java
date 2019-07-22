@@ -39,7 +39,7 @@ public enum MavenBuildExtensionOption implements CiOption {
             return result;
         }
     },
-    MVN_DEPLOY_PUBLISH_SEGREGATION(Constants.PROP_MVN_DEPLOY_PUBLISH_SEGREGATION),
+    MVN_MULTI_STAGE_BUILD(Constants.PROP_MVN_MULTI_STAGE_BUILD),
     /**
      * Determine current is origin (original) or forked.
      */

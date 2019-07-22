@@ -53,8 +53,8 @@ public final class Constants {
     public static final String PROP_MAVEN_PACKAGES_SKIP = "maven.packages.skip";
     public static final String PROP_MAVEN_SOURCE_SKIP = "maven.source.skip";
 
-    public static final String PROP_MVN_DEPLOY_PUBLISH_SEGREGATION = "mvn.deploy.publish.segregation";
-    public static final String PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY = "mvn.deploy.publish.segregation.goal.deploy";
+    public static final String PROP_MVN_MULTI_STAGE_BUILD = "mvn.multi.stage.build";
+    public static final String PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY = "mvn.multi.stage.build.goal.deploy";
 
     public static final String PROP_NEXUS2_STAGING = "nexus2.staging";
 

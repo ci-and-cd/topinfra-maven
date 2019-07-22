@@ -3,7 +3,7 @@ package top.infra.maven.extension.mavenbuild;
 import static java.lang.Boolean.FALSE;
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.shared.extension.Constants.PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY;
+import static top.infra.maven.shared.extension.Constants.PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY;
 import static top.infra.maven.shared.extension.GlobalOption.FAST;
 import static top.infra.maven.shared.extension.GlobalOption.getInfrastructureSpecificValue;
 import static top.infra.maven.shared.extension.GlobalOption.setInfrastructureSpecificValue;
@@ -104,7 +104,7 @@ public enum MavenBuildPomOption implements CiOption {
 
     NEXUS2_STAGING(Constants.PROP_NEXUS2_STAGING),
 
-    MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY) {
+    MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY) {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             final Optional<Boolean> nexus2Staging = NEXUS2_STAGING.getValue(context).map(Boolean::parseBoolean);

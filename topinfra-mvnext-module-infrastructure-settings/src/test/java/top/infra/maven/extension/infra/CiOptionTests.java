@@ -57,7 +57,7 @@ public class CiOptionTests {
 
     @Test
     public void testSonarOptions() {
-        final String expectedSonarHostUrl = "https://sonarqube.com";
+        final String expectedSonarHostUrl = "https://sonarcloud.io";
         final String expectedSonarOrganization = "home1-oss-github";
 
         final Properties systemProperties = new Properties();
