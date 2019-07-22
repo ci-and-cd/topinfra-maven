@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static top.infra.maven.extension.main.MavenBuildExtensionOption.ORIGIN_REPO;
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_FALSE;
@@ -20,6 +21,7 @@ import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_JAVADOC_SKIP
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_SOURCE_SKIP;
 import static top.infra.maven.shared.extension.Constants.PROP_NEXUS2_STAGING;
 import static top.infra.maven.shared.extension.Constants.PROP_PUBLISH_TO_REPO;
+import static top.infra.maven.shared.extension.Constants.PROP_SONAR;
 import static top.infra.maven.shared.extension.MavenOption.GENERATEREPORTS;
 import static top.infra.maven.shared.extension.VcsProperties.GIT_REF_NAME;
 import static top.infra.maven.test.utils.TestUtils.blankCiOptCtx;
@@ -90,12 +92,16 @@ public class MavenGoalEditorTest {
         ctxRefDevelop.getUserProperties().setProperty(GIT_REF_NAME.getPropertyName(), "develop");
         ctxRefDevelop.getUserProperties().setProperty(ORIGIN_REPO.getPropertyName(), BOOL_STRING_TRUE);
         assertTrue(goalsAndUserProps(ctxRefDevelop, singletonList(sonarGoal)).getKey().contains(sonarGoal));
+        assertEquals(BOOL_STRING_TRUE, goalsAndUserProps(ctxRefDevelop, singletonList(sonarGoal)).getValue().getProperty(PROP_SONAR));
+
         ctxRefDevelop.getUserProperties().setProperty(ORIGIN_REPO.getPropertyName(), BOOL_STRING_FALSE);
         assertFalse(goalsAndUserProps(ctxRefDevelop, singletonList(sonarGoal)).getKey().contains(sonarGoal));
+        assertNull(goalsAndUserProps(ctxRefDevelop, singletonList(sonarGoal)).getValue().getProperty(PROP_SONAR));
 
         final CiOptionContext ctxRefAbsent = blankCiOptCtx();
         ctxRefAbsent.getUserProperties().setProperty(ORIGIN_REPO.getPropertyName(), BOOL_STRING_TRUE);
         assertFalse(goalsAndUserProps(ctxRefAbsent, singletonList(sonarGoal)).getKey().contains(sonarGoal));
+        assertNull(goalsAndUserProps(ctxRefAbsent, singletonList(sonarGoal)).getValue().getProperty(PROP_SONAR));
     }
 
     @Test

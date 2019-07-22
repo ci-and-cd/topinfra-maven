@@ -22,6 +22,7 @@ import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_PACKAGES_SKI
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_SOURCE_SKIP;
 import static top.infra.maven.shared.extension.Constants.PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY;
 import static top.infra.maven.shared.extension.Constants.PROP_NEXUS2_STAGING;
+import static top.infra.maven.shared.extension.Constants.PROP_SONAR;
 import static top.infra.maven.shared.utils.MavenUtils.findInProperties;
 import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
 import static top.infra.maven.shared.utils.SupportFunction.newTuple;
@@ -264,7 +265,14 @@ public class MavenGoalEditor {
                 }
             }
 
-            final Optional<Boolean> packagesSkip = findInProperties(PROP_MAVEN_PACKAGES_SKIP, ciOptContext).map(Boolean::parseBoolean);
+            final Optional<Boolean> packagesSkip = Optional.ofNullable(
+                Optional.ofNullable(properties.getProperty(PROP_MAVEN_PACKAGES_SKIP))
+                    .map(Boolean::parseBoolean)
+                    .orElseGet(() ->
+                        findInProperties(PROP_MAVEN_PACKAGES_SKIP, ciOptContext)
+                            .map(Boolean::parseBoolean)
+                            .orElse(null))
+            );
             if (includes(resultPhases, MavenPhase.PACKAGE) && !packagesSkip.orElse(FALSE)) {
                 properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_PACKAGE, BOOL_STRING_TRUE);
                 properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL, PHASE_PACKAGE);
@@ -301,6 +309,10 @@ public class MavenGoalEditor {
                     properties.setProperty(PROP_MAVEN_SOURCE_SKIP, BOOL_STRING_FALSE);
                 }
             }
+        }
+
+        if (result.stream().filter(Objects::nonNull).anyMatch(goal -> goal.endsWith("sonar"))) {
+            properties.setProperty(PROP_SONAR, BOOL_STRING_TRUE);
         }
 
         return properties;

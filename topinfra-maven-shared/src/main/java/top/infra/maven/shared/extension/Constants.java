@@ -60,6 +60,8 @@ public final class Constants {
 
     public static final String PROP_PUBLISH_TO_REPO = "publish.to.repo";
 
+    public static final String PROP_SONAR = "sonar";
+
     private Constants() {
     }
 }

@@ -138,7 +138,7 @@ public enum MavenBuildPomOption implements CiOption {
         }
     },
 
-    SONAR("sonar"),
+    SONAR(Constants.PROP_SONAR),
 
     CHECKSTYLE_CONFIG_LOCATION("checkstyle.config.location") {
         @Override

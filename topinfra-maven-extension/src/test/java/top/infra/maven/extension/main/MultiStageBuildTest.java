@@ -132,8 +132,11 @@ public class MultiStageBuildTest {
             ciOptionContext(),
             asList(PHASE_INSTALL, PHASE_DEPLOY)).getValue().getProperty(PROP_MAVEN_PACKAGES_SKIP));
 
-        assertEquals(BOOL_STRING_TRUE,
-            goalsAndUserProps(ciOptionContext(), singletonList(PHASE_DEPLOY)).getValue().getProperty(PROP_MAVEN_PACKAGES_SKIP));
+        final Entry<List<String>, Properties> goalsAndProps = goalsAndUserProps(ciOptionContext(), singletonList(PHASE_DEPLOY));
+        assertEquals(BOOL_STRING_TRUE, goalsAndProps.getValue().getProperty(PROP_MAVEN_PACKAGES_SKIP));
+        assertEquals(BOOL_STRING_FALSE, goalsAndProps.getValue().getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_PACKAGE));
+        assertEquals(BOOL_STRING_FALSE, goalsAndProps.getValue().getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_INSTALL));
+        assertEquals(BOOL_STRING_TRUE, goalsAndProps.getValue().getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY));
     }
 
     @Test
