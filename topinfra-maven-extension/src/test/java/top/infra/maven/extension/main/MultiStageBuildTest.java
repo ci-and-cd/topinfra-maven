@@ -15,7 +15,10 @@ import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.shared.extension.Constants.PHASE_CLEAN;
 import static top.infra.maven.shared.extension.Constants.PHASE_DEPLOY;
 import static top.infra.maven.shared.extension.Constants.PHASE_INSTALL;
+import static top.infra.maven.shared.extension.Constants.PHASE_INTEGRATION_TEST;
 import static top.infra.maven.shared.extension.Constants.PHASE_PACKAGE;
+import static top.infra.maven.shared.extension.Constants.PHASE_POST_INTEGRATION_TEST;
+import static top.infra.maven.shared.extension.Constants.PHASE_PRE_INTEGRATION_TEST;
 import static top.infra.maven.shared.extension.Constants.PHASE_VERIFY;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_INSTALL_SKIP;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_PACKAGES_SKIP;
@@ -94,8 +97,43 @@ public class MultiStageBuildTest {
             goalsAndUserProps(ciOptionContext(), asList(PHASE_CLEAN, PHASE_PACKAGE)).getValue().getProperty(PROP_MAVEN_INSTALL_SKIP));
         assertEquals(BOOL_STRING_TRUE,
             goalsAndUserProps(ciOptionContext(), asList(PHASE_CLEAN, PHASE_VERIFY)).getValue().getProperty(PROP_MAVEN_INSTALL_SKIP));
-        assertNull(
+
+        assertEquals(BOOL_STRING_TRUE,
             goalsAndUserProps(ciOptionContext(), asList(PHASE_CLEAN, PHASE_DEPLOY)).getValue().getProperty(PROP_MAVEN_INSTALL_SKIP));
+
+        final CiOptionContext ctxNexus2StagingAbsent = blankCiOptCtx();
+        ctxNexus2StagingAbsent.getUserProperties().setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION, BOOL_STRING_TRUE);
+        ctxNexus2StagingAbsent.getUserProperties().setProperty(PROP_PUBLISH_TO_REPO, BOOL_STRING_TRUE);
+        assertNull(
+            goalsAndUserProps(ctxNexus2StagingAbsent, asList(PHASE_CLEAN, PHASE_DEPLOY)).getValue().getProperty(PROP_MAVEN_INSTALL_SKIP));
+
+        assertNull(
+            goalsAndUserProps(ciOptionContext(), asList(PHASE_INSTALL, PHASE_DEPLOY)).getValue().getProperty(PROP_MAVEN_INSTALL_SKIP));
+    }
+
+    @Test
+    public void testAutoSkipMavenPackages() {
+        assertNull(goalsAndUserProps(
+            ciOptionContext(),
+            asList(PHASE_PACKAGE, PHASE_DEPLOY)).getValue().getProperty(PROP_MAVEN_PACKAGES_SKIP));
+        assertNull(goalsAndUserProps(
+            ciOptionContext(),
+            asList(PHASE_PRE_INTEGRATION_TEST, PHASE_DEPLOY)).getValue().getProperty(PROP_MAVEN_PACKAGES_SKIP));
+        assertNull(goalsAndUserProps(
+            ciOptionContext(),
+            asList(PHASE_INTEGRATION_TEST, PHASE_DEPLOY)).getValue().getProperty(PROP_MAVEN_PACKAGES_SKIP));
+        assertNull(goalsAndUserProps(
+            ciOptionContext(),
+            asList(PHASE_POST_INTEGRATION_TEST, PHASE_DEPLOY)).getValue().getProperty(PROP_MAVEN_PACKAGES_SKIP));
+        assertNull(goalsAndUserProps(
+            ciOptionContext(),
+            asList(PHASE_VERIFY, PHASE_DEPLOY)).getValue().getProperty(PROP_MAVEN_PACKAGES_SKIP));
+        assertNull(goalsAndUserProps(
+            ciOptionContext(),
+            asList(PHASE_INSTALL, PHASE_DEPLOY)).getValue().getProperty(PROP_MAVEN_PACKAGES_SKIP));
+
+        assertEquals(BOOL_STRING_TRUE,
+            goalsAndUserProps(ciOptionContext(), singletonList(PHASE_DEPLOY)).getValue().getProperty(PROP_MAVEN_PACKAGES_SKIP));
     }
 
     @Test

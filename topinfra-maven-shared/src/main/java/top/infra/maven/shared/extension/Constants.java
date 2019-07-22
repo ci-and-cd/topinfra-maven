@@ -2,6 +2,10 @@ package top.infra.maven.shared.extension;
 
 import static org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher.SYSTEM_PROPERTY_SEC_LOCATION;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 public final class Constants {
 
     public static final String BOOL_STRING_FALSE = "false";
@@ -21,6 +25,8 @@ public final class Constants {
     public static final String PHASE_INSTALL = "install";
     public static final String PHASE_INTEGRATION_TEST = "integration-test";
     public static final String PHASE_PACKAGE = "package";
+    public static final String PHASE_POST_INTEGRATION_TEST = "post-integration-test";
+    public static final String PHASE_PRE_INTEGRATION_TEST = "pre-integration-test";
     public static final String PHASE_PROCESS_RESOURCES = "process-resources";
     public static final String PHASE_PROCESS_TEST_RESOURCES = "process-test-resources";
     public static final String PHASE_SITE = "site";
@@ -29,6 +35,10 @@ public final class Constants {
     public static final String PHASE_TEST_COMPILE = "test-compile";
     public static final String PHASE_VALIDATE = "validate";
     public static final String PHASE_VERIFY = "verify";
+
+    public static final List<String> PHASES_AFTER_PREPARE_PACKAGE = Collections.unmodifiableList(Arrays.asList(
+        PHASE_PACKAGE, PHASE_PRE_INTEGRATION_TEST, PHASE_INTEGRATION_TEST, PHASE_POST_INTEGRATION_TEST, PHASE_VERIFY, PHASE_INSTALL
+    ));
 
     public static final String SRC_CI_OPTS_PROPERTIES = "src/main/ci-script/ci_opts.properties"; // TODO rename
     public static final String SETTINGS_SECURITY_XML = "settings-security.xml";

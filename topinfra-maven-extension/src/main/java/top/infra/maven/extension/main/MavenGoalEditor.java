@@ -10,10 +10,13 @@ import static top.infra.maven.extension.main.MavenBuildExtensionOption.PUBLISH_T
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.shared.extension.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.shared.extension.Constants.PHASES_AFTER_PREPARE_PACKAGE;
 import static top.infra.maven.shared.extension.Constants.PHASE_CLEAN;
+import static top.infra.maven.shared.extension.Constants.PHASE_INSTALL;
 import static top.infra.maven.shared.extension.Constants.PHASE_PACKAGE;
 import static top.infra.maven.shared.extension.Constants.PHASE_VERIFY;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_CLEAN_SKIP;
+import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_INSTALL_SKIP;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_JAVADOC_SKIP;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_PACKAGES_SKIP;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_SOURCE_SKIP;
@@ -242,19 +245,27 @@ public class MavenGoalEditor {
             }
 
             if (includes(resultPhases, MavenPhase.DEPLOY)) {
-                final Optional<Boolean> nexus2Staging = findInProperties(PROP_NEXUS2_STAGING, ciOptContext)
-                    .map(Boolean::parseBoolean);
+                final Optional<Boolean> nexus2Staging = findInProperties(PROP_NEXUS2_STAGING, ciOptContext).map(Boolean::parseBoolean);
 
                 if (notIncludes(requestedPhases, MavenPhase.DEPLOY)) { // deploy added
                     properties.setProperty(PROP_NEXUS2_STAGING, BOOL_STRING_FALSE);
                 }
                 if (!nexus2Staging.isPresent()) {
                     properties.setProperty(PROP_NEXUS2_STAGING, BOOL_STRING_FALSE);
+                } else if (!nexus2Staging.get()
+                    && includes(requestedPhases, MavenPhase.DEPLOY)
+                ) { // TODO test this
+                    if (Collections.disjoint(requestedGoals, PHASES_AFTER_PREPARE_PACKAGE)) {
+                        properties.setProperty(PROP_MAVEN_PACKAGES_SKIP, BOOL_STRING_TRUE);
+                    }
+                    if (!requestedGoals.contains(PHASE_INSTALL)) {
+                        properties.setProperty(PROP_MAVEN_INSTALL_SKIP, BOOL_STRING_TRUE);
+                    }
                 }
             }
 
-            final boolean packagesSkip = findInProperties(PROP_MAVEN_PACKAGES_SKIP, ciOptContext).map(Boolean::parseBoolean).orElse(FALSE);
-            if (includes(resultPhases, MavenPhase.PACKAGE) && !packagesSkip) {
+            final Optional<Boolean> packagesSkip = findInProperties(PROP_MAVEN_PACKAGES_SKIP, ciOptContext).map(Boolean::parseBoolean);
+            if (includes(resultPhases, MavenPhase.PACKAGE) && !packagesSkip.orElse(FALSE)) {
                 properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_PACKAGE, BOOL_STRING_TRUE);
                 properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL, PHASE_PACKAGE);
             }
@@ -264,7 +275,7 @@ public class MavenGoalEditor {
                 && notIncludes(requestedPhases, MavenPhase.DEPLOY)
                 && includes(resultPhases, MavenPhase.DEPLOY)) {
                 properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_INSTALL, BOOL_STRING_TRUE);
-                if (!packagesSkip) {
+                if (!packagesSkip.orElse(FALSE)) {
                     properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_PACKAGE, BOOL_STRING_TRUE);
                 }
                 properties.setProperty(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL, Constants.PHASE_INSTALL);
