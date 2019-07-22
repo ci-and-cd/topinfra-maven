@@ -133,7 +133,7 @@ public class GitFlowSemanticVersionChecker implements MavenEventAware {
         return result;
     }
 
-    private static final Pattern PATTERN_SEMANTIC_VERSION_FEATURE = Pattern.compile("^([0-9]+\\.){0,2}[0-9]+-\\w+-SNAPSHOT$");
+    private static final Pattern PATTERN_SEMANTIC_VERSION_FEATURE = Pattern.compile("^([0-9]+\\.){0,2}[0-9]+-[0-9a-zA-Z_-]+-SNAPSHOT$");
 
     private static final Pattern PATTERN_SEMANTIC_VERSION_RELEASE = Pattern.compile("^([0-9]+\\.){0,2}[0-9]+$");
 

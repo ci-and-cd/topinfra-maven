@@ -34,12 +34,20 @@ public class ProjectVersionTest {
         assertTrue(isSemSnapshot("1-SNAPSHOT"));
 
         assertTrue(isSemFeature("2.0.1-feature_1-SNAPSHOT"));
+        assertTrue(isSemFeature("2.0.1-feature-1-SNAPSHOT"));
         assertTrue(isSemFeature("1.0.0-feature_1-SNAPSHOT"));
+        assertTrue(isSemFeature("1.0.0-feature-1-SNAPSHOT"));
         assertTrue(isSemFeature("1.0-feature_1-SNAPSHOT"));
+        assertTrue(isSemFeature("1.0-feature-1-SNAPSHOT"));
         assertTrue(isSemFeature("1-feature_1-SNAPSHOT"));
+        assertTrue(isSemFeature("1-feature-1-SNAPSHOT"));
 
         assertFalse(isSemSnapshot("2.0.1-feature-SNAPSHOT"));
+        assertFalse(isSemSnapshot("2.0.1-feature_1-SNAPSHOT"));
+        assertFalse(isSemSnapshot("2.0.1-feature-1-SNAPSHOT"));
         assertTrue(isSemFeature("2.0.1-feature-SNAPSHOT"));
+        assertTrue(isSemFeature("2.0.1-feature_1-SNAPSHOT"));
+        assertTrue(isSemFeature("2.0.1-feature-1-SNAPSHOT"));
         assertFalse(isSemSnapshot("2.0.1"));
         assertTrue(isSemRelease("2.0.1"));
     }
