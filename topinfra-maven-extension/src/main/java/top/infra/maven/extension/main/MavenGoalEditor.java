@@ -222,12 +222,14 @@ public class MavenGoalEditor {
         final Optional<Boolean> dpsDeploy = findInProperties(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY, ciOptContext)
             .map(Boolean::parseBoolean);
 
+        // default false values
         final Properties properties = new Properties();
         if (!dpsDeploy.isPresent()) {
             properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY, BOOL_STRING_FALSE);
         }
         properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_INSTALL, BOOL_STRING_FALSE);
         properties.setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_PACKAGE, BOOL_STRING_FALSE);
+
         if (!findInProperties(PROP_MAVEN_CLEAN_SKIP, ciOptContext).isPresent()) {
             if (requestedPhases.contains(MavenPhase.CLEAN)) { // phase clean present
                 properties.setProperty(PROP_MAVEN_CLEAN_SKIP, BOOL_STRING_FALSE);

@@ -7,6 +7,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static top.infra.maven.extension.main.MavenBuildExtensionOption.ORIGIN_REPO;
+import static top.infra.maven.extension.main.MavenGoalEditor.PROP_MVN_MULTI_STAGE_BUILD_GOAL;
+import static top.infra.maven.extension.main.MavenGoalEditor.PROP_MVN_MULTI_STAGE_BUILD_GOAL_INSTALL;
+import static top.infra.maven.extension.main.MavenGoalEditor.PROP_MVN_MULTI_STAGE_BUILD_GOAL_PACKAGE;
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.shared.extension.Constants.PHASE_CLEAN;
@@ -19,6 +22,7 @@ import static top.infra.maven.shared.extension.Constants.PHASE_VERIFY;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_CLEAN_SKIP;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_JAVADOC_SKIP;
 import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_SOURCE_SKIP;
+import static top.infra.maven.shared.extension.Constants.PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY;
 import static top.infra.maven.shared.extension.Constants.PROP_NEXUS2_STAGING;
 import static top.infra.maven.shared.extension.Constants.PROP_PUBLISH_TO_REPO;
 import static top.infra.maven.shared.extension.Constants.PROP_SONAR;
@@ -41,6 +45,26 @@ import top.infra.maven.test.logging.LoggerSlf4jImpl;
 public class MavenGoalEditorTest {
 
     private static final Logger logger = LoggerFactory.getLogger(MavenGoalEditorTest.class);
+
+    @Test
+    public void testCleanDeploy() {
+        final CiOptionContext ciOptCtx = blankCiOptCtx();
+        ciOptCtx.getUserProperties().setProperty(PROP_PUBLISH_TO_REPO, BOOL_STRING_TRUE);
+        final List<String> requestedGoals = asList(PHASE_CLEAN, PHASE_DEPLOY);
+
+        final Entry<List<String>, Properties> goalsAndProps = goalsAndUserProps(ciOptCtx, requestedGoals);
+        final Collection<String> resultGoals = goalsAndProps.getKey();
+        final Properties additionalUserProperties = goalsAndProps.getValue();
+
+        assertTrue(resultGoals.contains(PHASE_CLEAN));
+        assertTrue(resultGoals.contains(PHASE_DEPLOY));
+        assertEquals(BOOL_STRING_FALSE, additionalUserProperties.getProperty(PROP_MAVEN_CLEAN_SKIP));
+        assertEquals(BOOL_STRING_FALSE, additionalUserProperties.getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY));
+        assertEquals(BOOL_STRING_FALSE, additionalUserProperties.getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_INSTALL));
+        assertEquals(BOOL_STRING_FALSE, additionalUserProperties.getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_PACKAGE));
+        assertNull(additionalUserProperties.getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL));
+        assertNull(additionalUserProperties.getProperty(PROP_NEXUS2_STAGING));
+    }
 
     @Test
     public void testSimpleGoals() {
