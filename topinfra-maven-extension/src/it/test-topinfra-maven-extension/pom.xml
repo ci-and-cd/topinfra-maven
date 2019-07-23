@@ -47,21 +47,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <groupId>com.github.spotbugs</groupId>
-                <executions>
-                    <execution>
-                        <id>spotbugs-spotbugs</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>spotbugs</goal>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -105,20 +90,6 @@
                         <skipPoms>false</skipPoms>
                         <verbose>false</verbose>
                     </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>com.github.spotbugs</groupId>
-                    <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>${spotbugs-maven-plugin.version}</version>
-                    <dependencies>
-                        <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
-                        <dependency>
-                            <groupId>com.github.spotbugs</groupId>
-                            <artifactId>spotbugs</artifactId>
-                            <version>${spotbugs.version}</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -356,8 +327,5 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-        <spotbugs.version>3.1.12</spotbugs.version>
-        <spotbugs-maven-plugin.version>3.1.11</spotbugs-maven-plugin.version>
     </properties>
 </project>
