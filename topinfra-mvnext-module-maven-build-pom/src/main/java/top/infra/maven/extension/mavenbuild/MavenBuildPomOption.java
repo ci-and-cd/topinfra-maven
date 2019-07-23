@@ -107,6 +107,7 @@ public enum MavenBuildPomOption implements CiOption {
     MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY) {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
+            // TODO move this into MavenGoalEditor ?
             final Optional<Boolean> nexus2Staging = NEXUS2_STAGING.getValue(context).map(Boolean::parseBoolean);
             return nexus2Staging.map(staging -> staging ? BOOL_STRING_FALSE : null);
         }

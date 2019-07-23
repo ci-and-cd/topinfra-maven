@@ -210,6 +210,7 @@ public class MultiStageBuildTest {
         final CiOptionContext ciOptCtx = blankCiOptCtx();
         ciOptCtx.getUserProperties().setProperty(PROP_MVN_MULTI_STAGE_BUILD, BOOL_STRING_TRUE);
         ciOptCtx.getUserProperties().setProperty(PROP_NEXUS2_STAGING, BOOL_STRING_TRUE);
+        ciOptCtx.getUserProperties().setProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY, BOOL_STRING_FALSE); // nexus2.staging true
         ciOptCtx.getUserProperties().setProperty(PROP_PUBLISH_TO_REPO, BOOL_STRING_TRUE);
         final List<String> requestedGoals = singletonList(PHASE_DEPLOY);
 
@@ -219,7 +220,7 @@ public class MultiStageBuildTest {
 
         final Entry<List<String>, Properties> altRepoNotExists = goalsAndUserProps(ciOptCtx, requestedGoals);
         assertEquals(BOOL_STRING_TRUE, altRepoNotExists.getValue().getProperty(PROP_MAVEN_CLEAN_SKIP));
-        assertEquals(BOOL_STRING_FALSE, altRepoNotExists.getValue().getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY));
+        assertNull(altRepoNotExists.getValue().getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY));
         assertEquals(BOOL_STRING_FALSE, altRepoNotExists.getValue().getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_INSTALL));
         assertEquals(BOOL_STRING_TRUE, altRepoNotExists.getValue().getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_PACKAGE));
         assertEquals(PHASE_PACKAGE, altRepoNotExists.getValue().getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL));
@@ -232,10 +233,10 @@ public class MultiStageBuildTest {
             assertEquals(BOOL_STRING_TRUE, altRepoExists.getValue().getProperty(PROP_MAVEN_CLEAN_SKIP));
             assertNull(altRepoExists.getValue().getProperty(PROP_MAVEN_INSTALL_SKIP));
             assertNull(altRepoExists.getValue().getProperty(PROP_MAVEN_PACKAGES_SKIP));
-            assertEquals(BOOL_STRING_TRUE, altRepoExists.getValue().getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY));
+            assertNull(altRepoNotExists.getValue().getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY));
             assertEquals(BOOL_STRING_FALSE, altRepoExists.getValue().getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_INSTALL));
             assertEquals(BOOL_STRING_TRUE, altRepoExists.getValue().getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_PACKAGE));
-            assertEquals(PHASE_DEPLOY, altRepoExists.getValue().getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL));
+            assertEquals(PHASE_PACKAGE, altRepoExists.getValue().getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL));
             assertNull(altRepoExists.getValue().getProperty(PROP_NEXUS2_STAGING));
         } finally {
             Files.deleteIfExists(altDeployRepo);
