@@ -6,7 +6,7 @@
     <parent>
         <groupId>top.infra.maven</groupId>
         <artifactId>topinfra-maven</artifactId>
-        <version>1.0.9-SNAPSHOT</version>
+        <version>1.1.0</version>
     </parent>
     <artifactId>topinfra-mvnext-module-gpg-key</artifactId>
     <packaging>jar</packaging>
