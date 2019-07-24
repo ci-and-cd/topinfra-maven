@@ -36,8 +36,13 @@ public final class Constants {
     public static final String PHASE_VALIDATE = "validate";
     public static final String PHASE_VERIFY = "verify";
 
-    public static final List<String> PHASES_AFTER_PREPARE_PACKAGE = Collections.unmodifiableList(Arrays.asList(
-        PHASE_PACKAGE, PHASE_PRE_INTEGRATION_TEST, PHASE_INTEGRATION_TEST, PHASE_POST_INTEGRATION_TEST, PHASE_VERIFY, PHASE_INSTALL
+    public static final List<String> PHASES_AFTER_PREPARE_PACKAGE_AND_BEFORE_DEPLOY = Collections.unmodifiableList(Arrays.asList(
+        PHASE_PACKAGE,
+        PHASE_PRE_INTEGRATION_TEST,
+        PHASE_INTEGRATION_TEST,
+        PHASE_POST_INTEGRATION_TEST,
+        PHASE_VERIFY,
+        PHASE_INSTALL
     ));
 
     public static final String SRC_CI_OPTS_PROPERTIES = "src/main/ci-script/ci_opts.properties"; // TODO rename
