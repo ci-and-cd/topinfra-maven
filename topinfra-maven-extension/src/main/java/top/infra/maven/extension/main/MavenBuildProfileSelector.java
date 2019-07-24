@@ -3,7 +3,8 @@ package top.infra.maven.extension.main;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static top.infra.maven.utils.SupportFunction.newTuple;
+import static top.infra.maven.shared.utils.SupportFunction.componentName;
+import static top.infra.maven.shared.utils.SupportFunction.newTuple;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -13,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.IntStream;
 
@@ -26,6 +28,8 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 
 import top.infra.maven.extension.activator.CustomActivator;
+import top.infra.maven.shared.utils.PropertiesUtils;
+import top.infra.maven.shared.utils.SupportFunction;
 
 /**
  * Profile selector which combines profiles activated by custom and default
@@ -48,7 +52,7 @@ public class MavenBuildProfileSelector extends DefaultProfileSelector {
     @Requirement(role = CustomActivator.class)
     protected List<CustomActivator> customActivators;
 
-    private boolean printed = false;
+    private List<CustomActivator> availableActivators;
 
     // @Inject
     // public MavenBuildProfileSelector(
@@ -69,13 +73,13 @@ public class MavenBuildProfileSelector extends DefaultProfileSelector {
         final ModelProblemCollector problems
     ) {
         // logger.info(logStart(this, "getActiveProfiles"));
-        this.info();
+        final Collection<CustomActivator> availableActivators = this.availableActivators(context);
 
         final Collection<Profile> defaultActivated = new LinkedHashSet<>(super.getActiveProfiles(profiles, context, problems));
 
         final Map<Profile, List<CustomActivator>> profileActivators = profiles
             .stream()
-            .map(p -> newTuple(p, this.customActivators.stream().filter(act -> act.supported(p)).collect(toList())))
+            .map(p -> newTuple(p, availableActivators.stream().filter(act -> act.supported(p)).collect(toList())))
             .filter(t -> !t.getValue().isEmpty())
             .collect(toMap(Entry::getKey, Entry::getValue));
 
@@ -104,7 +108,7 @@ public class MavenBuildProfileSelector extends DefaultProfileSelector {
                     logger.debug(String.format(
                         "    profile [%s], activators: %s",
                         profile,
-                        activators.stream().map(act -> act.getClass().getSimpleName()).collect(toList())
+                        activators.stream().map(act -> componentName(act.getClass())).collect(toList())
                     )));
             }
 
@@ -137,20 +141,34 @@ public class MavenBuildProfileSelector extends DefaultProfileSelector {
         return new ArrayList<>(profilesActivated);
     }
 
-    private void info() {
-        if (!this.printed) {
-            this.printed = true;
+    private Collection<CustomActivator> availableActivators(final ProfileActivationContext context) {
+        if (this.availableActivators == null) {
+            final Properties systemProperties = PropertiesUtils.toProperties(context.getSystemProperties());
+            final Properties userProperties = PropertiesUtils.toProperties(context.getUserProperties());
+            this.availableActivators = this.customActivators
+                .stream()
+                .filter(it -> {
+                    final boolean disabled = SupportFunction.componentDisabled(it.getClass(), systemProperties, userProperties);
+                    if (disabled) {
+                        logger.info(String.format("    eventAware [%s] disabled", componentName(it.getClass())));
+                    }
+                    return !disabled;
+                })
+                .collect(toList());
+
             IntStream
-                .range(0, this.customActivators.size())
+                .range(0, this.availableActivators.size())
                 .forEach(idx -> {
-                    final CustomActivator it = this.customActivators.get(idx);
+                    final CustomActivator it = this.availableActivators.get(idx);
                     logger.info(String.format(
                         "    activator index: [%s], name: [%s]",
                         String.format("%02d ", idx),
-                        it.getClass().getSimpleName()
+                        componentName(it.getClass())
                     ));
                 });
         }
+
+        return this.availableActivators;
     }
 
     static boolean noAnyCondition(final Profile profile) {

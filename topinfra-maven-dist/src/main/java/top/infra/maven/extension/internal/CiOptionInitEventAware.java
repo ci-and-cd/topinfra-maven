@@ -1,10 +1,10 @@
 package top.infra.maven.extension.internal;
 
 import static java.util.stream.Collectors.toMap;
-import static top.infra.maven.extension.shared.CiOptions.PATTERN_VARS_ENV_DOT_CI;
-import static top.infra.maven.utils.PropertiesUtils.logProperties;
-import static top.infra.maven.utils.SupportFunction.logEnd;
-import static top.infra.maven.utils.SupportFunction.logStart;
+import static top.infra.maven.shared.utils.PropertiesUtils.PATTERN_VARS_ENV_DOT_CI;
+import static top.infra.maven.shared.utils.PropertiesUtils.logProperties;
+import static top.infra.maven.shared.utils.SupportFunction.logEnd;
+import static top.infra.maven.shared.utils.SupportFunction.logStart;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -21,12 +21,12 @@ import org.apache.maven.cli.CliRequest;
 
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.CiOptionFactoryBean;
+import top.infra.maven.extension.CiOptionFactory;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
-import top.infra.maven.utils.PropertiesUtils;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.utils.PropertiesUtils;
 
 @Named
 @Singleton
@@ -39,15 +39,15 @@ public class CiOptionInitEventAware implements MavenEventAware {
     @Inject
     public CiOptionInitEventAware(
         final org.codehaus.plexus.logging.Logger logger,
-        final List<CiOptionFactoryBean> optionFactoryBeans
+        final List<CiOptionFactory> optionFactoryBeans
     ) {
         this.logger = new LoggerPlexusImpl(logger);
         this.optionCollections = optionFactoryBeans
             .stream()
             .sorted()
             .collect(toMap(
-                CiOptionFactoryBean::getType,
-                CiOptionFactoryBean::getOptions,
+                CiOptionFactory::getType,
+                CiOptionFactory::getObjects,
                 (e1, e2) -> e1,
                 LinkedHashMap::new
             ));

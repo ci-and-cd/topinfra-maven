@@ -2,11 +2,11 @@ package top.infra.maven.extension.gitflow;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
-import static top.infra.maven.extension.shared.VcsProperties.GIT_REF_NAME;
-import static top.infra.maven.utils.SupportFunction.logEnd;
-import static top.infra.maven.utils.SupportFunction.logStart;
-import static top.infra.maven.utils.SupportFunction.newTuple;
+import static top.infra.maven.shared.extension.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.shared.extension.VcsProperties.GIT_REF_NAME;
+import static top.infra.maven.shared.utils.SupportFunction.logEnd;
+import static top.infra.maven.shared.utils.SupportFunction.logStart;
+import static top.infra.maven.shared.utils.SupportFunction.newTuple;
 
 import java.util.Collection;
 import java.util.Map.Entry;
@@ -22,12 +22,12 @@ import org.apache.maven.project.ProjectBuildingRequest;
 
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.shared.MavenProjectInfo;
-import top.infra.maven.extension.shared.MavenProjectInfoEventAware;
-import top.infra.maven.extension.shared.Orders;
-import top.infra.maven.extension.shared.VcsProperties;
+import top.infra.maven.extension.MavenProjectInfo;
+import top.infra.maven.extension.MavenProjectInfoFactory;
+import top.infra.maven.shared.extension.Orders;
+import top.infra.maven.shared.extension.VcsProperties;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
 
 @Named
 @Singleton
@@ -35,15 +35,15 @@ public class GitFlowSemanticVersionChecker implements MavenEventAware {
 
     private final Logger logger;
 
-    private final MavenProjectInfoEventAware projectInfoBean;
+    private final MavenProjectInfoFactory projectInfoFactory;
 
     @Inject
     public GitFlowSemanticVersionChecker(
         final org.codehaus.plexus.logging.Logger logger,
-        final MavenProjectInfoEventAware projectInfoBean
+        final MavenProjectInfoFactory projectInfoFactory
     ) {
         this.logger = new LoggerPlexusImpl(logger);
-        this.projectInfoBean = projectInfoBean;
+        this.projectInfoFactory = projectInfoFactory;
     }
 
     @Override
@@ -58,7 +58,7 @@ public class GitFlowSemanticVersionChecker implements MavenEventAware {
         final ProjectBuildingRequest projectBuilding,
         final CiOptionContext ciOptContext
     ) {
-        final MavenProjectInfo mavenProjectInfo = this.projectInfoBean.getRootProjectInfo();
+        final MavenProjectInfo mavenProjectInfo = this.projectInfoFactory.getRootProjectInfo();
 
         final Collection<String> requestedGoals = mavenExecution.getGoals();
         if (requestedGoals.stream().anyMatch(goal -> goal.contains("gitflow") || goal.contains("versions"))) {
@@ -133,7 +133,7 @@ public class GitFlowSemanticVersionChecker implements MavenEventAware {
         return result;
     }
 
-    private static final Pattern PATTERN_SEMANTIC_VERSION_FEATURE = Pattern.compile("^([0-9]+\\.){0,2}[0-9]+-\\w+-SNAPSHOT$");
+    private static final Pattern PATTERN_SEMANTIC_VERSION_FEATURE = Pattern.compile("^([0-9]+\\.){0,2}[0-9]+-[0-9a-zA-Z_-]+-SNAPSHOT$");
 
     private static final Pattern PATTERN_SEMANTIC_VERSION_RELEASE = Pattern.compile("^([0-9]+\\.){0,2}[0-9]+$");
 

@@ -7,8 +7,12 @@ import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY;
 import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY_PASS;
 import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY_URL;
 import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY_USER;
-import static top.infra.maven.utils.SupportFunction.logEnd;
-import static top.infra.maven.utils.SupportFunction.logStart;
+import static top.infra.maven.shared.extension.GlobalOption.FAST;
+import static top.infra.maven.shared.utils.MavenUtils.cmdArgOffline;
+import static top.infra.maven.shared.utils.MavenUtils.cmdArgUpdateSnapshots;
+import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
+import static top.infra.maven.shared.utils.SupportFunction.logEnd;
+import static top.infra.maven.shared.utils.SupportFunction.logStart;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,15 +25,13 @@ import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
-import top.infra.maven.extension.shared.Constants;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.shared.GlobalOption;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
-import top.infra.maven.utils.SupportFunction;
-import top.infra.maven.utils.SystemUtils;
+import top.infra.maven.shared.extension.Constants;
+import top.infra.maven.shared.extension.Orders;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.utils.SystemUtils;
 
 @Named
 @Singleton
@@ -81,14 +83,21 @@ public class DockerEventAware implements MavenEventAware {
 
             docker.initConfigFile();
 
-            if (!DOCKERFILE_USEMAVENSETTINGSFORAUTH.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(FALSE)) {
+            final boolean offline = cmdArgOffline(cliRequest);
+            final boolean useMavenSettingsForAuth = DOCKERFILE_USEMAVENSETTINGSFORAUTH.getValue(ciOptContext)
+                .map(Boolean::parseBoolean).orElse(FALSE);
+            if (!useMavenSettingsForAuth && !offline) {
                 this.login(docker);
             }
 
-            if (!GlobalOption.FAST.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(FALSE)) {
+            final boolean fast = FAST.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(FALSE);
+            if (!fast) {
                 this.cleanOldImages(docker);
+            }
 
-                this.pullBaseImages(docker);
+            if (!fast && !offline) {
+                final boolean update = cmdArgUpdateSnapshots(cliRequest);
+                this.pullBaseImages(docker, update);
             }
         }
     }
@@ -114,7 +123,7 @@ public class DockerEventAware implements MavenEventAware {
 
     private void login(final Docker docker) {
         final String target = docker.getLoginTarget();
-        if (SupportFunction.isNotEmpty(target) && target.startsWith("https://")) {
+        if (!isEmpty(target) && target.startsWith("https://")) {
             logger.info(String.format("    docker logging into secure registry %s", target));
         } else {
             logger.info(String.format("    docker logging into insecure registry %s", target));
@@ -128,16 +137,28 @@ public class DockerEventAware implements MavenEventAware {
         }
     }
 
-    private void pullBaseImages(final Docker docker) {
+    private void pullBaseImages(final Docker docker, final boolean forceUpdate) {
         logger.info(logStart(this, "pullBaseImages"));
 
         final List<String> dockerfiles = Docker.dockerfiles();
         if (logger.isInfoEnabled()) {
             logger.info(String.format("    Found dockerfiles %s", dockerfiles));
         }
-        final List<String> baseImages = docker.pullBaseImages(dockerfiles);
+        final List<String> baseImages = Docker.baseImages(dockerfiles);
         if (logger.isInfoEnabled()) {
             logger.info(String.format("    Found baseImages %s", baseImages));
+        }
+
+        final boolean haveAllLocalCopies = docker.imageRepositoryColonTags().containsAll(baseImages);
+        if (forceUpdate || !haveAllLocalCopies) {
+            baseImages.forEach(image -> {
+                logger.info(String.format("    Pull baseImage [%s]", image));
+                docker.pullImage(image);
+            });
+        } else {
+            logger.info(String.format(
+                "    Skip pullBaseImages %s, you have local copies of these images. forceUpdate [false]",
+                baseImages));
         }
 
         logger.info(logEnd(this, "pullBaseImages", Void.TYPE));

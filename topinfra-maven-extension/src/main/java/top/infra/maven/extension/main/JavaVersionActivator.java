@@ -1,10 +1,10 @@
 package top.infra.maven.extension.main;
 
 import static java.lang.Integer.parseInt;
-import static top.infra.maven.utils.MavenUtils.profileId;
-import static top.infra.maven.utils.MavenUtils.projectName;
-import static top.infra.maven.utils.PropertiesUtils.mapFromProperties;
-import static top.infra.maven.utils.SystemUtils.parseJavaVersion;
+import static top.infra.maven.shared.utils.MavenUtils.profileId;
+import static top.infra.maven.shared.utils.MavenUtils.projectName;
+import static top.infra.maven.shared.utils.PropertiesUtils.mapFromProperties;
+import static top.infra.maven.shared.utils.SystemUtils.parseJavaVersion;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -21,9 +21,9 @@ import org.apache.maven.model.Profile;
 import org.apache.maven.model.building.ModelProblemCollector;
 import org.apache.maven.model.profile.ProfileActivationContext;
 
-import top.infra.maven.extension.activator.AbstractCustomActivator;
-import top.infra.maven.extension.activator.model.ProjectBuilderActivatorModelResolver;
-import top.infra.maven.extension.shared.MavenProjectInfoEventAware;
+import top.infra.maven.extension.MavenProjectInfoFactory;
+import top.infra.maven.shared.extension.activator.AbstractCustomActivator;
+import top.infra.maven.extension.activator.model.ActivatorModelResolver;
 
 // @Component(role = CustomActivator.class, hint = "JavaVersionActivator")
 @Named
@@ -32,17 +32,17 @@ public class JavaVersionActivator extends AbstractCustomActivator {
 
     private static final Pattern PATTERN_JAVA_PROFILE = Pattern.compile(".*java[-]?(\\d+)[-]?.*");
 
-    private final MavenProjectInfoEventAware projectInfoBean;
+    private final MavenProjectInfoFactory projectInfoFactory;
 
     @Inject
     public JavaVersionActivator(
         final org.codehaus.plexus.logging.Logger logger,
-        final ProjectBuilderActivatorModelResolver resolver,
-        final MavenProjectInfoEventAware projectInfoBean
+        final ActivatorModelResolver resolver,
+        final MavenProjectInfoFactory projectInfoFactory
     ) {
         super(logger, resolver);
 
-        this.projectInfoBean = projectInfoBean;
+        this.projectInfoFactory = projectInfoFactory;
     }
 
     static boolean isJavaVersionRelatedProfile(final String id) {

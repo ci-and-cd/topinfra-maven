@@ -2,10 +2,10 @@ package top.infra.maven.extension.docker;
 
 import static top.infra.maven.extension.docker.Docker.dockerHost;
 import static top.infra.maven.extension.docker.Docker.dockerfiles;
-import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
-import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.extension.shared.GlobalOption.INFRASTRUCTURE;
-import static top.infra.maven.utils.SystemUtils.existsInPath;
+import static top.infra.maven.shared.extension.Constants.BOOL_STRING_FALSE;
+import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.shared.extension.GlobalOption.INFRASTRUCTURE;
+import static top.infra.maven.shared.utils.SystemUtils.existsInPath;
 
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -13,9 +13,9 @@ import java.util.Properties;
 
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.shared.Constants;
-import top.infra.maven.extension.shared.GlobalOption;
-import top.infra.maven.utils.UrlUtils;
+import top.infra.maven.shared.extension.Constants;
+import top.infra.maven.shared.extension.GlobalOption;
+import top.infra.maven.shared.utils.UrlUtils;
 
 public enum DockerOption implements CiOption {
     /**

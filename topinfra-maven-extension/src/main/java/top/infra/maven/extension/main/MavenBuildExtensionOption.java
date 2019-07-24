@@ -1,23 +1,24 @@
 package top.infra.maven.extension.main;
 
 import static java.lang.Boolean.FALSE;
-import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
-import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_NAME_DEVELOP;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_FEATURE;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_HOTFIX;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_RELEASE;
-import static top.infra.maven.extension.shared.Constants.GIT_REF_PREFIX_SUPPORT;
-import static top.infra.maven.utils.SystemUtils.systemUserHome;
+import static top.infra.maven.shared.extension.Constants.BOOL_STRING_FALSE;
+import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.shared.extension.Constants.GIT_REF_NAME_DEVELOP;
+import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_FEATURE;
+import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_HOTFIX;
+import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_RELEASE;
+import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_SUPPORT;
+import static top.infra.maven.shared.utils.SystemUtils.systemUserHome;
 
 import java.nio.file.Paths;
 import java.util.Optional;
 
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.shared.VcsProperties;
-import top.infra.maven.utils.FileUtils;
-import top.infra.maven.utils.SupportFunction;
+import top.infra.maven.shared.extension.Constants;
+import top.infra.maven.shared.extension.VcsProperties;
+import top.infra.maven.shared.utils.FileUtils;
+import top.infra.maven.shared.utils.SupportFunction;
 
 public enum MavenBuildExtensionOption implements CiOption {
     CACHE_SESSION_PATH("cache.session.path") {
@@ -38,7 +39,7 @@ public enum MavenBuildExtensionOption implements CiOption {
             return result;
         }
     },
-    MVN_DEPLOY_PUBLISH_SEGREGATION("mvn.deploy.publish.segregation"),
+    MVN_MULTI_STAGE_BUILD(Constants.PROP_MVN_MULTI_STAGE_BUILD),
     /**
      * Determine current is origin (original) or forked.
      */
@@ -60,28 +61,22 @@ public enum MavenBuildExtensionOption implements CiOption {
     PUBLISH_TO_REPO("publish.to.repo") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            final String result;
+            final Optional<String> refNameOptional = VcsProperties.GIT_REF_NAME.getValue(context);
+            final Optional<Boolean> originRepo = ORIGIN_REPO.getValue(context).map(Boolean::parseBoolean);
 
-            final String refName = VcsProperties.GIT_REF_NAME.getValue(context).orElse("");
-            final boolean originRepo = ORIGIN_REPO.getValue(context)
-                .map(Boolean::parseBoolean).orElse(FALSE);
-
-            if (originRepo) {
-                if (GIT_REF_NAME_DEVELOP.equals(refName)
-                    || refName.startsWith(GIT_REF_PREFIX_FEATURE)
-                    || refName.startsWith(GIT_REF_PREFIX_HOTFIX)
-                    || refName.startsWith(GIT_REF_PREFIX_RELEASE)
-                    || refName.startsWith(GIT_REF_PREFIX_SUPPORT)
-                ) {
-                    result = BOOL_STRING_TRUE;
+            return refNameOptional.map(refName -> {
+                final boolean result;
+                if (originRepo.orElse(FALSE)) {
+                    result = GIT_REF_NAME_DEVELOP.equals(refName)
+                        || refName.startsWith(GIT_REF_PREFIX_FEATURE)
+                        || refName.startsWith(GIT_REF_PREFIX_HOTFIX)
+                        || refName.startsWith(GIT_REF_PREFIX_RELEASE)
+                        || refName.startsWith(GIT_REF_PREFIX_SUPPORT);
                 } else {
-                    result = BOOL_STRING_FALSE;
+                    result = refName.startsWith(GIT_REF_PREFIX_FEATURE);
                 }
-            } else {
-                result = refName.startsWith(GIT_REF_PREFIX_FEATURE) ? BOOL_STRING_TRUE : BOOL_STRING_FALSE;
-            }
-
-            return Optional.of(result);
+                return result ? BOOL_STRING_TRUE : BOOL_STRING_FALSE;
+            });
         }
     },
     ;

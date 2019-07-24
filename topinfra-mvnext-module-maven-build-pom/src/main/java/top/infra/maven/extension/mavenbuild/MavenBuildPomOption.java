@@ -1,27 +1,24 @@
 package top.infra.maven.extension.mavenbuild;
 
 import static java.lang.Boolean.FALSE;
-import static top.infra.maven.extension.shared.Constants.BOOL_STRING_FALSE;
-import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.extension.shared.Constants.PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY;
-import static top.infra.maven.extension.shared.GlobalOption.FAST;
-import static top.infra.maven.extension.shared.GlobalOption.getInfrastructureSpecificValue;
-import static top.infra.maven.extension.shared.GlobalOption.setInfrastructureSpecificValue;
+import static top.infra.maven.shared.extension.Constants.BOOL_STRING_FALSE;
+import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.shared.extension.Constants.PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY;
+import static top.infra.maven.shared.extension.GlobalOption.FAST;
+import static top.infra.maven.shared.extension.GlobalOption.getInfrastructureSpecificValue;
+import static top.infra.maven.shared.extension.GlobalOption.setInfrastructureSpecificValue;
+import static top.infra.maven.shared.extension.MavenOption.GENERATEREPORTS;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.shared.Constants;
-import top.infra.maven.extension.shared.MavenOption;
-import top.infra.maven.extension.shared.VcsProperties;
-import top.infra.maven.utils.MavenUtils;
-import top.infra.maven.utils.SystemUtils;
+import top.infra.maven.shared.extension.Constants;
+import top.infra.maven.shared.extension.VcsProperties;
+import top.infra.maven.shared.utils.MavenBuildPomUtils;
 
-// TODO Move all options that depend on project properties to ProjectOption class.
+
 public enum MavenBuildPomOption implements CiOption {
 
     DEPENDENCYCHECK("dependency-check") {
@@ -54,7 +51,7 @@ public enum MavenBuildPomOption implements CiOption {
     GITHUB_GLOBAL_REPOSITORYOWNER("github.global.repositoryOwner") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            final boolean generateReports = MavenOption.GENERATEREPORTS.getValue(context)
+            final boolean generateReports = GENERATEREPORTS.getValue(context)
                 .map(Boolean::parseBoolean).orElse(FALSE);
 
             return generateReports
@@ -86,13 +83,10 @@ public enum MavenBuildPomOption implements CiOption {
      */
     GITHUB_SITE_PUBLISH("github.site.publish", BOOL_STRING_FALSE) {
         @Override
-        public Optional<String> getValue(final CiOptionContext context) {
-            final boolean generateReports = MavenOption.GENERATEREPORTS.getValue(context)
-                .map(Boolean::parseBoolean).orElse(FALSE);
-
-            return generateReports
-                ? this.findInProperties(context.getSystemProperties(), context.getUserProperties())
-                : Optional.of(BOOL_STRING_FALSE);
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return GENERATEREPORTS.getValue(context).map(Boolean::parseBoolean)
+                .filter(reports -> !reports)
+                .map(reports -> BOOL_STRING_FALSE);
         }
     },
 
@@ -110,9 +104,10 @@ public enum MavenBuildPomOption implements CiOption {
 
     NEXUS2_STAGING(Constants.PROP_NEXUS2_STAGING),
 
-    MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY(PROP_MVN_DEPLOY_PUBLISH_SEGREGATION_GOAL_DEPLOY) {
+    MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY) {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
+            // TODO move this into MavenGoalEditor ?
             final Optional<Boolean> nexus2Staging = NEXUS2_STAGING.getValue(context).map(Boolean::parseBoolean);
             return nexus2Staging.map(staging -> staging ? BOOL_STRING_FALSE : null);
         }
@@ -121,7 +116,7 @@ public enum MavenBuildPomOption implements CiOption {
     NOTGENERATEREPORTS("notGenerateReports") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            final Optional<String> generateReports = MavenOption.GENERATEREPORTS.getValue(context);
+            final Optional<String> generateReports = GENERATEREPORTS.getValue(context);
             return Optional.of(String.valueOf(generateReports.map(generate -> !Boolean.parseBoolean(generate)).orElse(FALSE)));
         }
     },
@@ -144,7 +139,7 @@ public enum MavenBuildPomOption implements CiOption {
         }
     },
 
-    SONAR("sonar"),
+    SONAR(Constants.PROP_SONAR),
 
     CHECKSTYLE_CONFIG_LOCATION("checkstyle.config.location") {
         @Override
@@ -199,27 +194,13 @@ public enum MavenBuildPomOption implements CiOption {
     WAGON_MERGEMAVENREPOS_SOURCE("wagon.merge-maven-repos.source") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            final Optional<String> result;
-            final String commitId = VcsProperties.GIT_COMMIT_ID.getValue(context)
-                .map(value -> value.substring(0, 8))
-                .orElse("unknown-commit");
-
-            final String executionRoot = MavenUtils
-                .findInProperties(MavenUtils.PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY, context)
-                .orElse(SystemUtils.systemUserDir());
-
-            // final Path path = Paths.get(executionRoot, ".mvn", "wagonRepository", "deferred");
-            final Path path = Paths.get(executionRoot, ".mvn", "wagonRepository", "altDeployment", commitId);
-
-            return Optional.of(path.toString());
+            return Optional.of(MavenBuildPomUtils.altDeploymentRepositoryPath(context).toString());
         }
 
         @Override
         public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
             final Optional<String> result = super.setProperties(context, properties);
-
-            result.ifPresent(source -> properties.setProperty("altDeploymentRepository", "repo::default::file://" + source));
-
+            result.ifPresent(path -> properties.setProperty("altDeploymentRepository", "repo::default::file://" + path));
             return result;
         }
     },

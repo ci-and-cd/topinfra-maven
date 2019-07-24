@@ -6,7 +6,7 @@
     <parent>
         <groupId>top.infra.maven</groupId>
         <artifactId>topinfra-maven</artifactId>
-        <version>1.0.8</version>
+        <version>1.1.0</version>
     </parent>
     <artifactId>topinfra-mvnext-module-maven-build-pom</artifactId>
     <packaging>jar</packaging>
@@ -30,7 +30,8 @@
 
     <!-- @formatter:off -->
     <dependencies>
-        <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-dist</artifactId><classifier>shaded</classifier><scope>provided</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-core</artifactId><scope>provided</scope></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-shared</artifactId></dependency>
 
         <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-test</artifactId><scope>test</scope></dependency>
     </dependencies>

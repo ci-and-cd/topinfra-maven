@@ -1,8 +1,8 @@
 package top.infra.maven.extension.infra;
 
 import static java.lang.Boolean.FALSE;
-import static top.infra.maven.utils.MavenUtils.profileId;
-import static top.infra.maven.utils.MavenUtils.projectName;
+import static top.infra.maven.shared.utils.MavenUtils.profileId;
+import static top.infra.maven.shared.utils.MavenUtils.projectName;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -20,13 +20,13 @@ import org.apache.maven.model.profile.ProfileActivationContext;
 import org.apache.maven.model.profile.activation.ProfileActivator;
 
 import top.infra.maven.CiOptionContext;
+import top.infra.maven.extension.CiOptionContextFactory;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.activator.AbstractCustomActivator;
+import top.infra.maven.shared.extension.activator.AbstractCustomActivator;
 import top.infra.maven.extension.activator.CustomActivator;
-import top.infra.maven.extension.activator.model.ProjectBuilderActivatorModelResolver;
-import top.infra.maven.extension.shared.CiOptionContextBeanFactory;
-import top.infra.maven.extension.shared.GlobalOption;
-import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.extension.activator.model.ActivatorModelResolver;
+import top.infra.maven.shared.extension.GlobalOption;
+import top.infra.maven.shared.extension.Orders;
 
 // @Component(role = CustomActivator.class, hint = "InfrastructureActivator") // This instance has multiple roles
 @Named
@@ -35,15 +35,15 @@ public class InfrastructureActivator extends AbstractCustomActivator implements 
 
     private static final Pattern PATTERN_INFRASTRUCTURE_PROFILE = Pattern.compile(".*infrastructure_(\\w+)[-]?.*");
 
-    private final CiOptionContextBeanFactory ciOptContextFactory;
+    private final CiOptionContextFactory ciOptContextFactory;
 
     private CiOptionContext ciOptContext;
 
     @Inject
     public InfrastructureActivator(
         final org.codehaus.plexus.logging.Logger logger,
-        final ProjectBuilderActivatorModelResolver resolver,
-        final CiOptionContextBeanFactory ciOptContextFactory
+        final ActivatorModelResolver resolver,
+        final CiOptionContextFactory ciOptContextFactory
     ) {
         super(logger, resolver);
 
@@ -153,7 +153,7 @@ public class InfrastructureActivator extends AbstractCustomActivator implements 
      */
     @Override
     public void onInit(final Context context) {
-        this.ciOptContext = this.ciOptContextFactory.getCiOpts();
+        this.ciOptContext = this.ciOptContextFactory.getObject();
     }
 
     /**

@@ -4,8 +4,8 @@ import static top.infra.maven.extension.gpg.GpgOption.GPG_EXECUTABLE;
 import static top.infra.maven.extension.gpg.GpgOption.GPG_KEYID;
 import static top.infra.maven.extension.gpg.GpgOption.GPG_KEYNAME;
 import static top.infra.maven.extension.gpg.GpgOption.GPG_PASSPHRASE;
-import static top.infra.maven.utils.SupportFunction.logEnd;
-import static top.infra.maven.utils.SupportFunction.logStart;
+import static top.infra.maven.shared.utils.SupportFunction.logEnd;
+import static top.infra.maven.shared.utils.SupportFunction.logStart;
 
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -20,11 +20,11 @@ import org.apache.maven.project.ProjectBuildingRequest;
 
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
-import top.infra.maven.utils.MavenUtils;
-import top.infra.maven.utils.SystemUtils;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.utils.MavenUtils;
+import top.infra.maven.shared.utils.SystemUtils;
 
 @Named
 @Singleton

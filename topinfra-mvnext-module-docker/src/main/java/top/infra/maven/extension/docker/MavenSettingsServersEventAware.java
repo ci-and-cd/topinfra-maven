@@ -1,6 +1,6 @@
 package top.infra.maven.extension.docker;
 
-import static top.infra.maven.utils.SupportFunction.isEmpty;
+import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
 
 import cn.home1.tools.maven.MavenSettingsSecurity;
 
@@ -31,12 +31,12 @@ import org.unix4j.Unix4j;
 
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.shared.Constants;
-import top.infra.maven.extension.shared.Orders;
+import top.infra.maven.shared.extension.Constants;
+import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
-import top.infra.maven.utils.MavenUtils;
-import top.infra.maven.utils.SupportFunction;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.utils.MavenUtils;
+import top.infra.maven.shared.utils.SupportFunction;
 
 /**
  * Auto fill empty or blank properties (e.g. CI_OPT_GPG_PASSPHRASE) in maven settings.xml.
@@ -134,7 +134,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         final CiOptionContext ciOptContext
     ) {
         MavenUtils.findInProperties(
-            Constants.PROP_NAME_SETTINGS,
+            Constants.PROP_SETTINGS,
             ciOptContext.getSystemProperties(),
             ciOptContext.getUserProperties()
         )
@@ -167,7 +167,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         final MavenExecutionRequest request,
         final CiOptionContext ciOptContext
     ) {
-        final Optional<String> settingsSecurityXml = MavenUtils.findInProperties(Constants.PROP_NAME_SETTINGS_SECURITY, ciOptContext);
+        final Optional<String> settingsSecurityXml = MavenUtils.findInProperties(Constants.PROP_SETTINGS_SECURITY, ciOptContext);
         final Optional<MavenSettingsSecurity> settingsSecurity = settingsSecurityXml
             .map(xml -> new MavenSettingsSecurity(xml, false));
         this.encryptedBlankString = settingsSecurity.map(ss -> ss.encodeText(" ")).orElse(null);

@@ -1,15 +1,17 @@
 package top.infra.maven.extension.main;
 
 import static java.util.stream.Collectors.toList;
-import static top.infra.maven.extension.shared.CiOptions.PATTERN_VARS_ENV_DOT_CI;
-import static top.infra.maven.extension.shared.VcsProperties.GIT_REF_NAME;
-import static top.infra.maven.utils.PropertiesUtils.logProperties;
-import static top.infra.maven.utils.SupportFunction.isEmpty;
-import static top.infra.maven.utils.SupportFunction.logEnd;
-import static top.infra.maven.utils.SupportFunction.logStart;
-import static top.infra.maven.utils.SupportFunction.newTuple;
+import static top.infra.maven.shared.extension.VcsProperties.GIT_REF_NAME;
+import static top.infra.maven.shared.utils.PropertiesUtils.PATTERN_VARS_ENV_DOT_CI;
+import static top.infra.maven.shared.utils.PropertiesUtils.logProperties;
+import static top.infra.maven.shared.utils.SupportFunction.componentName;
+import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
+import static top.infra.maven.shared.utils.SupportFunction.logEnd;
+import static top.infra.maven.shared.utils.SupportFunction.logStart;
+import static top.infra.maven.shared.utils.SupportFunction.newTuple;
 
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,15 +38,15 @@ import org.apache.maven.toolchain.building.ToolchainsBuildingResult;
 
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.Ordered;
+import top.infra.maven.extension.CiOptionContextFactory;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.OrderedConfigurationProcessor;
-import top.infra.maven.extension.shared.CiOptionContextBeanFactory;
-import top.infra.maven.extension.shared.Orders;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
-import top.infra.maven.utils.MavenUtils;
-import top.infra.maven.utils.PropertiesUtils;
-import top.infra.maven.utils.SupportFunction;
+import top.infra.maven.shared.extension.Orders;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.utils.MavenUtils;
+import top.infra.maven.shared.utils.PropertiesUtils;
+import top.infra.maven.shared.utils.SupportFunction;
 
 /**
  * Main entry point. Reads properties and exposes them as user properties.
@@ -59,13 +61,15 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
 
     private final Logger logger;
 
-    private final CiOptionContextBeanFactory ciOptContextFactory;
+    private final CiOptionContextFactory ciOptContextFactory;
 
-    private final Map<String, List<MavenEventAware>> eventAwares;
+    private final List<MavenEventAware> eventAwares;
 
     private CiOptionContext ciOptContext;
 
     private CliRequest cliRequest;
+
+    private Map<String, List<MavenEventAware>> handlerMap;
 
     /**
      * Constructor.
@@ -77,43 +81,19 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
     @Inject
     public MainEventSpy(
         final org.codehaus.plexus.logging.Logger logger,
-        final CiOptionContextBeanFactory ciOptContextFactory,
+        final CiOptionContextFactory ciOptContextFactory,
         final List<MavenEventAware> eventAwares
     ) {
         logger.info(logStart(this, "constructor"));
 
         this.logger = new LoggerPlexusImpl(logger);
         this.ciOptContextFactory = ciOptContextFactory;
+        this.eventAwares = Collections.unmodifiableList(eventAwares);
 
         this.ciOptContext = null;
+        this.cliRequest = null;
+        this.handlerMap = null;
 
-        final List<MavenEventAware> list = eventAwares.stream().sorted().collect(toList());
-        final Map<String, List<MavenEventAware>> map = new LinkedHashMap<>();
-        predicates()
-            .forEach(tuple -> map.put(tuple.getKey(), handlers(list, tuple.getValue())));
-        this.eventAwares = map;
-
-        IntStream
-            .range(0, list.size())
-            .forEach(idx -> {
-                final MavenEventAware it = list.get(idx);
-                logger.info(String.format(
-                    "    eventAware index: [%s], order: [%s], name: [%s], from module: [%s]",
-                    String.format("%02d ", idx),
-                    String.format("%011d ", it.getOrder()),
-                    it.getClass().getSimpleName(),
-                    SupportFunction.module(it)
-                ));
-                logger.info(String.format("        handles: %s", handles(it)));
-            });
-
-        this.eventAwares.forEach((k, v) -> {
-            logger.info(String.format("    event [%s]", k));
-            v.forEach(it ->
-                logger.info(String.format("        order: [%s], name: [%s], from module: [%s]",
-                    it.getOrder(), it.getClass().getSimpleName(), SupportFunction.module(it)))
-            );
-        });
         logger.info(logEnd(this, "constructor", Void.TYPE));
     }
 
@@ -149,6 +129,46 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
     public void init(final Context context) throws Exception {
         logger.info(logStart(this, "init", context));
         try {
+            final Properties systemProperties = MavenUtils.systemProperties(context);
+            final Properties userProperties = MavenUtils.userProperties(context);
+            final List<MavenEventAware> list = this.eventAwares
+                .stream()
+                .sorted()
+                .filter(it -> {
+                    final boolean disabled = SupportFunction.componentDisabled(it.getClass(), systemProperties, userProperties);
+                    if (disabled) {
+                        logger.info(String.format("    eventAware [%s] disabled", componentName(it.getClass())));
+                    }
+                    return !disabled;
+                })
+                .collect(toList());
+            final Map<String, List<MavenEventAware>> map = new LinkedHashMap<>();
+            predicates()
+                .forEach(tuple -> map.put(tuple.getKey(), handlers(list, tuple.getValue())));
+            this.handlerMap = map;
+
+            IntStream
+                .range(0, list.size())
+                .forEach(idx -> {
+                    final MavenEventAware it = list.get(idx);
+                    logger.info(String.format(
+                        "    eventAware index: [%s], order: [%s], name: [%s], from module: [%s]",
+                        String.format("%02d ", idx),
+                        String.format("%011d ", it.getOrder()),
+                        componentName(it.getClass()),
+                        SupportFunction.module(it)
+                    ));
+                    logger.info(String.format("        handles: %s", handles(it)));
+                });
+
+            this.handlerMap.forEach((k, v) -> {
+                logger.info(String.format("    event [%s]", k));
+                v.forEach(it ->
+                    logger.info(String.format("        order: [%s], name: [%s], from module: [%s]",
+                        it.getOrder(), componentName(it.getClass()), SupportFunction.module(it)))
+                );
+            });
+
             this.onInit(context);
         } catch (final Exception ex) {
             logger.error("    Exception on init.", ex);
@@ -219,7 +239,7 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
         assert Orders.ORDER_CI_OPTION_INIT < Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
         assert Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SECURITY_XML;
 
-        this.eventAwares.get("afterInit")
+        this.handlerMap.get("afterInit")
             .forEach(it -> it.afterInit(cliRequest, ciOptionContext));
 
         final Optional<String> gitRefName = GIT_REF_NAME.getValue(ciOptionContext);
@@ -252,7 +272,7 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
 
         assert Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SERVERS;
 
-        this.eventAwares.get("onSettingsBuildingRequest")
+        this.handlerMap.get("onSettingsBuildingRequest")
             .forEach(it -> it.onSettingsBuildingRequest(cliRequest, request, ciOptionContext));
     }
 
@@ -264,7 +284,7 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
         // set settings.localRepository (if present) into effectiveSettings
         assert Orders.ORDER_CI_OPTION_INIT < Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
 
-        this.eventAwares.get("onSettingsBuildingResult")
+        this.handlerMap.get("onSettingsBuildingResult")
             .forEach(it -> it.onSettingsBuildingResult(cliRequest, result, ciOptionContext));
     }
 
@@ -275,7 +295,7 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
     ) {
         assert Orders.ORDER_CI_OPTION_INIT < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES;
 
-        this.eventAwares.get("onToolchainsBuildingRequest")
+        this.handlerMap.get("onToolchainsBuildingRequest")
             .forEach(it -> it.onToolchainsBuildingRequest(cliRequest, request, ciOptionContext));
     }
 
@@ -284,7 +304,7 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
         final ToolchainsBuildingResult result,
         final CiOptionContext ciOptionContext
     ) {
-        this.eventAwares.get("onToolchainsBuildingResult")
+        this.handlerMap.get("onToolchainsBuildingResult")
             .forEach(it -> it.onToolchainsBuildingResult(cliRequest, result, ciOptionContext));
     }
 
@@ -296,7 +316,7 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
         assert Orders.ORDER_CI_OPTION_INIT < Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
         assert Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SERVERS;
 
-        this.eventAwares.get("onMavenExecutionRequest")
+        this.handlerMap.get("onMavenExecutionRequest")
             .forEach(it -> it.onMavenExecutionRequest(cliRequest, request, ciOptionContext));
 
 
@@ -336,7 +356,7 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
         assert Orders.EVENT_AWARE_ORDER_GOAL_EDITOR < Orders.ORDER_GIT_FLOW_SEMANTIC_VERSION;
         assert Orders.ORDER_GIT_FLOW_SEMANTIC_VERSION < Orders.EVENT_AWARE_ORDER_DOCKER;
 
-        this.eventAwares.get("onProjectBuildingRequest")
+        this.handlerMap.get("onProjectBuildingRequest")
             .forEach(it -> it.onProjectBuildingRequest(cliRequest, mavenExecution, projectBuilding, ciOptionContext));
     }
 
@@ -356,10 +376,10 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
         assert Orders.ORDER_INFO_PRINTER < Orders.ORDER_CI_OPTION_CONTEXT_FACTORY;
         assert Orders.ORDER_CI_OPTION_CONTEXT_FACTORY < Orders.ORDER_INFRASTRUCTURE_ACTIVATOR;
 
-        this.eventAwares.get("onInit")
+        this.handlerMap.get("onInit")
             .forEach(it -> it.onInit(context));
 
-        this.ciOptContext = this.ciOptContextFactory.getCiOpts();
+        this.ciOptContext = this.ciOptContextFactory.getObject();
     }
 
     @Override

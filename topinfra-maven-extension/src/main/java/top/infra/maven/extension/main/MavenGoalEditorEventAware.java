@@ -1,9 +1,8 @@
 package top.infra.maven.extension.main;
 
-import static java.lang.Boolean.FALSE;
-import static top.infra.maven.utils.PropertiesUtils.logProperties;
-import static top.infra.maven.utils.SupportFunction.logEnd;
-import static top.infra.maven.utils.SupportFunction.logStart;
+import static top.infra.maven.shared.utils.PropertiesUtils.logProperties;
+import static top.infra.maven.shared.utils.SupportFunction.logEnd;
+import static top.infra.maven.shared.utils.SupportFunction.logStart;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,12 +19,11 @@ import org.apache.maven.project.ProjectBuildingRequest;
 
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.extension.shared.MavenOption;
-import top.infra.maven.extension.shared.Orders;
-import top.infra.maven.extension.shared.VcsProperties;
+import top.infra.maven.shared.extension.Orders;
+import top.infra.maven.shared.extension.VcsProperties;
 import top.infra.maven.logging.Logger;
-import top.infra.maven.logging.LoggerPlexusImpl;
-import top.infra.maven.utils.PropertiesUtils;
+import top.infra.maven.shared.logging.LoggerPlexusImpl;
+import top.infra.maven.shared.utils.PropertiesUtils;
 
 @Named
 @Singleton
@@ -78,14 +76,7 @@ public class MavenGoalEditorEventAware implements MavenEventAware {
         logger.info(logStart(this, "editGoals", request.getGoals()));
         VcsProperties.info(logger, ciOptContext);
 
-        final MavenGoalEditor goalEditor = new MavenGoalEditor(
-            logger,
-            MavenOption.GENERATEREPORTS.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null),
-            VcsProperties.GIT_REF_NAME.getValue(ciOptContext).orElse(null),
-            MavenBuildExtensionOption.MVN_DEPLOY_PUBLISH_SEGREGATION.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(FALSE),
-            MavenBuildExtensionOption.ORIGIN_REPO.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null),
-            MavenBuildExtensionOption.PUBLISH_TO_REPO.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null) // make sure version is valid too
-        );
+        final MavenGoalEditor goalEditor = MavenGoalEditor.newMavenGoalEditor(logger, ciOptContext);
         final Entry<List<String>, Properties> goalsAndProps = goalEditor.goalsAndUserProperties(ciOptContext, request.getGoals());
 
         logProperties(logger, "    goalEditor.userProperties", goalsAndProps.getValue(), null);

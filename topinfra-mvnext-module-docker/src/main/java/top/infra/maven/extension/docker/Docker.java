@@ -1,5 +1,7 @@
 package top.infra.maven.extension.docker;
 
+import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,8 +17,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import top.infra.maven.utils.SupportFunction;
-import top.infra.maven.utils.SystemUtils;
+import top.infra.maven.shared.utils.SupportFunction;
+import top.infra.maven.shared.utils.SystemUtils;
 
 /**
  * TODO use a java docker client ?
@@ -73,7 +75,7 @@ public class Docker {
         return org.unix4j.Unix4j.find(".", "*Docker*")
             .toStringList()
             .stream()
-            .filter(line -> !line.contains("/target/classes/")) // TODO windows ?
+            .filter(line -> !line.contains("/target/classes/") && !line.contains("\\target\\classes\\"))
             .filter(line -> !PATTERN_FILE_WITH_EXT.matcher(line).matches())
             .collect(Collectors.toList());
     }
@@ -81,13 +83,24 @@ public class Docker {
     public List<String> imageIdsToClean() {
         final Entry<Integer, String> returnCodeAndStdout = this.docker("images");
 
-        final List<String> imageIds;
+        final List<String> result;
         if (returnCodeAndStdout.getKey() == 0) {
-            imageIds = imagesToClean(SupportFunction.lines(returnCodeAndStdout.getValue()));
+            result = imagesToClean(SupportFunction.lines(returnCodeAndStdout.getValue()));
         } else {
-            imageIds = Collections.emptyList();
+            result = Collections.emptyList();
         }
-        return imageIds;
+        return result;
+    }
+
+    /**
+     * docker images --format '{{.Repository}}:{{.Tag}}'
+     *
+     * @return list of {{.Repository}}:{{.Tag}}
+     */
+    public List<String> imageRepositoryColonTags() {
+        //
+        final Entry<Integer, String> returnCodeAndStdout = this.docker("images", "--format", "'{{.Repository}}:{{.Tag}}'");
+        return returnCodeAndStdout.getKey() == 0 ? SupportFunction.lines(returnCodeAndStdout.getValue()) : Collections.emptyList();
     }
 
     private Entry<Integer, String> docker(final String... options) {
@@ -129,18 +142,16 @@ public class Docker {
         }
     }
 
-    /**
-     * Pull base images found in Dockerfiles.
-     *
-     * @param dockerfiles Dockerfiles to find base images in.
-     * @return base images found / pulled
-     */
-    public List<String> pullBaseImages(final List<String> dockerfiles) {
-        final List<String> baseImages = baseImages(dockerfiles);
-        baseImages.forEach(image -> this.docker("pull", image));
-        return baseImages;
+    public void pullImage(final String image) {
+        this.docker("pull", image);
     }
 
+    /**
+     * Find base images in Dockerfiles.
+     *
+     * @param dockerfiles Dockerfiles to find base images in.
+     * @return base images found (--format '{{.Repository}}:{{.Tag}}')
+     */
     static List<String> baseImages(final List<String> dockerfiles) {
         return dockerfiles
             .stream()
@@ -164,12 +175,12 @@ public class Docker {
     }
 
     public String getLoginTarget() {
-        return SupportFunction.isNotEmpty(this.registry) ? this.registry : this.registryUrl;
+        return !isEmpty(this.registry) ? this.registry : this.registryUrl;
     }
 
     public Optional<Integer> login(final String target) {
         final Optional<Integer> result;
-        if (SupportFunction.isNotEmpty(target) && !shouldSkipDockerLogin()) {
+        if (!isEmpty(target) && !shouldSkipDockerLogin()) {
             final List<String> command = dockerCommand("login", "--password-stdin", "-u=" + this.registryUser, target);
             result = Optional.of(SystemUtils.exec(this.environment, this.registryPass, command).getKey());
         } else {
@@ -179,6 +190,6 @@ public class Docker {
     }
 
     public boolean shouldSkipDockerLogin() {
-        return SupportFunction.isEmpty(this.registryPass) || SupportFunction.isEmpty(this.registryUser);
+        return isEmpty(this.registryPass) || isEmpty(this.registryUser);
     }
 }

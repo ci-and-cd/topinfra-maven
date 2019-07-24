@@ -3,10 +3,10 @@ package top.infra.maven.extension.docker;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static top.infra.maven.extension.shared.Constants.BOOL_STRING_TRUE;
-import static top.infra.maven.extension.shared.MavenOption.GENERATEREPORTS;
 import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY;
 import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY_URL;
+import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
+import static top.infra.maven.shared.extension.MavenOption.GENERATEREPORTS;
 
 import java.util.Properties;
 
@@ -14,7 +14,9 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.extension.OptionCollections;
+import top.infra.maven.shared.DefaultCiOptionContext;
+import top.infra.maven.test.extension.OptionCollections;
+import top.infra.maven.shared.utils.PropertiesUtils;
 
 
 public class DockerOptionTests {
@@ -30,14 +32,14 @@ public class DockerOptionTests {
 
         // gitProperties if needed
 
-        final CiOptionContext ciOptContext = new CiOptionContext(
+        final CiOptionContext ciOptContext = new DefaultCiOptionContext(
             systemProperties,
             userProperties
         );
 
         final Properties loadedProperties = new Properties();
         loadedProperties.setProperty(DOCKER_REGISTRY_URL.getEnvVariableName(), "https://docker.io/v2/");
-        ciOptContext.setSystemPropertiesIfAbsent(loadedProperties);
+        PropertiesUtils.setSystemPropertiesIfAbsent(ciOptContext.getSystemProperties(), loadedProperties);
 
         // ciOptContext.githubSiteRepoOwner().ifPresent(githubSiteRepoOwner ->
         //     ciOptContext.setSystemProperty(GITHUB_GLOBAL_REPOSITORYOWNER, githubSiteRepoOwner));
