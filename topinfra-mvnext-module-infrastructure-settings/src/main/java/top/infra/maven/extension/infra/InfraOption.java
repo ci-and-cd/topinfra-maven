@@ -71,6 +71,17 @@ public enum InfraOption implements CiOption {
             return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
         }
     },
+    MVNSITE_URL("mvnsite.url") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
     MVNSITE_USERNAME("mvnsite.username") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
