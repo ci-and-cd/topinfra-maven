@@ -8,6 +8,7 @@ import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_FEATURE;
 import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_HOTFIX;
 import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_RELEASE;
 import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_SUPPORT;
+import static top.infra.maven.shared.extension.Constants.PROP_PUBLISH_TO_REPO;
 import static top.infra.maven.shared.utils.SystemUtils.systemUserHome;
 
 import java.nio.file.Paths;
@@ -58,7 +59,7 @@ public enum MavenBuildExtensionOption implements CiOption {
         }
     },
     ORIGIN_REPO_SLUG("origin.repo.slug", "unknown/unknown"),
-    PUBLISH_TO_REPO("publish.to.repo") {
+    PUBLISH_TO_REPO(PROP_PUBLISH_TO_REPO) {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             final Optional<String> refNameOptional = VcsProperties.GIT_REF_NAME.getValue(context);
