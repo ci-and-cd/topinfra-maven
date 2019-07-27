@@ -116,6 +116,63 @@ public enum InfraOption implements CiOption {
             return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
         }
     },
+
+    REPOSITORY_URL("repository.url") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
+    REPOSITORY_RELEASES_URL("repository.releases.url") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
+    REPOSITORY_SNAPSHOTS_URL("repository.snapshots.url") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
+    REPOSITORY_THIRDPARTY_URL("repository.third-party.url") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
+    SNAPSHOTREPOSITORY_URL("snapshotRepository.url") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
+
     SONAR_HOST_URL("sonar.host.url") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
