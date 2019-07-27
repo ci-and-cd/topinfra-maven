@@ -1,5 +1,6 @@
 package top.infra.maven.extension.main;
 
+import static java.util.stream.Collectors.toList;
 import static org.eclipse.jgit.lib.Repository.shortenRefName;
 import static top.infra.maven.shared.extension.VcsProperties.GIT_COMMIT_ID;
 import static top.infra.maven.shared.extension.VcsProperties.GIT_REF_NAME;
@@ -17,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -34,9 +34,9 @@ import org.eclipse.jgit.lib.RepositoryBuilder;
 
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
+import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.shared.extension.VcsProperties;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 import top.infra.maven.shared.utils.MavenUtils;
 import top.infra.maven.shared.utils.PropertiesUtils;
@@ -147,14 +147,19 @@ public class GitPropertiesEventAware implements MavenEventAware {
                         refNameFull = fullBranchRef.getName();
                         refName = shortenRefName(refNameFull);
                     } else {
-                        final List<String> refsMatched = repository.getRefDatabase().getRefs()
+                        final List<Ref> refs = repository.getRefDatabase().getRefs();
+                        logger.info(String.format(
+                            "    refs. %s",
+                            refs.stream().map(ref -> ref.getName() + ":" + ref.getObjectId()).collect(toList())));
+
+                        final List<String> refsMatched = refs
                             .stream()
                             .filter(ref -> ref.getObjectId().getName().equals(fullBranch))
                             .filter(ref -> !ref.getName().endsWith("/HEAD") && !ref.getName().equals("HEAD"))
                             .map(Ref::getName)
-                            .collect(Collectors.toList());
+                            .collect(toList());
 
-                        logger.info(String.format("refs matched. %s %s", fullBranch, refsMatched));
+                        logger.info(String.format("    refs matched. %s %s", fullBranch, refsMatched));
 
                         refNameFull = refsMatched.stream().findFirst().orElse("");
                         refName = shortenRefName(refNameFull).replaceFirst("^origin/", "");

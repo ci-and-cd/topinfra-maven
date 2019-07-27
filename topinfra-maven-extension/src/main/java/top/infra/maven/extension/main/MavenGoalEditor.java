@@ -2,6 +2,7 @@ package top.infra.maven.extension.main;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Collections.disjoint;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toMap;
 import static top.infra.maven.extension.main.MavenBuildExtensionOption.MVN_MULTI_STAGE_BUILD;
@@ -10,7 +11,7 @@ import static top.infra.maven.extension.main.MavenBuildExtensionOption.PUBLISH_T
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_FALSE;
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.shared.extension.Constants.GIT_REF_NAME_DEVELOP;
-import static top.infra.maven.shared.extension.Constants.PHASES_AFTER_PREPARE_PACKAGE;
+import static top.infra.maven.shared.extension.Constants.PHASES_AFTER_PREPARE_PACKAGE_AND_BEFORE_DEPLOY;
 import static top.infra.maven.shared.extension.Constants.PHASE_CLEAN;
 import static top.infra.maven.shared.extension.Constants.PHASE_INSTALL;
 import static top.infra.maven.shared.extension.Constants.PHASE_PACKAGE;
@@ -258,7 +259,8 @@ public class MavenGoalEditor {
                 } else if (!nexus2Staging.get()
                     && includes(requestedPhases, MavenPhase.DEPLOY)
                 ) {
-                    if (Collections.disjoint(requestedGoals, PHASES_AFTER_PREPARE_PACKAGE)) {
+                    if (disjoint(requestedGoals, PHASES_AFTER_PREPARE_PACKAGE_AND_BEFORE_DEPLOY)
+                        && !requestedGoals.contains(PHASE_CLEAN)) {
                         properties.setProperty(PROP_MAVEN_PACKAGES_SKIP, BOOL_STRING_TRUE);
                     }
                     if (!requestedGoals.contains(PHASE_INSTALL)) {

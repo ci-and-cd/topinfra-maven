@@ -152,7 +152,62 @@ public class MultiStageBuildTest {
     }
 
     @Test
-    public void testCleanDeploy() throws IOException {
+    public void testCleanDeployWhenAltDeployRepoAbsentAndNexus2StagingAbsent() throws IOException {
+        final CiOptionContext ciOptCtx = blankCiOptCtx();
+        ciOptCtx.getUserProperties().setProperty(PROP_MVN_MULTI_STAGE_BUILD, BOOL_STRING_TRUE);
+        ciOptCtx.getUserProperties().setProperty(PROP_PUBLISH_TO_REPO, BOOL_STRING_TRUE);
+        final List<String> requestedGoals = asList(PHASE_CLEAN, PHASE_DEPLOY);
+
+        final Path altDeployRepo = MavenBuildPomUtils.altDeploymentRepositoryPath(ciOptCtx);
+        logger.info("altDeployRepo: {}", altDeployRepo);
+
+        if (altDeployRepo.toFile().exists()) {
+            Files.deleteIfExists(altDeployRepo);
+        }
+
+        final Entry<List<String>, Properties> goalsAndProps = goalsAndUserProps(ciOptCtx, requestedGoals);
+        final Collection<String> resultGoals = goalsAndProps.getKey();
+        final Properties additionalUserProperties = goalsAndProps.getValue();
+
+        assertTrue(resultGoals.contains(PHASE_CLEAN));
+        assertTrue(resultGoals.contains(PHASE_DEPLOY));
+        assertEquals(BOOL_STRING_FALSE, additionalUserProperties.getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY));
+        assertEquals(BOOL_STRING_FALSE, additionalUserProperties.getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_INSTALL));
+        assertEquals(BOOL_STRING_TRUE, additionalUserProperties.getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_PACKAGE));
+        assertEquals(PHASE_PACKAGE, additionalUserProperties.getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL));
+        assertEquals(BOOL_STRING_FALSE, additionalUserProperties.getProperty(PROP_NEXUS2_STAGING));
+    }
+
+    @Test
+    public void testCleanDeployWhenAltDeployRepoAbsentAndNotNexus2Staging() throws IOException {
+        final CiOptionContext ciOptCtx = blankCiOptCtx();
+        ciOptCtx.getUserProperties().setProperty(PROP_MVN_MULTI_STAGE_BUILD, BOOL_STRING_TRUE);
+        ciOptCtx.getUserProperties().setProperty(PROP_NEXUS2_STAGING, BOOL_STRING_FALSE);
+        ciOptCtx.getUserProperties().setProperty(PROP_PUBLISH_TO_REPO, BOOL_STRING_TRUE);
+        final List<String> requestedGoals = asList(PHASE_CLEAN, PHASE_DEPLOY);
+
+        final Path altDeployRepo = MavenBuildPomUtils.altDeploymentRepositoryPath(ciOptCtx);
+        logger.info("altDeployRepo: {}", altDeployRepo);
+
+        if (altDeployRepo.toFile().exists()) {
+            Files.deleteIfExists(altDeployRepo);
+        }
+
+        final Entry<List<String>, Properties> goalsAndProps = goalsAndUserProps(ciOptCtx, requestedGoals);
+        final Collection<String> resultGoals = goalsAndProps.getKey();
+        final Properties additionalUserProperties = goalsAndProps.getValue();
+
+        assertTrue(resultGoals.contains(PHASE_CLEAN));
+        assertTrue(resultGoals.contains(PHASE_DEPLOY));
+        assertEquals(BOOL_STRING_FALSE, additionalUserProperties.getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY));
+        assertEquals(BOOL_STRING_FALSE, additionalUserProperties.getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_INSTALL));
+        assertEquals(BOOL_STRING_TRUE, additionalUserProperties.getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL_PACKAGE));
+        assertEquals(PHASE_PACKAGE, additionalUserProperties.getProperty(PROP_MVN_MULTI_STAGE_BUILD_GOAL));
+        assertNull(additionalUserProperties.getProperty(PROP_NEXUS2_STAGING));
+    }
+
+    @Test
+    public void testCleanDeployWhenAltDeployRepoPresent() throws IOException {
         final CiOptionContext ciOptCtx = blankCiOptCtx();
         ciOptCtx.getUserProperties().setProperty(PROP_MVN_MULTI_STAGE_BUILD, BOOL_STRING_TRUE);
         ciOptCtx.getUserProperties().setProperty(PROP_PUBLISH_TO_REPO, BOOL_STRING_TRUE);
