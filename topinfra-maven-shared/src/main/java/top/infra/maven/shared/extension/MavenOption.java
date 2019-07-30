@@ -3,6 +3,7 @@ package top.infra.maven.shared.extension;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static top.infra.maven.shared.extension.Constants.PROP_SETTINGS_LOCALREPOSITORY;
 
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -113,6 +114,25 @@ public enum MavenOption implements CiOption {
                 .orElse(Constants.BOOL_STRING_FALSE));
         }
     },
+    MAVEN_REPO_LOCAL("maven.repo.local") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            final Optional<String> settingsLocalRepository = this.findInProperties(PROP_SETTINGS_LOCALREPOSITORY, context);
+
+            final Optional<String> result;
+            if (settingsLocalRepository.isPresent()) {
+                result = settingsLocalRepository;
+            } else {
+                final Optional<String> mavenUserHome = MAVEN_USER_HOME.getValue(context);
+                result = mavenUserHome.map(dotM2 -> Paths.get(dotM2, "repository").toString());
+            }
+            return result;
+        }
+    },
+    /**
+     * This environment/property is original used by io.takari:maven-wrapper (https://github.com/takari/maven-wrapper).
+     */
+    MAVEN_USER_HOME("maven.user.home"),
     /**
      * See: "https://maven.apache.org/plugins/maven-site-plugin/site-mojo.html".
      * <p/>
