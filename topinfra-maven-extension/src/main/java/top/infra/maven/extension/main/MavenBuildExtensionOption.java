@@ -9,7 +9,6 @@ import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_HOTFIX;
 import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_RELEASE;
 import static top.infra.maven.shared.extension.Constants.GIT_REF_PREFIX_SUPPORT;
 import static top.infra.maven.shared.extension.Constants.PROP_PUBLISH_TO_REPO;
-import static top.infra.maven.shared.utils.SystemUtils.systemUserHome;
 
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -17,8 +16,10 @@ import java.util.Optional;
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.shared.extension.Constants;
+import top.infra.maven.shared.extension.MavenOption;
 import top.infra.maven.shared.extension.VcsProperties;
 import top.infra.maven.shared.utils.FileUtils;
+import top.infra.maven.shared.utils.MavenUtils;
 import top.infra.maven.shared.utils.SupportFunction;
 
 public enum MavenBuildExtensionOption implements CiOption {
@@ -27,7 +28,9 @@ public enum MavenBuildExtensionOption implements CiOption {
         public Optional<String> calculateValue(final CiOptionContext context) {
             // We need a stable path prefix for cache
             // java.io.tmp changed on every time java process start.
-            final String prefix = Paths.get(systemUserHome(), ".ci-and-cd", "sessions").toString();
+            final Optional<String> mavenUserHome = MavenOption.MAVEN_USER_HOME.getValue(context);
+            final String home = mavenUserHome.orElseGet(() -> MavenUtils.userHomeDotM2().toString());
+            final String prefix = Paths.get(home, ".ci-and-cd", "sessions").toString();
             final String commitId = VcsProperties.GIT_COMMIT_ID.getValue(context).map(value -> value.substring(0, 8)).orElse("unknown-commit");
             final String pathname = Paths.get(prefix, SupportFunction.uniqueKey(), commitId).toString();
             return Optional.of(pathname);
@@ -80,7 +83,7 @@ public enum MavenBuildExtensionOption implements CiOption {
             });
         }
     },
-    ;
+    SETTINGS_LOCALREPOSITORY(Constants.PROP_SETTINGS_LOCALREPOSITORY);
 
     private final String defaultValue;
     private final String propertyName;

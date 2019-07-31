@@ -24,6 +24,7 @@ import static top.infra.maven.shared.extension.Constants.PROP_MAVEN_SOURCE_SKIP;
 import static top.infra.maven.shared.extension.Constants.PROP_MVN_MULTI_STAGE_BUILD_GOAL_DEPLOY;
 import static top.infra.maven.shared.extension.Constants.PROP_NEXUS2_STAGING;
 import static top.infra.maven.shared.extension.Constants.PROP_SONAR;
+import static top.infra.maven.shared.extension.VcsProperties.GIT_REF_NAME;
 import static top.infra.maven.shared.utils.MavenUtils.findInProperties;
 import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
 import static top.infra.maven.shared.utils.SupportFunction.newTuple;
@@ -47,7 +48,6 @@ import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.MavenPhase;
 import top.infra.maven.shared.extension.Constants;
 import top.infra.maven.shared.extension.MavenOption;
-import top.infra.maven.shared.extension.VcsProperties;
 import top.infra.maven.shared.utils.MavenBuildPomUtils;
 
 public class MavenGoalEditor {
@@ -94,7 +94,7 @@ public class MavenGoalEditor {
             logger,
             MavenBuildPomUtils.altDeploymentRepositoryPath(ciOptContext),
             MavenOption.GENERATEREPORTS.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null),
-            VcsProperties.GIT_REF_NAME.getValue(ciOptContext).orElse(null),
+            GIT_REF_NAME.getValue(ciOptContext).orElse(null),
             MVN_MULTI_STAGE_BUILD.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(FALSE),
             ORIGIN_REPO.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null),
             PUBLISH_TO_REPO.getValue(ciOptContext).map(Boolean::parseBoolean).orElse(null) // make sure version is valid too
@@ -162,8 +162,10 @@ public class MavenGoalEditor {
                 if (this.publishToRepo == null || this.publishToRepo) {
                     resultGoals.add(goal);
                 } else {
-                    logger.info(String.format("    editGoals skip [%s] (%s: %s)",
-                        goal, MavenBuildExtensionOption.PUBLISH_TO_REPO.getEnvVariableName(), this.publishToRepo));
+                    logger.info(String.format("    editGoals skip [%s] (%s: %s depends on %s/%s and %s/%s)",
+                        goal, PUBLISH_TO_REPO.getEnvVariableName(), this.publishToRepo,
+                        ORIGIN_REPO.getEnvVariableName(), ORIGIN_REPO.getPropertyName(),
+                        GIT_REF_NAME.getEnvVariableName(), GIT_REF_NAME.getPropertyName()));
                 }
             } else if (isSiteGoal(goal)) {
                 if (this.generateReports == null || this.generateReports) {
@@ -193,7 +195,7 @@ public class MavenGoalEditor {
                     logger.info(String.format("    editGoals skip [%s] (%s: %s, %s: %s)",
                         goal,
                         MavenBuildExtensionOption.ORIGIN_REPO.getEnvVariableName(), this.originRepo,
-                        VcsProperties.GIT_REF_NAME.getEnvVariableName(), this.gitRefName));
+                        GIT_REF_NAME.getEnvVariableName(), this.gitRefName));
                 }
             } else {
                 resultGoals.add(goal);
