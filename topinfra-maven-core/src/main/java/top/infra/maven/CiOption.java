@@ -18,8 +18,16 @@ public interface CiOption {
     }
 
     default String envVariableName(final String propertyName) {
+        final String envVarPrefix = this.getEnvVariablePrefix();
         final String name = name(propertyName);
-        return name.startsWith("CI_OPT_") ? name : "CI_OPT_" + name;
+        final String result;
+        if (envVarPrefix == null || envVarPrefix.isEmpty()) {
+            result = name;
+        } else {
+            // result = name.startsWith("CI_OPT_") ? name : "CI_OPT_" + name;
+            result = name.startsWith(envVarPrefix) ? name : envVarPrefix + name;
+        }
+        return result;
     }
 
     default Optional<String> findInProperties(final CiOptionContext context) {
@@ -57,6 +65,10 @@ public interface CiOption {
 
     default String getEnvVariableName() {
         return this.envVariableName(this.getPropertyName());
+    }
+
+    default String getEnvVariablePrefix() {
+        return "CI_OPT_";
     }
 
     String getPropertyName();

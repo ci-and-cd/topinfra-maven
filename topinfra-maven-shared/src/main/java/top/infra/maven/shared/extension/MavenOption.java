@@ -132,7 +132,12 @@ public enum MavenOption implements CiOption {
     /**
      * This environment/property is original used by io.takari:maven-wrapper (https://github.com/takari/maven-wrapper).
      */
-    MAVEN_USER_HOME("maven.user.home"),
+    MAVEN_USER_HOME("maven.user.home") {
+        @Override
+        public String getEnvVariablePrefix() {
+            return "";
+        }
+    },
     /**
      * See: "https://maven.apache.org/plugins/maven-site-plugin/site-mojo.html".
      * <p/>
