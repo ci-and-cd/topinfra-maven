@@ -6,7 +6,6 @@ import static top.infra.maven.shared.extension.GlobalOption.INFRASTRUCTURE;
 import static top.infra.maven.shared.extension.GlobalOption.getInfrastructureSpecificValue;
 import static top.infra.maven.shared.extension.GlobalOption.setInfrastructureSpecificValue;
 import static top.infra.maven.shared.utils.SystemUtils.systemJavaIoTmp;
-import static top.infra.maven.shared.utils.SystemUtils.systemUserHome;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,6 +14,7 @@ import java.util.Properties;
 
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
+import top.infra.maven.shared.extension.MavenOption;
 import top.infra.maven.shared.utils.MavenUtils;
 
 public enum InfraOption implements CiOption {
@@ -23,8 +23,10 @@ public enum InfraOption implements CiOption {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
             // We need a stable global cache path
+            final Optional<String> mavenUserHome = MavenOption.MAVEN_USER_HOME.getValue(context);
+            final String home = mavenUserHome.orElseGet(() -> MavenUtils.userHomeDotM2().toString());
             return Optional.of(INFRASTRUCTURE.getValue(context)
-                .map(infra -> Paths.get(systemUserHome(), ".ci-and-cd", infra).toString())
+                .map(infra -> Paths.get(home, ".ci-and-cd", infra).toString())
                 .orElseGet(() -> MavenUtils.userHomeDotM2().toString()));
         }
     },
