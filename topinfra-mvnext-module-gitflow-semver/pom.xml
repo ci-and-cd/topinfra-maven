@@ -6,7 +6,7 @@
     <parent>
         <groupId>top.infra.maven</groupId>
         <artifactId>topinfra-maven</artifactId>
-        <version>1.2.0</version>
+        <version>1.2.1-SNAPSHOT</version>
     </parent>
     <artifactId>topinfra-mvnext-module-gitflow-semver</artifactId>
     <packaging>jar</packaging>
