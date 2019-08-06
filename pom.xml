@@ -9,7 +9,7 @@
     <name>topinfra-maven</name>
     <packaging>pom</packaging>
     <url>https://github.com/ci-and-cd/topinfra-maven</url>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
 
     <developers>
         <developer>
@@ -87,24 +87,6 @@
             <!-- @formatter:off -->
             <plugins>
                 <plugin>
-                    <groupId>pl.project13.maven</groupId>
-                    <artifactId>git-commit-id-plugin</artifactId>
-                    <version>${version.git-commit-id-plugin}</version>
-                    <configuration>
-                        <commitIdGenerationMode>flat</commitIdGenerationMode>
-                        <dotGitDirectory>${maven.multiModuleProjectDirectory}/.git</dotGitDirectory>
-                        <failOnNoGitDirectory>false</failOnNoGitDirectory>
-                        <failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
-                        <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                        <!--generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename-->
-                        <generateGitPropertiesFilename>src/main/resources/git.properties</generateGitPropertiesFilename>
-                        <injectAllReactorProjects>true</injectAllReactorProjects>
-                        <prefix>git</prefix>
-                        <skipPoms>false</skipPoms>
-                        <verbose>false</verbose>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <groupId>org.codehaus.plexus</groupId>
                     <artifactId>plexus-component-metadata</artifactId>
                     <version>2.0.0</version>
@@ -171,7 +153,6 @@
                 </plugin>
 
                 <plugin><groupId>org.codehaus.mojo</groupId><artifactId>build-helper-maven-plugin</artifactId><version>${version.build-helper-maven-plugin}</version></plugin>
-                <plugin><groupId>org.codehaus.mojo</groupId><artifactId>wagon-maven-plugin</artifactId><version>${version.wagon-maven-plugin}</version></plugin>
             </plugins>
             <!-- @formatter:on -->
         </pluginManagement>
@@ -254,6 +235,40 @@
 
     <!-- @formatter:off -->
     <profiles>
+        <profile>
+            <id>git-commit-id</id>
+            <activation>
+                <file><exists>${basedir}/.git</exists></file>
+                <property><name>!git-commit-id.disabled</name></property>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>pl.project13.maven</groupId>
+                            <artifactId>git-commit-id-plugin</artifactId>
+                            <version>${version.git-commit-id-plugin}</version>
+                            <configuration>
+                                <commitIdGenerationMode>flat</commitIdGenerationMode>
+                                <dotGitDirectory>${maven.multiModuleProjectDirectory}/.git</dotGitDirectory>
+                                <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                                <failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
+                                <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                                <!--generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename-->
+                                <generateGitPropertiesFilename>src/main/resources/git.properties</generateGitPropertiesFilename>
+                                <injectAllReactorProjects>true</injectAllReactorProjects>
+                                <prefix>git</prefix>
+                                <skipPoms>false</skipPoms>
+                                <verbose>false</verbose>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+            <properties>
+                <version.git-commit-id-plugin>2.2.6</version.git-commit-id-plugin>
+            </properties>
+        </profile>
         <profile>
             <id>default-infrastructure_ossrh</id>
             <activation><property><name>!infrastructure</name></property></activation>
@@ -390,6 +405,7 @@
                             <artifactId>maven-deploy-plugin</artifactId>
                             <configuration><skip>true</skip></configuration>
                         </plugin>
+                        <plugin><groupId>org.codehaus.mojo</groupId><artifactId>wagon-maven-plugin</artifactId><version>${version.wagon-maven-plugin}</version></plugin>
                     </plugins>
                 </pluginManagement>
                 <plugins>
@@ -520,6 +536,19 @@
                     </plugin>
                 </plugins>
             </build>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>github-mvn-repo-wagon-maven-plugin</id>
+                    <url>https://raw.github.com/ci-and-cd/wagon-maven-plugin/mvn-repo/</url>
+                    <name>Forked wagon-maven-plugin that can merge snapshots metadata correctly</name>
+                    <layout>default</layout>
+                    <snapshots><enabled>true</enabled><updatePolicy>daily</updatePolicy></snapshots>
+                    <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases>
+                </pluginRepository>
+            </pluginRepositories>
+            <properties>
+                <version.wagon-maven-plugin>wagon-maven-plugin-2.0.1-snapshot-chshawkn-1.6</version.wagon-maven-plugin>
+            </properties>
         </profile>
         <profile>
             <id>skip-tests-when-fast-option-present</id>
@@ -960,7 +989,6 @@
         <version.asm>6.2</version.asm>
         <version.build-helper-maven-plugin>3.0.0</version.build-helper-maven-plugin>
         <version.doxia-module-markdown>1.8</version.doxia-module-markdown>
-        <version.git-commit-id-plugin>2.2.6</version.git-commit-id-plugin>
         <version.org.jacoco_jacoco>0.8.3</version.org.jacoco_jacoco>
 
         <version.maven-antrun-plugin>1.8</version.maven-antrun-plugin>
@@ -989,22 +1017,11 @@
         <version.plexus-cipher>1.7</version.plexus-cipher>
         <version.spring-context>5.1.6.RELEASE</version.spring-context>
 
-        <version.wagon-maven-plugin>wagon-maven-plugin-2.0.1-snapshot-chshawkn-1.6</version.wagon-maven-plugin>
         <version.wagon-ssh>3.0.0</version.wagon-ssh>
         <version.wagon-webdav-jackrabbit>3.0.0</version.wagon-webdav-jackrabbit>
     </properties>
 
     <!-- @formatter:off -->
-    <pluginRepositories>
-        <pluginRepository>
-            <id>github-mvn-repo-wagon-maven-plugin</id>
-            <url>https://raw.github.com/ci-and-cd/wagon-maven-plugin/mvn-repo/</url>
-            <name>Forked wagon-maven-plugin that can merge snapshots metadata correctly</name>
-            <layout>default</layout>
-            <snapshots><enabled>true</enabled><updatePolicy>daily</updatePolicy></snapshots>
-            <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases>
-        </pluginRepository>
-    </pluginRepositories>
     <repositories>
         <repository>
             <id>ossrh-nexus2-releases</id><name>ossrh nexus2 releases</name><url>https://oss.sonatype.org/content/repositories/releases/</url>
