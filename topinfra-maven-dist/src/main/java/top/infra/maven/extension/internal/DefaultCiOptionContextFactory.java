@@ -6,12 +6,12 @@ import javax.inject.Singleton;
 
 import org.apache.maven.eventspy.EventSpy.Context;
 
+import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.CiOptionContextFactory;
-import top.infra.maven.shared.DefaultCiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
+import top.infra.maven.shared.DefaultCiOptionContext;
 import top.infra.maven.shared.extension.Orders;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 import top.infra.maven.shared.utils.MavenUtils;
 

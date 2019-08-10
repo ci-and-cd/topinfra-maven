@@ -23,7 +23,7 @@ import org.apache.maven.model.resolution.InvalidRepositoryException;
 import org.apache.maven.model.resolution.ModelResolver;
 import org.apache.maven.model.resolution.UnresolvableModelException;
 
-import top.infra.maven.logging.Logger;
+import top.infra.logging.Logger;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 import top.infra.maven.shared.utils.DownloadUtils;
 import top.infra.maven.shared.utils.DownloadUtils.DownloadException;
@@ -110,11 +110,12 @@ public class RepositoryModelResolver implements ModelResolver {
 
     public void setLocalRepository(final String localRepository) {
         this.localRepository = new File(localRepository);
-    }    @Override
+    }
+
+    @Override
     public void addRepository(Repository repository) throws InvalidRepositoryException {
         this.addRepository(repository, false);
     }
-
 
 
     @Override

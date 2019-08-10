@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.test.logging.LoggerSlf4jImpl;
+import top.infra.test.logging.LoggerSlf4jImpl;
 
 public class MavenGoalEditorTest {
 

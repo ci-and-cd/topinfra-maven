@@ -20,8 +20,8 @@ import org.apache.maven.cli.configuration.ConfigurationProcessor;
 import org.apache.maven.cli.configuration.SettingsXmlConfigurationProcessor;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
 
+import top.infra.logging.Logger;
 import top.infra.maven.extension.OrderedConfigurationProcessor;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 
 /**

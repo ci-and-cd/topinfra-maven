@@ -1,12 +1,13 @@
 package top.infra.maven.extension.docker;
 
 import static org.junit.Assert.assertEquals;
-import static top.infra.maven.shared.utils.SupportFunction.lines;
 
 import java.util.List;
 
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
+
+import top.infra.util.StringUtils;
 
 public class DockerTests {
 
@@ -79,7 +80,7 @@ public class DockerTests {
 
     @Test
     public void testImagesToClean() {
-        final List<String> lines = lines(this.dockerImagesOutput);
+        final List<String> lines = StringUtils.lines(this.dockerImagesOutput);
         final List<String> imageIds = Docker.imagesToClean(lines);
 
         slf4jLogger.info("lines: {}", lines);

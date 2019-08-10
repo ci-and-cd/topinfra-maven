@@ -1,4 +1,4 @@
-package top.infra.maven.shared.exception;
+package top.infra.exception;
 
 import java.io.IOException;
 

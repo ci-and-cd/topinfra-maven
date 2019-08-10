@@ -7,20 +7,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import top.infra.maven.shared.extension.Constants;
+import top.infra.filesafe.GpgUtils;
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.shared.utils.SystemUtils;
+import top.infra.maven.shared.extension.Constants;
+import top.infra.util.cli.CliUtils;
 
 public enum GpgOption implements CiOption {
 
     GPG_EXECUTABLE("gpg.executable") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {
-            final String gpg = SystemUtils.exec("which gpg").getKey() == 0 ? "gpg" : null;
-            final String gpgExecutable = SystemUtils.exec("which gpg2").getKey() == 0 ? "gpg2" : gpg;
-
-            return Optional.ofNullable(gpgExecutable);
+            return GpgUtils.gpgExecutable();
         }
     },
     GPG_KEYID("gpg.keyid"),
@@ -33,7 +31,7 @@ public enum GpgOption implements CiOption {
             final Optional<String> result;
             if (gpgExecutable.isPresent()) {
                 final List<String> gpgVersion = Arrays.asList(gpgExecutable.get(), "--batch=true", "--version");
-                final Map.Entry<Integer, String> resultGpgVersion = SystemUtils.exec(null, null, gpgVersion);
+                final Map.Entry<Integer, String> resultGpgVersion = CliUtils.exec(null, null, gpgVersion);
                 if (gpgVersionGreater(resultGpgVersion.getValue(), "2.1")) {
                     result = Optional.of(Constants.BOOL_STRING_TRUE);
                 } else {

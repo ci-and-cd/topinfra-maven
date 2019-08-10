@@ -5,12 +5,12 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import top.infra.logging.Logger;
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.shared.cienv.AppveyorVariables;
 import top.infra.maven.shared.cienv.GitlabCiVariables;
 import top.infra.maven.shared.cienv.TravisCiVariables;
-import top.infra.maven.logging.Logger;
 
 public enum VcsProperties implements CiOption {
 

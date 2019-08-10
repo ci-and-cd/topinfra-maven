@@ -12,7 +12,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -22,17 +21,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import top.infra.maven.shared.exception.RuntimeIOException;
+import top.infra.exception.RuntimeIOException;
 
 public abstract class SupportFunction {
 
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
     private SupportFunction() {
-    }
-
-    public static List<String> asList(final String[] array1, final String... array2) {
-        return Arrays.asList(concat(array1, array2));
     }
 
     public static String componentName(final Class<?> clazz) {
@@ -51,28 +46,8 @@ public abstract class SupportFunction {
         return parseBoolean(systemProperties.getProperty(envVar, userProperties.getProperty(propName, BOOL_STRING_FALSE)));
     }
 
-    public static String[] concat(final String[] array1, final String... array2) {
-        return Stream.of(array1, array2).flatMap(Stream::of).toArray(String[]::new);
-        // return Stream.concat(Arrays.stream(array1), Arrays.stream(array2)).toArray(String[]::new);
-    }
-
     public static boolean exists(final Path path) {
         return path != null && path.toFile().exists();
-    }
-
-    public static boolean isEmpty(final String str) {
-        return str == null || str.isEmpty();
-    }
-
-    public static List<String> lines(final String cmdOutput) {
-        return Arrays.stream(("" + cmdOutput).split("\\r?\\n"))
-            .map(line -> line.replaceAll("\\s+", " "))
-            .filter(SupportFunction::isNotEmpty)
-            .collect(Collectors.toList());
-    }
-
-    public static boolean isNotEmpty(final String str) {
-        return !isEmpty(str);
     }
 
     public static List<Entry<String, List<String>>> commonPrefixes(final List<String> names) {
@@ -137,10 +112,6 @@ public abstract class SupportFunction {
 
     public static <F, S> Entry<Optional<F>, Optional<S>> newTupleOptional(final F first, final S second) {
         return new AbstractMap.SimpleImmutableEntry<>(Optional.ofNullable(first), Optional.ofNullable(second));
-    }
-
-    public static boolean notEmpty(final String str) {
-        return str != null && !str.isEmpty();
     }
 
     public static String stackTrace(final Exception ex) {

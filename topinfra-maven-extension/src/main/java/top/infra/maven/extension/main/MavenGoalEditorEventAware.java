@@ -17,11 +17,11 @@ import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
+import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.shared.extension.VcsProperties;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 import top.infra.maven.shared.utils.PropertiesUtils;
 

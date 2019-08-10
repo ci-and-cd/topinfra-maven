@@ -6,7 +6,7 @@ import static top.infra.maven.shared.cienv.GitlabCiVariables.NA;
 import java.util.Optional;
 import java.util.Properties;
 
-import top.infra.maven.shared.utils.SupportFunction;
+import top.infra.util.StringUtils;
 
 public class AppveyorVariables {
 
@@ -23,7 +23,7 @@ public class AppveyorVariables {
     }
 
     public boolean isPullRequest() {
-        return this.pullRequestHeadRepoName().map(SupportFunction::notEmpty).orElse(FALSE);
+        return this.pullRequestHeadRepoName().map(StringUtils::notEmpty).orElse(FALSE);
     }
 
     public Optional<String> pullRequestHeadRepoName() {

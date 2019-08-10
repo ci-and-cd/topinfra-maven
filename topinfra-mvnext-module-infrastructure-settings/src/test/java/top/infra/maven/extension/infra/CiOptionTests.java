@@ -13,12 +13,12 @@ import java.util.Properties;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
+import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.shared.DefaultCiOptionContext;
-import top.infra.maven.test.extension.OptionCollections;
-import top.infra.maven.logging.Logger;
-import top.infra.maven.test.logging.LoggerSlf4jImpl;
 import top.infra.maven.shared.utils.PropertiesUtils;
+import top.infra.maven.test.extension.OptionCollections;
+import top.infra.test.logging.LoggerSlf4jImpl;
 
 public class CiOptionTests {
 

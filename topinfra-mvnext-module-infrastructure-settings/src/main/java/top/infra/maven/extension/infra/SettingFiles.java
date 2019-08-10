@@ -17,8 +17,8 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.maven.cli.CLIManager;
 import org.apache.maven.cli.CliRequest;
 
+import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.utils.FileUtils;
 import top.infra.maven.shared.utils.MavenUtils;
 

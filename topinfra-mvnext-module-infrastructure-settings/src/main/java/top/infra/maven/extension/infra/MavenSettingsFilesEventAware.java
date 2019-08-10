@@ -14,11 +14,11 @@ import org.apache.maven.cli.CliRequest;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
 import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
 
+import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.shared.extension.Constants;
 import top.infra.maven.shared.extension.Orders;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 
 @Named

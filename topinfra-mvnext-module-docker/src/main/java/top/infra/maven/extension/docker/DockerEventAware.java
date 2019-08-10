@@ -10,9 +10,9 @@ import static top.infra.maven.extension.docker.DockerOption.DOCKER_REGISTRY_USER
 import static top.infra.maven.shared.extension.GlobalOption.FAST;
 import static top.infra.maven.shared.utils.MavenUtils.cmdArgOffline;
 import static top.infra.maven.shared.utils.MavenUtils.cmdArgUpdateSnapshots;
-import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
 import static top.infra.maven.shared.utils.SupportFunction.logEnd;
 import static top.infra.maven.shared.utils.SupportFunction.logStart;
+import static top.infra.util.StringUtils.isEmpty;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,9 +25,9 @@ import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 
+import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.extension.Constants;
 import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;

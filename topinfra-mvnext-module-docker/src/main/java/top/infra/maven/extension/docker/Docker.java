@@ -1,6 +1,6 @@
 package top.infra.maven.extension.docker;
 
-import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
+import static top.infra.util.StringUtils.isEmpty;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,8 +17,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import top.infra.maven.shared.utils.SupportFunction;
+import org.codehaus.plexus.util.cli.Commandline;
+
 import top.infra.maven.shared.utils.SystemUtils;
+import top.infra.util.StringUtils;
+import top.infra.util.cli.CliUtils;
 
 /**
  * TODO use a java docker client ?
@@ -56,11 +59,11 @@ public class Docker {
     static Map<String, String> environment(final String dockerHost, final String registry) {
         final Map<String, String> result = new LinkedHashMap<>();
 
-        if (SupportFunction.notEmpty(dockerHost)) {
+        if (!StringUtils.isEmpty(dockerHost)) {
             result.put("DOCKER_HOST", dockerHost);
         }
 
-        if (SupportFunction.notEmpty(registry) && !registry.startsWith("https://")) {
+        if (!StringUtils.isEmpty(registry) && !registry.startsWith("https://")) {
             result.put("DOCKER_OPTS", String.format("–insecure-registry %s", registry));
         }
 
@@ -85,7 +88,7 @@ public class Docker {
 
         final List<String> result;
         if (returnCodeAndStdout.getKey() == 0) {
-            result = imagesToClean(SupportFunction.lines(returnCodeAndStdout.getValue()));
+            result = imagesToClean(StringUtils.lines(returnCodeAndStdout.getValue()));
         } else {
             result = Collections.emptyList();
         }
@@ -100,15 +103,7 @@ public class Docker {
     public List<String> imageRepositoryColonTags() {
         //
         final Entry<Integer, String> returnCodeAndStdout = this.docker("images", "--format", "'{{.Repository}}:{{.Tag}}'");
-        return returnCodeAndStdout.getKey() == 0 ? SupportFunction.lines(returnCodeAndStdout.getValue()) : Collections.emptyList();
-    }
-
-    private Entry<Integer, String> docker(final String... options) {
-        return SystemUtils.exec(this.environment, null, dockerCommand(options));
-    }
-
-    static List<String> dockerCommand(final String... options) {
-        return SupportFunction.asList(new String[]{"docker"}, options);
+        return returnCodeAndStdout.getKey() == 0 ? StringUtils.lines(returnCodeAndStdout.getValue()) : Collections.emptyList();
     }
 
     static List<String> imagesToClean(final List<String> dockerImages) {
@@ -156,9 +151,9 @@ public class Docker {
         return dockerfiles
             .stream()
             .map(Docker::baseImageOf)
-            .filter(SupportFunction::isNotEmpty)
+            .filter(StringUtils::isNotEmpty)
             .map(line -> line.replaceAll("\\s+", " "))
-            .filter(SupportFunction::isNotEmpty)
+            .filter(StringUtils::isNotEmpty)
             .map(line -> line.split("\\s+"))
             .filter(value -> value.length > 1)
             .map(value -> value[1])
@@ -181,8 +176,9 @@ public class Docker {
     public Optional<Integer> login(final String target) {
         final Optional<Integer> result;
         if (!isEmpty(target) && !shouldSkipDockerLogin()) {
-            final List<String> command = dockerCommand("login", "--password-stdin", "-u=" + this.registryUser, target);
-            result = Optional.of(SystemUtils.exec(this.environment, this.registryPass, command).getKey());
+            final Commandline cl = dockerCli("login", "--password-stdin", "-u=" + this.registryUser, target);
+
+            result = Optional.of(CliUtils.exec(this.environment, this.registryPass, cl).getKey());
         } else {
             result = Optional.empty();
         }
@@ -191,5 +187,25 @@ public class Docker {
 
     public boolean shouldSkipDockerLogin() {
         return isEmpty(this.registryPass) || isEmpty(this.registryUser);
+    }
+
+    @Deprecated
+    private static List<String> dockerCommand(final String... options) {
+        return StringUtils.asList(new String[]{"docker"}, options);
+    }
+
+    private Entry<Integer, String> docker(final String... options) {
+        // return CliUtils.exec(this.environment, null, dockerCommand(options));
+        return CliUtils.exec(this.environment, null, dockerCli(options));
+    }
+
+    static Commandline dockerCli(final String... options) {
+        final Commandline cl = new Commandline();
+        cl.setExecutable("docker");
+        for (final String option : options) {
+            cl.createArg().setValue(option);
+        }
+        cl.setWorkingDirectory(SystemUtils.systemUserDir());
+        return cl;
     }
 }

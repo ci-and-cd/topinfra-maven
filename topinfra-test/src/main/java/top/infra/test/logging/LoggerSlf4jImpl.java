@@ -1,6 +1,6 @@
-package top.infra.maven.test.logging;
+package top.infra.test.logging;
 
-import top.infra.maven.logging.Logger;
+import top.infra.logging.Logger;
 
 public class LoggerSlf4jImpl implements Logger {
 

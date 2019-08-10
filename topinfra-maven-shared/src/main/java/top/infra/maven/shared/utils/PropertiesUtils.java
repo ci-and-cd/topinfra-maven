@@ -6,7 +6,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
-import top.infra.maven.logging.Logger;
+import top.infra.logging.Logger;
 import top.infra.maven.shared.extension.CiOptions;
 
 public class PropertiesUtils {

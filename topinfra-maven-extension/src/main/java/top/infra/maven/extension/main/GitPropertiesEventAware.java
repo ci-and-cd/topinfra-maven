@@ -32,9 +32,9 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryBuilder;
 
+import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.shared.extension.VcsProperties;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;

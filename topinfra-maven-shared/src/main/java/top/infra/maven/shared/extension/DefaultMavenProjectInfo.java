@@ -20,8 +20,8 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingResult;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
+import top.infra.logging.Logger;
 import top.infra.maven.extension.MavenProjectInfo;
-import top.infra.maven.logging.Logger;
 
 public class DefaultMavenProjectInfo implements MavenProjectInfo {
 

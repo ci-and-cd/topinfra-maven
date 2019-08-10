@@ -26,8 +26,8 @@ import static top.infra.maven.shared.extension.Constants.PROP_NEXUS2_STAGING;
 import static top.infra.maven.shared.extension.Constants.PROP_SONAR;
 import static top.infra.maven.shared.extension.VcsProperties.GIT_REF_NAME;
 import static top.infra.maven.shared.utils.MavenUtils.findInProperties;
-import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
 import static top.infra.maven.shared.utils.SupportFunction.newTuple;
+import static top.infra.util.StringUtils.isEmpty;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -43,8 +43,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 
+import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.MavenPhase;
 import top.infra.maven.shared.extension.Constants;
 import top.infra.maven.shared.extension.MavenOption;

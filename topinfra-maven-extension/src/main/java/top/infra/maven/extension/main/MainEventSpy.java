@@ -5,10 +5,10 @@ import static top.infra.maven.shared.extension.VcsProperties.GIT_REF_NAME;
 import static top.infra.maven.shared.utils.PropertiesUtils.PATTERN_VARS_ENV_DOT_CI;
 import static top.infra.maven.shared.utils.PropertiesUtils.logProperties;
 import static top.infra.maven.shared.utils.SupportFunction.componentName;
-import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
 import static top.infra.maven.shared.utils.SupportFunction.logEnd;
 import static top.infra.maven.shared.utils.SupportFunction.logStart;
 import static top.infra.maven.shared.utils.SupportFunction.newTuple;
+import static top.infra.util.StringUtils.isEmpty;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -36,12 +36,12 @@ import org.apache.maven.settings.building.SettingsBuildingResult;
 import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
 import org.apache.maven.toolchain.building.ToolchainsBuildingResult;
 
+import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.Ordered;
 import top.infra.maven.extension.CiOptionContextFactory;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.extension.OrderedConfigurationProcessor;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 import top.infra.maven.shared.utils.MavenUtils;

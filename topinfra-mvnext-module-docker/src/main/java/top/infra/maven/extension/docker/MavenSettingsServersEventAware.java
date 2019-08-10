@@ -1,6 +1,6 @@
 package top.infra.maven.extension.docker;
 
-import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
+import static top.infra.util.StringUtils.isEmpty;
 
 import cn.home1.tools.maven.MavenSettingsSecurity;
 
@@ -29,14 +29,14 @@ import org.apache.maven.settings.building.SettingsBuildingRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.unix4j.Unix4j;
 
+import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.shared.extension.Constants;
 import top.infra.maven.shared.extension.Orders;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 import top.infra.maven.shared.utils.MavenUtils;
-import top.infra.maven.shared.utils.SupportFunction;
+import top.infra.util.StringUtils;
 
 /**
  * Auto fill empty or blank properties (e.g. CI_OPT_GPG_PASSPHRASE) in maven settings.xml.
@@ -292,7 +292,7 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
      */
     private static List<String> envVarsInSettingsXml(final Path settingsXml) {
         return settingsXml != null
-            ? SupportFunction.lines(Unix4j.cat(settingsXml.toFile()).toStringResult())
+            ? StringUtils.lines(Unix4j.cat(settingsXml.toFile()).toStringResult())
             .stream()
             .flatMap(line -> envVars(line).stream())
             .distinct()

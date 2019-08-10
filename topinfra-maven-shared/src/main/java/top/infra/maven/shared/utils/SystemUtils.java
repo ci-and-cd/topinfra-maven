@@ -1,67 +1,14 @@
 package top.infra.maven.shared.utils;
 
-import static top.infra.maven.shared.utils.SupportFunction.newTuple;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class SystemUtils {
 
     private SystemUtils() {
-    }
-
-    public static Map.Entry<Integer, String> exec(final String command) {
-        try {
-            final Process proc = Runtime.getRuntime().exec(command);
-            return execResult(proc);
-        } catch (final IOException ex) {
-            return newTuple(-1, "");
-        }
-    }
-
-    private static Map.Entry<Integer, String> execResult(final Process proc) {
-        try {
-            final String result = new BufferedReader(new InputStreamReader(proc.getInputStream()))
-                .lines()
-                .collect(Collectors.joining("\n"));
-            return newTuple(proc.waitFor(), result);
-        } catch (final InterruptedException ie) {
-            Thread.currentThread().interrupt();
-            return newTuple(-1, "");
-        }
-    }
-
-    public static Map.Entry<Integer, String> exec(
-        final Map<String, String> environment,
-        final String stdIn,
-        final List<String> command
-    ) {
-        final ProcessBuilder processBuilder = new ProcessBuilder(command);
-        if (environment != null) {
-            processBuilder.environment().putAll(environment);
-        }
-        try {
-            final Process proc = processBuilder.start();
-            if (stdIn != null) {
-                try (final PrintWriter writer = new PrintWriter(proc.getOutputStream())) {
-                    writer.println(stdIn);
-                    writer.flush();
-                }
-            }
-            return execResult(proc);
-        } catch (final IOException ex) {
-            return newTuple(-1, "");
-        }
     }
 
     /**

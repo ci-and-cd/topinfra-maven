@@ -16,7 +16,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import top.infra.maven.logging.Logger;
+import top.infra.logging.Logger;
 
 public abstract class DownloadUtils {
 

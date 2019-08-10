@@ -2,7 +2,7 @@ package top.infra.maven.extension.main;
 
 import static top.infra.maven.extension.main.MavenBuildExtensionOption.SETTINGS_LOCALREPOSITORY;
 import static top.infra.maven.shared.extension.Constants.PROP_SETTINGS_LOCALREPOSITORY;
-import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
+import static top.infra.util.StringUtils.isEmpty;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -12,9 +12,9 @@ import org.apache.maven.cli.CliRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.settings.building.SettingsBuildingResult;
 
+import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 

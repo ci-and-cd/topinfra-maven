@@ -1,6 +1,6 @@
 package top.infra.maven.shared.logging;
 
-import top.infra.maven.logging.Logger;
+import top.infra.logging.Logger;
 
 public class LoggerPlexusImpl implements Logger {
 

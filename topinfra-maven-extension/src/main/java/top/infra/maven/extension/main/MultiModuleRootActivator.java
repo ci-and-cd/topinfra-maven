@@ -14,8 +14,8 @@ import org.apache.maven.model.profile.ProfileActivationContext;
 
 import top.infra.maven.extension.MavenProjectInfo;
 import top.infra.maven.extension.MavenProjectInfoFactory;
-import top.infra.maven.shared.extension.activator.AbstractCustomActivator;
 import top.infra.maven.extension.activator.model.ActivatorModelResolver;
+import top.infra.maven.shared.extension.activator.AbstractCustomActivator;
 
 // @Component(role = CustomActivator.class, hint = "MultiModuleRootActivator")
 @Named

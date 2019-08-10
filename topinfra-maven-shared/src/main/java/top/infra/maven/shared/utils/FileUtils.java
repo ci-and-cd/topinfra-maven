@@ -11,7 +11,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 
-import top.infra.maven.shared.exception.RuntimeIOException;
+import top.infra.exception.RuntimeIOException;
 
 public class FileUtils {
 

@@ -12,9 +12,9 @@ import static top.infra.maven.shared.extension.Constants.GIT_REF_NAME_MASTER;
 import static top.infra.maven.shared.extension.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 import static top.infra.maven.shared.utils.FileUtils.readFile;
 import static top.infra.maven.shared.utils.FileUtils.writeFile;
-import static top.infra.maven.shared.utils.SupportFunction.isEmpty;
 import static top.infra.maven.shared.utils.SupportFunction.newTuple;
 import static top.infra.maven.shared.utils.SupportFunction.newTupleOptional;
+import static top.infra.util.StringUtils.isEmpty;
 
 import java.nio.file.Path;
 import java.util.Base64;
@@ -27,8 +27,8 @@ import java.util.regex.Pattern;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
+import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.extension.GlobalOption;
 import top.infra.maven.shared.utils.DownloadUtils;
 import top.infra.maven.shared.utils.DownloadUtils.DownloadException;

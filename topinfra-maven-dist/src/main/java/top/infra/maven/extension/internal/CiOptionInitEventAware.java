@@ -19,12 +19,12 @@ import javax.inject.Singleton;
 
 import org.apache.maven.cli.CliRequest;
 
+import top.infra.logging.Logger;
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.CiOptionFactory;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.shared.extension.Orders;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 import top.infra.maven.shared.utils.PropertiesUtils;
 

@@ -8,7 +8,7 @@ import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
 
-import top.infra.maven.logging.Logger;
+import top.infra.logging.Logger;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 
 /**

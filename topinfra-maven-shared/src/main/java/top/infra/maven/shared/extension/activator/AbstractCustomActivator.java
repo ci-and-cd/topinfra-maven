@@ -13,9 +13,9 @@ import org.apache.maven.model.Profile;
 import org.apache.maven.model.building.ModelProblemCollector;
 import org.apache.maven.model.profile.ProfileActivationContext;
 
+import top.infra.logging.Logger;
 import top.infra.maven.extension.activator.CustomActivator;
 import top.infra.maven.extension.activator.model.ActivatorModelResolver;
-import top.infra.maven.logging.Logger;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 import top.infra.maven.shared.utils.MavenUtils;
 
