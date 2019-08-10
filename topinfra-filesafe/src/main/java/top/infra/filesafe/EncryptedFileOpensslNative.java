@@ -9,11 +9,11 @@ import java.util.Map.Entry;
 import top.infra.logging.Logger;
 import top.infra.util.StringUtils;
 
-public class EncryptedFileOpenssl extends AbstractResource implements EncryptedFile {
+public class EncryptedFileOpensslNative extends AbstractResource implements EncryptedFile {
 
     private final Map<String, String> environment;
 
-    public EncryptedFileOpenssl(final Logger logger, final Path path) {
+    public EncryptedFileOpensslNative(final Logger logger, final Path path) {
         super(logger, path);
 
         this.environment = Collections.emptyMap();

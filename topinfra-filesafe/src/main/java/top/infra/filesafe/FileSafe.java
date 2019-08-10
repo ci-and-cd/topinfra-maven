@@ -1,55 +1,75 @@
 package top.infra.filesafe;
 
 import java.nio.file.Path;
+import java.security.Security;
 
 import top.infra.logging.Logger;
 
 public abstract class FileSafe {
 
+    static {
+        // Install the BC provider
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+    }
+
     private FileSafe() {
     }
 
-    public static EncryptedFile decryptByGpg(
+    public static EncryptedFile decryptByBcpg(
+        final Logger logger,
+        final Path path
+    ) {
+        return new EncryptedFileGpgJava(logger, path);
+    }
+
+    public static EncryptedFile decryptByNativeGpg(
         final Logger logger,
         final Path path,
         final String gpgExecutable
     ) {
-        return new EncryptedFileGpg(logger, path, gpgExecutable);
+        return new EncryptedFileGpgNative(logger, path, gpgExecutable);
     }
 
-    public static EncryptedFile decryptByJava(
+    public static EncryptedFile decryptByJavaOpenssl(
         final Logger logger,
         final Path path
     ) {
-        return new EncryptedFileJava(logger, path);
+        return new EncryptedFileOpensslJava(logger, path);
     }
 
-    public static EncryptedFile decryptByOpenssl(
+    public static EncryptedFile decryptByNativeOpenssl(
         final Logger logger,
         final Path path
     ) {
-        return new EncryptedFileOpenssl(logger, path);
+        return new EncryptedFileOpensslNative(logger, path);
     }
 
-    public static ClearFile encryptByGpg(
+    public static ClearFile encryptByBcpg(
+        final Logger logger,
+        final Path path
+    ) {
+        return new ClearFileGpgJava(logger, path);
+    }
+
+    public static ClearFile encryptByNativeGpg(
         final Logger logger,
         final Path path,
         final String gpgExecutable
     ) {
-        return new ClearFileGpg(logger, path, gpgExecutable);
+        return new ClearFileGpgNative(logger, path, gpgExecutable);
     }
 
-    public static ClearFile encryptByJava(
+    public static ClearFile encryptByJavaOpenssl(
         final Logger logger,
         final Path path
     ) {
-        return new ClearFileJava(logger, path);
+        return new ClearFileOpensslJava(logger, path);
     }
 
-    public static ClearFile encryptByOpenssl(
+    public static ClearFile encryptByNativeOpenssl(
         final Logger logger,
         final Path path
     ) {
-        return new ClearFileOpenssl(logger, path);
+        return new ClearFileOpensslNative(logger, path);
     }
 }

@@ -193,14 +193,14 @@ public class Gpg {
 
     public void decryptKey() {
         if (!StringUtils.isEmpty(this.passphrase)) {
-            final EncryptedFile codesigningAscEnc = FileSafe.decryptByJava(this.logger, Paths.get(CODESIGNING_ASC_ENC));
+            final EncryptedFile codesigningAscEnc = FileSafe.decryptByJavaOpenssl(this.logger, Paths.get(CODESIGNING_ASC_ENC));
             if (codesigningAscEnc.exists()) {
                 codesigningAscEnc.decrypt(this.passphrase, Paths.get(CODESIGNING_ASC));
             } else {
                 logger.info(String.format("    Skip decrypting [%s], file absent.", CODESIGNING_ASC_ENC));
             }
 
-            final EncryptedFile codesigningAscGpg = FileSafe.decryptByGpg(this.logger, Paths.get(CODESIGNING_ASC_GPG), this.executable);
+            final EncryptedFile codesigningAscGpg = FileSafe.decryptByBcpg(this.logger, Paths.get(CODESIGNING_ASC_GPG));
             if (codesigningAscGpg.exists()) {
                 codesigningAscGpg.decrypt(this.passphrase, Paths.get(CODESIGNING_ASC));
             }

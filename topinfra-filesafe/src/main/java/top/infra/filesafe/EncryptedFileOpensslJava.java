@@ -13,9 +13,9 @@ import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Base64.Decoder;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Random;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -23,11 +23,11 @@ import javax.crypto.spec.SecretKeySpec;
 
 import top.infra.logging.Logger;
 
-public class ClearFileJava extends AbstractResource implements ClearFile {
+public class EncryptedFileOpensslJava extends AbstractResource implements EncryptedFile {
 
     private final Map<String, String> environment;
 
-    public ClearFileJava(final Logger logger, final Path path) {
+    public EncryptedFileOpensslJava(final Logger logger, final Path path) {
         super(logger, path);
 
         this.environment = Collections.emptyMap();
@@ -39,25 +39,31 @@ public class ClearFileJava extends AbstractResource implements ClearFile {
     }
 
     @Override
-    public void encrypt(final String passphrase, final Path targetPath) {
+    public void decrypt(final String passphrase, final Path targetPath) {
         try {
-            final byte[] encryptedBytes = encrypt(this.getPath(), passphrase, targetPath);
+            final byte[] clearBytes = decrypt(this.getPath(), passphrase, targetPath);
+            final String clearText = new String(clearBytes, StandardCharsets.ISO_8859_1);
         } catch (final GeneralSecurityException | IOException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
     }
 
-    private static byte[] encrypt(
+    private static byte[] decrypt(
         final Path inPath,
         final String passphrase,
         final Path targetPath
     ) throws IOException, GeneralSecurityException {
-        final byte[] inBytes = Files.readAllBytes(inPath);
+        final String source = new String(Files.readAllBytes(inPath), StandardCharsets.US_ASCII).replaceAll("\\s", "");
+        final Decoder decoder = Base64.getDecoder();
+        final byte[] inBytes = decoder.decode(source);
 
         final byte[] magicBytes = "Salted__".getBytes(StandardCharsets.US_ASCII);
+        final byte[] shouldBeMagic = Arrays.copyOfRange(inBytes, 0, magicBytes.length);
+        if (!Arrays.equals(shouldBeMagic, magicBytes)) {
+            throw new IllegalArgumentException("Bad magic number");
+        }
 
-        final byte[] saltBytes = new byte[8];
-        new Random().nextBytes(saltBytes);
+        final byte[] saltBytes = Arrays.copyOfRange(inBytes, magicBytes.length, magicBytes.length + 8);
         final byte[] passphraseBytes = passphrase.getBytes(StandardCharsets.US_ASCII);
         final byte[] passphraseAndSaltBytes = concat(passphraseBytes, saltBytes);
 
@@ -74,13 +80,10 @@ public class ClearFileJava extends AbstractResource implements ClearFile {
         final byte[] iv = Arrays.copyOfRange(keyAndIv, 32, 48);
         final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         final SecretKeySpec key = new SecretKeySpec(keyValue, "AES");
-        cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
-        final byte[] secretBytes = cipher.doFinal(inBytes, 0, inBytes.length);
-
-        final Base64.Encoder encoder = Base64.getEncoder();
-        final byte[] outBytes = encoder.encode(concat(concat(magicBytes, saltBytes), secretBytes));
-        Files.write(targetPath, outBytes, CREATE, TRUNCATE_EXISTING, WRITE, DSYNC);
-        return outBytes;
+        cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
+        final byte[] clearBytes = cipher.doFinal(inBytes, 16, inBytes.length - 16);
+        Files.write(targetPath, clearBytes, CREATE, TRUNCATE_EXISTING, WRITE, DSYNC);
+        return clearBytes;
     }
 
     private static byte[] concat(final byte[] a, final byte[] b) {

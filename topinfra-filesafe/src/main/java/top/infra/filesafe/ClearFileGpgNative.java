@@ -9,12 +9,12 @@ import java.util.Map.Entry;
 
 import top.infra.logging.Logger;
 
-public class EncryptedFileGpg extends AbstractResource implements EncryptedFile {
+public class ClearFileGpgNative extends AbstractResource implements ClearFile {
 
     private final String gpgExecutable;
     private final Map<String, String> environment;
 
-    public EncryptedFileGpg(final Logger logger, final Path path, final String gpgExecutable) {
+    public ClearFileGpgNative(final Logger logger, final Path path, final String gpgExecutable) {
         super(logger, path);
         this.gpgExecutable = gpgExecutable;
 
@@ -24,17 +24,17 @@ public class EncryptedFileGpg extends AbstractResource implements EncryptedFile 
     }
 
     @Override
-    public void decrypt(final String passphrase, final Path targetPath) {
-        logger.info("    decrypt private key");
+    public void encrypt(final String passphrase, final Path targetPath) {
+        logger.info(String.format("    Encrypting [%s] by native gpg", this.getPath()));
         // echo ${CI_OPT_GPG_PASSPHRASE} |
-        // gpg --batch=true --yes --passphrase-fd 0 --cipher-algo AES256 --output src/test/resources/testfile.out
-        // --decrypt src/test/resources/testfile.txt.enc
+        // gpg --yes --passphrase-fd 0 --cipher-algo AES256 --symmetric --no-symkey-cache --output src/test/resources/testfile.txt.enc
+        // src/test/resources/testfile.txt
         final List<String> gpgDecrypt = GpgUtils.cmdGpgBatchYes(
             this.gpgExecutable,
             "--passphrase-fd", "0",
-            "--cipher-algo", "AES256",
+            "--cipher-algo", "AES256", "--symmetric", "--no-symkey-cache",
             "--output", targetPath.toString(),
-            "--decrypt", this.getPath().toString()
+            this.getPath().toString()
         );
         final Entry<Integer, String> resultGpgDecrypt = this.exec(passphrase, gpgDecrypt);
         logger.info(resultGpgDecrypt.getValue());

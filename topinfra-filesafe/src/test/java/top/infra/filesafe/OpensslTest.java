@@ -23,7 +23,7 @@ public class OpensslTest {
     private Logger logger;
 
     private final Path decryptedFilePath = Paths.get("src/test/resources/testfile.txt.out");
-    private final Path plainFilePath = Paths.get("src/test/resources/testfile.txt");
+    private final Path clearFilePath = Paths.get("src/test/resources/testfile.txt");
 
     @Before
     public void setUp() throws IOException {
@@ -33,11 +33,11 @@ public class OpensslTest {
     }
 
     @Test
-    public void testOpenssl() throws IOException {
+    public void testNative() throws IOException {
         assertEquals("openssl should present", Integer.valueOf(0), CliUtils.exec("which openssl").getKey());
 
         final Path encryptedFilePath = Paths.get("src/test/resources/testfile.txt.enc");
-        final EncryptedFile encryptedFile = FileSafe.decryptByOpenssl(this.logger, encryptedFilePath);
+        final EncryptedFile encryptedFile = FileSafe.decryptByNativeOpenssl(this.logger, encryptedFilePath);
         Files.deleteIfExists(encryptedFile.getPath());
 
         assertFalse(String.format("encryptedFile [%s] should not exists.", encryptedFile.getPath()),
@@ -47,7 +47,7 @@ public class OpensslTest {
 
         final String passphrase = "openssl_passphrase";
 
-        final ClearFile clearFile = FileSafe.encryptByOpenssl(this.logger, this.plainFilePath);
+        final ClearFile clearFile = FileSafe.encryptByNativeOpenssl(this.logger, this.clearFilePath);
         clearFile.encrypt(passphrase, encryptedFile.getPath());
         assertTrue(String.format("encryptedFile [%s] should exists.", encryptedFile.getPath()),
             encryptedFile.getPath().toFile().exists());
@@ -62,11 +62,11 @@ public class OpensslTest {
     }
 
     @Test
-    public void testOpensslEncryptJavaDecrypt() throws IOException {
+    public void testNativeEncryptJavaDecrypt() throws IOException {
         assertEquals("openssl should present", Integer.valueOf(0), CliUtils.exec("which openssl").getKey());
 
         final Path encryptedFilePath = Paths.get("src/test/resources/testfile.txt.enc");
-        final EncryptedFile encryptedFile = FileSafe.decryptByJava(this.logger, encryptedFilePath);
+        final EncryptedFile encryptedFile = FileSafe.decryptByJavaOpenssl(this.logger, encryptedFilePath);
         Files.deleteIfExists(encryptedFile.getPath());
 
         assertFalse(String.format("encryptedFile [%s] should not exists.", encryptedFile.getPath()),
@@ -76,7 +76,7 @@ public class OpensslTest {
 
         final String passphrase = "openssl_passphrase";
 
-        final ClearFile clearFile = FileSafe.encryptByOpenssl(this.logger, this.plainFilePath);
+        final ClearFile clearFile = FileSafe.encryptByNativeOpenssl(this.logger, this.clearFilePath);
         clearFile.encrypt(passphrase, encryptedFile.getPath());
         assertTrue(String.format("encryptedFile [%s] should exists.", encryptedFile.getPath()),
             encryptedFile.getPath().toFile().exists());
@@ -91,11 +91,11 @@ public class OpensslTest {
     }
 
     @Test
-    public void testJavaEncryptOpensslDecrypt() throws IOException {
+    public void testJavaEncryptNativeDecrypt() throws IOException {
         assertEquals("openssl should present", Integer.valueOf(0), CliUtils.exec("which openssl").getKey());
 
         final Path encryptedFilePath = Paths.get("src/test/resources/testfile.txt.enc");
-        final EncryptedFile encryptedFile = FileSafe.decryptByOpenssl(this.logger, encryptedFilePath);
+        final EncryptedFile encryptedFile = FileSafe.decryptByNativeOpenssl(this.logger, encryptedFilePath);
         Files.deleteIfExists(encryptedFile.getPath());
 
         assertFalse(String.format("encryptedFile [%s] should not exists.", encryptedFile.getPath()),
@@ -105,7 +105,7 @@ public class OpensslTest {
 
         final String passphrase = "openssl_passphrase";
 
-        final ClearFile clearFile = FileSafe.encryptByJava(this.logger, this.plainFilePath);
+        final ClearFile clearFile = FileSafe.encryptByJavaOpenssl(this.logger, this.clearFilePath);
         clearFile.encrypt(passphrase, encryptedFile.getPath());
         assertTrue(String.format("encryptedFile [%s] should exists.", encryptedFile.getPath()),
             encryptedFile.getPath().toFile().exists());

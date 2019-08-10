@@ -13,9 +13,9 @@ import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Base64.Decoder;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Random;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -23,11 +23,11 @@ import javax.crypto.spec.SecretKeySpec;
 
 import top.infra.logging.Logger;
 
-public class EncryptedFileJava extends AbstractResource implements EncryptedFile {
+public class ClearFileOpensslJava extends AbstractResource implements ClearFile {
 
     private final Map<String, String> environment;
 
-    public EncryptedFileJava(final Logger logger, final Path path) {
+    public ClearFileOpensslJava(final Logger logger, final Path path) {
         super(logger, path);
 
         this.environment = Collections.emptyMap();
@@ -39,31 +39,25 @@ public class EncryptedFileJava extends AbstractResource implements EncryptedFile
     }
 
     @Override
-    public void decrypt(final String passphrase, final Path targetPath) {
+    public void encrypt(final String passphrase, final Path targetPath) {
         try {
-            final byte[] clearBytes = decrypt(this.getPath(), passphrase, targetPath);
-            final String clearText = new String(clearBytes, StandardCharsets.ISO_8859_1);
+            final byte[] encryptedBytes = encrypt(this.getPath(), passphrase, targetPath);
         } catch (final GeneralSecurityException | IOException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
     }
 
-    private static byte[] decrypt(
+    private static byte[] encrypt(
         final Path inPath,
         final String passphrase,
         final Path targetPath
     ) throws IOException, GeneralSecurityException {
-        final String source = new String(Files.readAllBytes(inPath), StandardCharsets.US_ASCII).replaceAll("\\s", "");
-        final Decoder decoder = Base64.getDecoder();
-        final byte[] inBytes = decoder.decode(source);
+        final byte[] inBytes = Files.readAllBytes(inPath);
 
         final byte[] magicBytes = "Salted__".getBytes(StandardCharsets.US_ASCII);
-        final byte[] shouldBeMagic = Arrays.copyOfRange(inBytes, 0, magicBytes.length);
-        if (!Arrays.equals(shouldBeMagic, magicBytes)) {
-            throw new IllegalArgumentException("Bad magic number");
-        }
 
-        final byte[] saltBytes = Arrays.copyOfRange(inBytes, magicBytes.length, magicBytes.length + 8);
+        final byte[] saltBytes = new byte[8];
+        new Random().nextBytes(saltBytes);
         final byte[] passphraseBytes = passphrase.getBytes(StandardCharsets.US_ASCII);
         final byte[] passphraseAndSaltBytes = concat(passphraseBytes, saltBytes);
 
@@ -80,10 +74,13 @@ public class EncryptedFileJava extends AbstractResource implements EncryptedFile
         final byte[] iv = Arrays.copyOfRange(keyAndIv, 32, 48);
         final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         final SecretKeySpec key = new SecretKeySpec(keyValue, "AES");
-        cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
-        final byte[] clearBytes = cipher.doFinal(inBytes, 16, inBytes.length - 16);
-        Files.write(targetPath, clearBytes, CREATE, TRUNCATE_EXISTING, WRITE, DSYNC);
-        return clearBytes;
+        cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
+        final byte[] secretBytes = cipher.doFinal(inBytes, 0, inBytes.length);
+
+        final Base64.Encoder encoder = Base64.getEncoder();
+        final byte[] outBytes = encoder.encode(concat(concat(magicBytes, saltBytes), secretBytes));
+        Files.write(targetPath, outBytes, CREATE, TRUNCATE_EXISTING, WRITE, DSYNC);
+        return outBytes;
     }
 
     private static byte[] concat(final byte[] a, final byte[] b) {

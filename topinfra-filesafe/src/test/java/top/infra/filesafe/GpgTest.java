@@ -23,46 +23,103 @@ public class GpgTest {
     private Logger logger;
 
     private final Path decryptedFilePath = Paths.get("src/test/resources/testfile.txt.out");
-    private final Path plainFilePath = Paths.get("src/test/resources/testfile.txt");
-    private EncryptedFile encryptedFile;
-    private ClearFile clearFile;
+    private final Path encryptedFilePath = Paths.get("src/test/resources/testfile.txt.gpg");
+    private final Path clearFilePath = Paths.get("src/test/resources/testfile.txt");
+    private EncryptedFile nativeEncryptedFile;
+    private ClearFile nativeClearFile;
 
     @Before
     public void setUp() throws IOException {
         this.logger = new LoggerSlf4jImpl(LoggerFactory.getLogger(GpgTest.class));
         final Optional<String> gpgExecutable = GpgUtils.gpgExecutable();
         if (gpgExecutable.isPresent()) {
-            final Path encryptedFilePath = Paths.get("src/test/resources/testfile.txt.gpg");
-            this.encryptedFile = FileSafe.decryptByGpg(this.logger, encryptedFilePath, gpgExecutable.get());
-            this.clearFile = FileSafe.encryptByGpg(this.logger, this.plainFilePath, gpgExecutable.get());
+            this.nativeEncryptedFile = FileSafe.decryptByNativeGpg(this.logger, this.encryptedFilePath, gpgExecutable.get());
+            this.nativeClearFile = FileSafe.encryptByNativeGpg(this.logger, this.clearFilePath, gpgExecutable.get());
 
             Files.deleteIfExists(this.decryptedFilePath);
-            Files.deleteIfExists(this.encryptedFile.getPath());
+            Files.deleteIfExists(this.nativeEncryptedFile.getPath());
         }
     }
 
     @Test
-    public void testGpg() {
-        assertNotNull("gpgExecutable should present", this.encryptedFile);
-        assertNotNull("gpgExecutable should present", this.clearFile);
+    public void testNative() {
+        assertNotNull("gpgExecutable should present", this.nativeEncryptedFile);
+        assertNotNull("gpgExecutable should present", this.nativeClearFile);
 
-        assertFalse(String.format("encryptedFile [%s] should not exists.", this.encryptedFile.getPath()),
-            this.encryptedFile.getPath().toFile().exists());
+        final ClearFile clearFile = this.nativeClearFile;
+        final EncryptedFile encryptedFile = this.nativeEncryptedFile;
+
+        assertFalse(String.format("encryptedFile [%s] should not exists.", encryptedFile.getPath()),
+            encryptedFile.getPath().toFile().exists());
         assertFalse(String.format("decryptedFile [%s] should not exists.", this.decryptedFilePath),
             this.decryptedFilePath.toFile().exists());
 
         final String passphrase = "gpg_passphrase";
 
-        this.clearFile.encrypt(passphrase, this.encryptedFile.getPath());
-        assertTrue(String.format("encryptedFile [%s] should exists.", this.encryptedFile.getPath()),
-            this.encryptedFile.getPath().toFile().exists());
+        clearFile.encrypt(passphrase, encryptedFile.getPath());
+        assertTrue(String.format("encryptedFile [%s] should exists.", encryptedFile.getPath()),
+            encryptedFile.getPath().toFile().exists());
         assertFalse(String.format("decryptedFile [%s] should not exists.", this.decryptedFilePath),
             this.decryptedFilePath.toFile().exists());
 
-        this.encryptedFile.decrypt(passphrase, this.decryptedFilePath);
+        encryptedFile.decrypt(passphrase, this.decryptedFilePath);
         assertTrue(String.format("decryptedFile [%s] should exists.", this.decryptedFilePath),
             this.decryptedFilePath.toFile().exists());
 
-        assertThat(this.decryptedFilePath).hasSameContentAs(this.clearFile.getPath());
+        assertThat(this.decryptedFilePath).hasSameContentAs(clearFile.getPath());
+    }
+
+    @Test
+    public void testJavaEncryptNativeDecrypt() {
+        assertNotNull("gpgExecutable should present", this.nativeEncryptedFile);
+
+        final ClearFile clearFile = FileSafe.encryptByBcpg(this.logger, this.clearFilePath);
+        final EncryptedFile encryptedFile = this.nativeEncryptedFile;
+
+        assertFalse(String.format("encryptedFile [%s] should not exists.", encryptedFile.getPath()),
+            encryptedFile.getPath().toFile().exists());
+        assertFalse(String.format("decryptedFile [%s] should not exists.", this.decryptedFilePath),
+            this.decryptedFilePath.toFile().exists());
+
+        final String passphrase = "gpg_passphrase";
+
+        clearFile.encrypt(passphrase, encryptedFile.getPath());
+        assertTrue(String.format("encryptedFile [%s] should exists.", encryptedFile.getPath()),
+            encryptedFile.getPath().toFile().exists());
+        assertFalse(String.format("decryptedFile [%s] should not exists.", this.decryptedFilePath),
+            this.decryptedFilePath.toFile().exists());
+
+        encryptedFile.decrypt(passphrase, this.decryptedFilePath);
+        assertTrue(String.format("decryptedFile [%s] should exists.", this.decryptedFilePath),
+            this.decryptedFilePath.toFile().exists());
+
+        assertThat(this.decryptedFilePath).hasSameContentAs(clearFile.getPath());
+    }
+
+    @Test
+    public void testNativeEncryptJavaDecrypt() {
+        assertNotNull("gpgExecutable should present", this.nativeClearFile);
+
+        final ClearFile clearFile = this.nativeClearFile;
+        final EncryptedFile encryptedFile = FileSafe.decryptByBcpg(this.logger, this.encryptedFilePath);
+
+        assertFalse(String.format("encryptedFile [%s] should not exists.", encryptedFile.getPath()),
+            encryptedFile.getPath().toFile().exists());
+        assertFalse(String.format("decryptedFile [%s] should not exists.", this.decryptedFilePath),
+            this.decryptedFilePath.toFile().exists());
+
+        final String passphrase = "gpg_passphrase";
+
+        clearFile.encrypt(passphrase, encryptedFile.getPath());
+        assertTrue(String.format("encryptedFile [%s] should exists.", encryptedFile.getPath()),
+            encryptedFile.getPath().toFile().exists());
+        assertFalse(String.format("decryptedFile [%s] should not exists.", this.decryptedFilePath),
+            this.decryptedFilePath.toFile().exists());
+
+        encryptedFile.decrypt(passphrase, this.decryptedFilePath);
+        assertTrue(String.format("decryptedFile [%s] should exists.", this.decryptedFilePath),
+            this.decryptedFilePath.toFile().exists());
+
+        assertThat(this.decryptedFilePath).hasSameContentAs(clearFile.getPath());
     }
 }

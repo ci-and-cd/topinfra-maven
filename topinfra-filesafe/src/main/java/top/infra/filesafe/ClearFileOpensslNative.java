@@ -8,11 +8,11 @@ import java.util.Map;
 import top.infra.logging.Logger;
 import top.infra.util.StringUtils;
 
-public class ClearFileOpenssl extends AbstractResource implements ClearFile {
+public class ClearFileOpensslNative extends AbstractResource implements ClearFile {
 
     private final Map<String, String> environment;
 
-    public ClearFileOpenssl(final Logger logger, final Path path) {
+    public ClearFileOpensslNative(final Logger logger, final Path path) {
         super(logger, path);
 
         this.environment = Collections.emptyMap();
