@@ -234,11 +234,11 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
         logger.info(String.format("    executionRootPath [%s]", rootProjectPath));
 
         assert Orders.ORDER_SYSTEM_TO_USER_PROPERTIES < Orders.ORDER_GIT_PROPERTIES;
-        assert Orders.ORDER_GIT_PROPERTIES < Orders.ORDER_GIT_REPO_FACTORY;
-        assert Orders.ORDER_GIT_REPO_FACTORY < Orders.ORDER_CACHE_SETTINGS_RESOURCES_FACTORY;
-        assert Orders.ORDER_CACHE_SETTINGS_RESOURCES_FACTORY < Orders.ORDER_CI_OPTION_CONFIG_LOADER;
+        assert Orders.ORDER_GIT_PROPERTIES < Orders.ORDER_CI_OPTION_CONFIG_LOADER;
         assert Orders.ORDER_CI_OPTION_CONFIG_LOADER < Orders.ORDER_CI_OPTION_INIT;
-        assert Orders.ORDER_CI_OPTION_INIT < Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
+        assert Orders.ORDER_CI_OPTION_INIT < Orders.ORDER_GIT_REPO_FACTORY;
+        assert Orders.ORDER_GIT_REPO_FACTORY < Orders.ORDER_CACHE_SETTINGS_RESOURCES_FACTORY;
+        assert Orders.ORDER_CACHE_SETTINGS_RESOURCES_FACTORY < Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
         assert Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SECURITY_XML;
 
         this.handlerMap.get("afterInit")
