@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import top.infra.logging.Logger;
 
@@ -29,13 +30,27 @@ public class ClearFileGpgNative extends AbstractResource implements ClearFile {
         // echo ${CI_OPT_GPG_PASSPHRASE} |
         // gpg --yes --passphrase-fd 0 --cipher-algo AES256 --symmetric --no-symkey-cache --output src/test/resources/testfile.txt.enc
         // src/test/resources/testfile.txt
-        final List<String> command = GpgUtils.cmdGpgBatchYes(
-            this.gpgExecutable,
-            "--passphrase-fd", "0",
-            "--cipher-algo", "AES256", "--symmetric", "--no-symkey-cache",
-            "--output", targetPath.toString(),
-            this.getPath().toString()
-        );
+
+        final List<String> command;
+        final Optional<String> gpgVersion = GpgUtils.gpgVersion(this.gpgExecutable);
+        if (GpgUtils.gpgVersionGreater(gpgVersion.orElse(null), "2.2.6")) {
+            command = GpgUtils.cmdGpgBatchYes(
+                this.gpgExecutable,
+                "--passphrase-fd", "0",
+                "--cipher-algo", "AES256", "--symmetric", "--no-symkey-cache",
+                "--output", targetPath.toString(),
+                this.getPath().toString()
+            );
+        } else {
+            command = GpgUtils.cmdGpgBatchYes(
+                this.gpgExecutable,
+                "--passphrase-fd", "0",
+                "--cipher-algo", "AES256", "--symmetric",
+                "--output", targetPath.toString(),
+                this.getPath().toString()
+            );
+        }
+
         final Entry<Integer, Entry<String, String>> result = this.exec(passphrase, command);
         logger.info(String.format("    Encrypt [%s] by native gpg. code [%s], output: [%s][%s]",
             this.getPath(), result.getKey(), result.getValue().getKey(), result.getValue().getValue()));

@@ -2,8 +2,6 @@ package top.infra.maven.extension.gpg;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
-import static java.util.regex.Pattern.DOTALL;
-import static java.util.regex.Pattern.MULTILINE;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -13,17 +11,11 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import top.infra.filesafe.EncryptedFile;
 import top.infra.filesafe.FileSafe;
@@ -74,36 +66,10 @@ public class Gpg {
             logger.info(String.format("    Using %s", Arrays.toString(GpgUtils.gpgCommand(executable))));
         }
 
-        final Map<String, String> env = new LinkedHashMap<>();
-        env.put("LC_CTYPE", "UTF-8");
-        final Entry<Integer, Entry<String, String>> tty = CliUtils.exec("tty");
-        if (tty.getKey() == 0) {
-            if (logger.isInfoEnabled()) {
-                logger.info(String.format("    GPG_TTY=%s", tty.getValue()));
-            }
-            final String stdOut = tty.getValue().getKey();
-            env.put("GPG_TTY", stdOut);
+        this.environment = GpgUtils.gpgEnvironment();
+        if (this.environment.containsKey("GPG_TTY")) {
+            logger.info(String.format("    GPG_TTY=%s", this.environment.get("GPG_TTY")));
         }
-        this.environment = Collections.unmodifiableMap(env);
-    }
-
-    public static boolean gpgVersionGreater(
-        final String gpgVersionInfo,
-        final String thanVersion
-    ) {
-        // e.g. "gpg (GnuPG) 2.2.14\nlibgcrypt 1.8.4\nCopyright ( ... pressed, ZIP, ZLIB, BZIP2"
-        final Matcher matcher = Pattern
-            .compile("[^0-9]*([0-9]+\\.[0-9]+\\.[0-9]+).*", DOTALL | MULTILINE)
-            .matcher(gpgVersionInfo);
-
-        final boolean result;
-        if (matcher.matches()) {
-            final String versionValue = matcher.group(1);
-            result = new DefaultArtifactVersion(versionValue).compareTo(new DefaultArtifactVersion(thanVersion)) > 0;
-        } else {
-            result = false;
-        }
-        return result;
     }
 
     public void decryptAndImportKeys() {
@@ -135,14 +101,12 @@ public class Gpg {
     }
 
     public void configFile() {
-        // use --batch=true to avoid 'gpg tty not a tty' error
-        final Entry<Integer, Entry<String, String>> resultGpgVersion = this.exec(this.cmdGpgBatch("--version"));
-        final String gpgVersion = resultGpgVersion.getValue().getKey();
-        logger.info(gpgVersion);
+        final Optional<String> gpgVersion = GpgUtils.gpgVersion(this.executable);
+        logger.info(String.format("[%s] version [%s]", this.executable, gpgVersion.orElse(null)));
 
         final Path dotGnupg = this.homeDir.resolve(DOT_GNUPG);
         final Path dotGnupgGpgConf = dotGnupg.resolve("gpg.conf");
-        if (gpgVersionGreater(gpgVersion, "2.1")) {
+        if (GpgUtils.gpgVersionGreater(gpgVersion.orElse(null), "2.1")) {
             logger.info("    gpg version greater than 2.1");
             try {
                 Files.createDirectories(dotGnupg);
@@ -167,7 +131,7 @@ public class Gpg {
                 logger.info(FileUtils.readFile(dotGnupgGpgConf, UTF_8).orElse(""));
             }
 
-            if (gpgVersionGreater(gpgVersion, "2.2")) {
+            if (GpgUtils.gpgVersionGreater(gpgVersion.orElse(null), "2.2")) {
                 // on gpg-2.1.11 'pinentry-mode loopback' is invalid option
                 logger.info("    add 'pinentry-mode loopback' to '~/.gnupg/gpg.conf'");
                 FileUtils.writeFile(dotGnupgGpgConf, "pinentry-mode loopback\n".getBytes(UTF_8),
@@ -269,7 +233,7 @@ public class Gpg {
     }
 
     private List<String> cmdGpgBatch(final String... command) {
-        return StringUtils.asList(StringUtils.concat(GpgUtils.gpgCommand(this.executable), "--batch=true"), command);
+        return GpgUtils.cmdGpgBatch(this.executable, command);
     }
 
     private Entry<Integer, Entry<String, String>> exec(final List<String> command) {
