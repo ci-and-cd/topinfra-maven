@@ -29,15 +29,16 @@ public class EncryptedFileGpgNative extends AbstractResource implements Encrypte
         // echo ${CI_OPT_GPG_PASSPHRASE} |
         // gpg --batch=true --yes --passphrase-fd 0 --cipher-algo AES256 --output src/test/resources/testfile.out
         // --decrypt src/test/resources/testfile.txt.enc
-        final List<String> gpgDecrypt = GpgUtils.cmdGpgBatchYes(
+        final List<String> command = GpgUtils.cmdGpgBatchYes(
             this.gpgExecutable,
             "--passphrase-fd", "0",
             "--cipher-algo", "AES256",
             "--output", targetPath.toString(),
             "--decrypt", this.getPath().toString()
         );
-        final Entry<Integer, String> resultGpgDecrypt = this.exec(passphrase, gpgDecrypt);
-        logger.info(resultGpgDecrypt.getValue());
+        final Entry<Integer, Entry<String, String>> result = this.exec(passphrase, command);
+        logger.info(String.format("    Decrypt [%s] by native gpg. code [%s], output: [%s][%s]",
+            this.getPath(), result.getKey(), result.getValue().getKey(), result.getValue().getValue()));
     }
 
     @Override

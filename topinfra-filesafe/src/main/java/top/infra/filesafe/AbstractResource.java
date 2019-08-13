@@ -18,11 +18,11 @@ public abstract class AbstractResource implements Resource {
         this.path = path;
     }
 
-    protected Entry<Integer, String> exec(final List<String> command) {
+    protected Entry<Integer, Entry<String, String>> exec(final List<String> command) {
         return CliUtils.exec(this.getEnvironment(), null, command);
     }
 
-    protected Entry<Integer, String> exec(final String stdIn, final List<String> command) {
+    protected Entry<Integer, Entry<String, String>> exec(final String stdIn, final List<String> command) {
         return CliUtils.exec(this.getEnvironment(), stdIn, command);
     }
 

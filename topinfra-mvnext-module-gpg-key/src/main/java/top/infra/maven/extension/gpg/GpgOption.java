@@ -4,7 +4,7 @@ import static top.infra.maven.extension.gpg.Gpg.gpgVersionGreater;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import top.infra.filesafe.GpgUtils;
@@ -30,9 +30,10 @@ public enum GpgOption implements CiOption {
 
             final Optional<String> result;
             if (gpgExecutable.isPresent()) {
-                final List<String> gpgVersion = Arrays.asList(gpgExecutable.get(), "--batch=true", "--version");
-                final Map.Entry<Integer, String> resultGpgVersion = CliUtils.exec(null, null, gpgVersion);
-                if (gpgVersionGreater(resultGpgVersion.getValue(), "2.1")) {
+                final List<String> command = Arrays.asList(gpgExecutable.get(), "--batch=true", "--version");
+                final Entry<Integer, Entry<String, String>> resultGpgVersion = CliUtils.exec(null, null, command);
+                final String gpgVersion = resultGpgVersion.getValue().getKey();
+                if (gpgVersionGreater(gpgVersion, "2.1")) {
                     result = Optional.of(Constants.BOOL_STRING_TRUE);
                 } else {
                     result = Optional.empty();

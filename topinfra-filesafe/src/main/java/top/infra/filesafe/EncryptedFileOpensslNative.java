@@ -29,14 +29,15 @@ public class EncryptedFileOpensslNative extends AbstractResource implements Encr
         if (!StringUtils.isEmpty(passphrase) && this.getPath().toFile().exists()) {
             logger.info(String.format("    Decrypting [%s] by openssl", this.getPath()));
 
-            final Entry<Integer, String> opensslVersion = this.exec(Arrays.asList("openssl", "version", "-a"));
-            logger.info(opensslVersion.getValue());
+            final Entry<Integer, Entry<String, String>> opensslVersion = this.exec(Arrays.asList("openssl", "version", "-a"));
+            logger.info(String.format("code [%s], [%s][%s]",
+                opensslVersion.getKey(), opensslVersion.getValue().getKey(), opensslVersion.getValue().getValue()));
 
             // bad decrypt
             // 140611360391616:error:06065064:digital envelope routines:EVP_DecryptFinal_ex:bad decrypt:../crypto/evp/evp_enc.c:536:
             // see: https://stackoverflow.com/questions/34304570/how-to-resolve-the-evp-decryptfinal-ex-bad-decrypt-during-file-decryption
             // openssl aes-256-cbc -A -a -d -k ${CI_OPT_GPG_PASSPHRASE} -md md5 -in codesigning.asc.enc -out codesigning.asc -p
-            final Entry<Integer, String> resultOpensslDecrypt = this.exec(Arrays.asList(
+            final Entry<Integer, Entry<String, String>> result = this.exec(Arrays.asList(
                 "openssl", "aes-256-cbc",
                 "-A", "-a",
                 "-d", "-k", passphrase,
@@ -44,7 +45,8 @@ public class EncryptedFileOpensslNative extends AbstractResource implements Encr
                 "-in", this.getPath().toString(),
                 "-out", targetPath.toString()
             ));
-            logger.info(resultOpensslDecrypt.getValue());
+            logger.info(String.format("    Decrypt [%s] by openssl. code [%s], output: [%s][%s]",
+                this.getPath(), result.getKey(), result.getValue().getKey(), result.getValue().getValue()));
         }
     }
 }

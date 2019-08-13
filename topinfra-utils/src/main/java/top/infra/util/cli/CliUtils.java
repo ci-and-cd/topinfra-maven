@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.codehaus.plexus.util.cli.CommandLineException;
@@ -21,28 +22,31 @@ public abstract class CliUtils {
     private CliUtils() {
     }
 
-    public static Map.Entry<Integer, String> exec(final String command) {
+    public static Entry<Integer, Entry<String, String>> exec(final String command) {
         try {
             final Process proc = Runtime.getRuntime().exec(command);
             return execResult(proc);
         } catch (final IOException ex) {
-            return newTuple(-1, "");
+            return newTuple(-1, newTuple("", ex.getMessage()));
         }
     }
 
-    private static Map.Entry<Integer, String> execResult(final Process proc) {
+    private static Entry<Integer, Entry<String, String>> execResult(final Process proc) {
         try {
-            final String result = new BufferedReader(new InputStreamReader(proc.getInputStream()))
+            final String stdOut = new BufferedReader(new InputStreamReader(proc.getInputStream()))
                 .lines()
                 .collect(Collectors.joining("\n"));
-            return newTuple(proc.waitFor(), result);
+            final String stdErr = new BufferedReader(new InputStreamReader(proc.getErrorStream()))
+                .lines()
+                .collect(Collectors.joining("\n"));
+            return newTuple(proc.waitFor(), newTuple(stdOut, stdErr));
         } catch (final InterruptedException ie) {
             Thread.currentThread().interrupt();
-            return newTuple(-1, "");
+            return newTuple(-1, newTuple("", ""));
         }
     }
 
-    public static Map.Entry<Integer, String> exec(
+    public static Entry<Integer, Entry<String, String>> exec(
         final Map<String, String> environment,
         final String stdIn,
         final List<String> command
@@ -61,11 +65,11 @@ public abstract class CliUtils {
             }
             return execResult(proc);
         } catch (final IOException ex) {
-            return newTuple(-1, "");
+            return newTuple(-1, newTuple("", ex.getMessage()));
         }
     }
 
-    public static Map.Entry<Integer, String> exec(
+    public static Entry<Integer, String> exec(
         final Map<String, String> environment,
         final String stdIn,
         final Commandline cl
@@ -95,7 +99,7 @@ public abstract class CliUtils {
         }
     }
 
-    public static <F, S> Map.Entry<F, S> newTuple(final F first, final S second) {
+    public static <F, S> Entry<F, S> newTuple(final F first, final S second) {
         return new AbstractMap.SimpleImmutableEntry<>(first, second);
     }
 }

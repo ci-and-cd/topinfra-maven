@@ -76,12 +76,13 @@ public class Gpg {
 
         final Map<String, String> env = new LinkedHashMap<>();
         env.put("LC_CTYPE", "UTF-8");
-        final Entry<Integer, String> tty = CliUtils.exec("tty");
+        final Entry<Integer, Entry<String, String>> tty = CliUtils.exec("tty");
         if (tty.getKey() == 0) {
             if (logger.isInfoEnabled()) {
                 logger.info(String.format("    GPG_TTY=%s", tty.getValue()));
             }
-            env.put("GPG_TTY", tty.getValue());
+            final String stdOut = tty.getValue().getKey();
+            env.put("GPG_TTY", stdOut);
         }
         this.environment = Collections.unmodifiableMap(env);
     }
@@ -135,12 +136,13 @@ public class Gpg {
 
     public void configFile() {
         // use --batch=true to avoid 'gpg tty not a tty' error
-        final Entry<Integer, String> resultGpgVersion = this.exec(this.cmdGpgBatch("--version"));
-        logger.info(resultGpgVersion.getValue());
+        final Entry<Integer, Entry<String, String>> resultGpgVersion = this.exec(this.cmdGpgBatch("--version"));
+        final String gpgVersion = resultGpgVersion.getValue().getKey();
+        logger.info(gpgVersion);
 
         final Path dotGnupg = this.homeDir.resolve(DOT_GNUPG);
         final Path dotGnupgGpgConf = dotGnupg.resolve("gpg.conf");
-        if (gpgVersionGreater(resultGpgVersion.getValue(), "2.1")) {
+        if (gpgVersionGreater(gpgVersion, "2.1")) {
             logger.info("    gpg version greater than 2.1");
             try {
                 Files.createDirectories(dotGnupg);
@@ -165,7 +167,7 @@ public class Gpg {
                 logger.info(FileUtils.readFile(dotGnupgGpgConf, UTF_8).orElse(""));
             }
 
-            if (gpgVersionGreater(resultGpgVersion.getValue(), "2.2")) {
+            if (gpgVersionGreater(gpgVersion, "2.2")) {
                 // on gpg-2.1.11 'pinentry-mode loopback' is invalid option
                 logger.info("    add 'pinentry-mode loopback' to '~/.gnupg/gpg.conf'");
                 FileUtils.writeFile(dotGnupgGpgConf, "pinentry-mode loopback\n".getBytes(UTF_8),
@@ -251,10 +253,11 @@ public class Gpg {
                     logger.info("    export secret key for gradle build");
                     // ${gpg_cmd_batch} --keyring secring.gpg --export-secret-key ${CI_OPT_GPG_KEYID} > secring.gpg;
                     final List<String> exportKey = this.cmdGpgBatch("--keyring", "secring.gpg", "--export-secret-key", this.keyId);
-                    final Entry<Integer, String> resultExportKey = this.exec("", exportKey);
+                    final Entry<Integer, Entry<String, String>> resultExportKey = this.exec("", exportKey);
                     if (resultExportKey.getKey() == 0) {
                         final Path secringGpg = this.executionRoot.resolve("secring.gpg");
-                        FileUtils.writeFile(secringGpg, resultExportKey.getValue().getBytes(UTF_8), StandardOpenOption.SYNC);
+                        final String stdOut = resultExportKey.getValue().getKey();
+                        FileUtils.writeFile(secringGpg, stdOut.getBytes(UTF_8), StandardOpenOption.SYNC);
                     }
                 }
             }
@@ -269,11 +272,11 @@ public class Gpg {
         return StringUtils.asList(StringUtils.concat(GpgUtils.gpgCommand(this.executable), "--batch=true"), command);
     }
 
-    private Map.Entry<Integer, String> exec(final List<String> command) {
+    private Entry<Integer, Entry<String, String>> exec(final List<String> command) {
         return this.exec(null, command);
     }
 
-    private Map.Entry<Integer, String> exec(final String stdIn, final List<String> command) {
+    private Entry<Integer, Entry<String, String>> exec(final String stdIn, final List<String> command) {
         return CliUtils.exec(this.environment, stdIn, command);
     }
 
@@ -282,8 +285,9 @@ public class Gpg {
 
         if (!StringUtils.isEmpty(keyName)) {
             // $(${gpg_cmd} --list-secret-keys | { grep ${CI_OPT_GPG_KEYNAME} || true; }
-            final Entry<Integer, String> resultListSecKeys = this.exec(null, this.cmdGpgBatch("--list-secret-keys"));
-            final List<String> secretKeyFound = StringUtils.lines(resultListSecKeys.getValue())
+            final Entry<Integer, Entry<String, String>> resultListSecKeys = this.exec(null, this.cmdGpgBatch("--list-secret-keys"));
+            final String stdOut = resultListSecKeys.getValue().getKey();
+            final List<String> secretKeyFound = StringUtils.lines(stdOut)
                 .stream()
                 .filter(line -> line.contains(keyName))
                 .collect(Collectors.toList());
@@ -304,25 +308,25 @@ public class Gpg {
         return Optional.ofNullable(found);
     }
 
-    private Entry<Integer, String> gpgImport(final String keyFile, final boolean fastimport) {
+    private Entry<Integer, Entry<String, String>> gpgImport(final String keyFile, final boolean fastimport) {
         final String importOption = fastimport ? "--fast-import" : "--import";
         logger.info(String.format("    gpg %s %s", importOption, keyFile));
         // e.g.
         // ${gpg_cmd_batch_yes} --import codesigning.pub
         // ${gpg_cmd_batch_yes} --import codesigning.asc
         // ${gpg_cmd_batch_yes} --fast-import codesigning.asc
-        final Entry<Integer, String> result = this.exec(null, this.cmdGpgBatchYes(importOption, keyFile));
-        logger.info(result.getValue());
+        final Entry<Integer, Entry<String, String>> result = this.exec(null, this.cmdGpgBatchYes(importOption, keyFile));
+        logger.info(String.format("code [%s], [%s][%s]", result.getKey(), result.getValue().getKey(), result.getValue().getValue()));
         return result;
     }
 
-    private Entry<Integer, String> gpgListKeys(final boolean privateKey) {
+    private Entry<Integer, Entry<String, String>> gpgListKeys(final boolean privateKey) {
         final String listOption = privateKey ? "--list-secret-keys" : "--list-keys";
         logger.info(String.format("    gpg %s", listOption));
         // ${gpg_cmd_batch} --list-keys
         // ${gpg_cmd_batch} --list-secret-keys
-        final Entry<Integer, String> result = this.exec(null, this.cmdGpgBatch(listOption));
-        logger.info(result.getValue());
+        final Entry<Integer, Entry<String, String>> result = this.exec(null, this.cmdGpgBatch(listOption));
+        logger.info(String.format("code [%s], [%s][%s]", result.getKey(), result.getValue().getKey(), result.getValue().getValue()));
         return result;
     }
 
@@ -330,9 +334,9 @@ public class Gpg {
         if (!StringUtils.isEmpty(keyName)) {
             logger.info(String.format("    gpg set default key to %s", keyName));
             // echo -e "trust\n5\ny\n" | gpg --cmd-fd 0 --batch=true --edit-key ${CI_OPT_GPG_KEYNAME}
-            final List<String> setDefaultKey = this.cmdGpgBatch("--cmd-fd", "0", "--edit-key", keyName);
-            final Entry<Integer, String> resultSetDefaultKey = this.exec("", setDefaultKey);
-            logger.info(resultSetDefaultKey.getValue());
+            final List<String> command = this.cmdGpgBatch("--cmd-fd", "0", "--edit-key", keyName);
+            final Entry<Integer, Entry<String, String>> result = this.exec("", command);
+            logger.info(String.format("code [%s], [%s][%s]", result.getKey(), result.getValue().getKey(), result.getValue().getValue()));
         }
     }
 

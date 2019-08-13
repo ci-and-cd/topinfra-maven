@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import top.infra.logging.Logger;
 import top.infra.util.StringUtils;
@@ -23,18 +24,20 @@ public class ClearFileOpensslNative extends AbstractResource implements ClearFil
         if (!StringUtils.isEmpty(passphrase) && this.getPath().toFile().exists()) {
             logger.info(String.format("    Encrypting [%s] by openssl", this.getPath()));
 
-            final Map.Entry<Integer, String> opensslVersion = this.exec(Arrays.asList("openssl", "version", "-a"));
-            logger.info(opensslVersion.getValue());
+            final Entry<Integer, Entry<String, String>> opensslVersion = this.exec(Arrays.asList("openssl", "version", "-a"));
+            logger.info(String.format("code [%s], [%s][%s]",
+                opensslVersion.getKey(), opensslVersion.getValue().getKey(), opensslVersion.getValue().getValue()));
 
             // openssl aes-256-cbc -a -k ${CI_OPT_GPG_PASSPHRASE} -md md5 -salt -in codesigning.asc.enc -out codesigning.asc -p
-            final Map.Entry<Integer, String> resultOpensslEncrypt = this.exec(Arrays.asList(
+            final Entry<Integer, Entry<String, String>> result = this.exec(Arrays.asList(
                 "openssl", "aes-256-cbc",
                 "-a", "-k", passphrase,
                 "-md", "md5", "-salt",
                 "-in", this.getPath().toString(),
                 "-out", targetPath.toString()
             ));
-            logger.info(resultOpensslEncrypt.getValue());
+            logger.info(String.format("    Encrypt [%s] by openssl. code [%s], output: [%s][%s]",
+                this.getPath(), result.getKey(), result.getValue().getKey(), result.getValue().getValue()));
         }
     }
 
