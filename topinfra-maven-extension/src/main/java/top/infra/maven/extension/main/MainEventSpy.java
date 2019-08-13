@@ -230,11 +230,13 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
         final CliRequest cliRequest,
         final CiOptionContext ciOptionContext
     ) {
-        final Path rootProjectPath = MavenUtils.executionRootPath(cliRequest, ciOptionContext).toAbsolutePath();
+        final Path rootProjectPath = MavenUtils.executionRootPath(cliRequest).toAbsolutePath();
         logger.info(String.format("    executionRootPath [%s]", rootProjectPath));
 
         assert Orders.ORDER_SYSTEM_TO_USER_PROPERTIES < Orders.ORDER_GIT_PROPERTIES;
-        assert Orders.ORDER_GIT_PROPERTIES < Orders.ORDER_CI_OPTION_CONFIG_LOADER;
+        assert Orders.ORDER_GIT_PROPERTIES < Orders.ORDER_GIT_REPO_FACTORY;
+        assert Orders.ORDER_GIT_REPO_FACTORY < Orders.ORDER_CACHE_SETTINGS_RESOURCES_FACTORY;
+        assert Orders.ORDER_CACHE_SETTINGS_RESOURCES_FACTORY < Orders.ORDER_CI_OPTION_CONFIG_LOADER;
         assert Orders.ORDER_CI_OPTION_CONFIG_LOADER < Orders.ORDER_CI_OPTION_INIT;
         assert Orders.ORDER_CI_OPTION_INIT < Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY;
         assert Orders.ORDER_MAVEN_SETTINGS_LOCALREPOSITORY < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SECURITY_XML;
@@ -270,7 +272,8 @@ public class MainEventSpy extends AbstractEventSpy implements OrderedConfigurati
             logger.info(String.format("    userSettingsSource: [%s]", request.getUserSettingsSource()));
         }
 
-        assert Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SERVERS;
+        assert Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES < Orders.EVENT_AWARE_ORDER_EXTRA_FILES;
+        assert Orders.EVENT_AWARE_ORDER_EXTRA_FILES < Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SERVERS;
 
         this.handlerMap.get("onSettingsBuildingRequest")
             .forEach(it -> it.onSettingsBuildingRequest(cliRequest, request, ciOptionContext));

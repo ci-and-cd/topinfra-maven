@@ -29,12 +29,12 @@ public abstract class MavenUtils {
 
     public static final String PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY = "maven.multiModuleProjectDirectory";
 
-    public static Boolean cmdArgOffline(final CliRequest cliRequest) {
-        return cliRequest.getCommandLine().hasOption(CLIManager.OFFLINE);
+    public static Boolean cmdArgOffline(final CommandLine commandLine) {
+        return commandLine.hasOption(CLIManager.OFFLINE);
     }
 
-    public static Boolean cmdArgUpdateSnapshots(final CliRequest cliRequest) {
-        return cliRequest.getCommandLine().hasOption(CLIManager.UPDATE_SNAPSHOTS);
+    public static Boolean cmdArgUpdateSnapshots(final CommandLine commandLine) {
+        return commandLine.hasOption(CLIManager.UPDATE_SNAPSHOTS);
     }
 
     public static Optional<String> findInProperties(
@@ -141,11 +141,8 @@ public abstract class MavenUtils {
         return profile.getActivation().getProperty().getValue();
     }
 
-    public static Path executionRootPath(
-        final CliRequest cliRequest,
-        final CiOptionContext ciOptionContext
-    ) {
-        return mavenMultiModuleProjectDirectory(ciOptionContext.getSystemProperties())
+    public static Path executionRootPath(final CliRequest cliRequest) {
+        return mavenMultiModuleProjectDirectory(cliRequest.getSystemProperties())
             .orElseGet(() -> {
                 final Optional<Path> argFile = cmdArgFile(cliRequest).map(Paths::get).filter(path -> path.toFile().exists());
                 final Path result;

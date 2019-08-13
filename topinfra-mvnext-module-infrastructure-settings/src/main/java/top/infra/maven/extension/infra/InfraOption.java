@@ -50,6 +50,29 @@ public enum InfraOption implements CiOption {
     MAVEN_BUILD_OPTS_REPO("maven.build.opts.repo"),
     MAVEN_BUILD_OPTS_REPO_REF("maven.build.opts.repo.ref", GIT_REF_NAME_MASTER),
 
+    DEPLOYKEY("deployKey") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
+    DEPLOYKEY_PASSPHRASE("deployKey.passphrase") {
+        @Override
+        public Optional<String> calculateValue(final CiOptionContext context) {
+            return getInfrastructureSpecificValue(this, context);
+        }
+
+        @Override
+        public Optional<String> setProperties(final CiOptionContext context, final Properties properties) {
+            return setInfrastructureSpecificValue(this, super::setProperties, context, properties);
+        }
+    },
+
     GIT_AUTH_TOKEN("git.auth.token") {
         @Override
         public Optional<String> calculateValue(final CiOptionContext context) {

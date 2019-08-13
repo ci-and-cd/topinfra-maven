@@ -30,7 +30,10 @@
 
     <!-- @formatter:off -->
     <dependencies>
+        <dependency><groupId>org.codehaus.plexus</groupId><artifactId>plexus-utils</artifactId><optional>true</optional></dependency>
         <dependency><groupId>org.json</groupId><artifactId>json</artifactId></dependency>
+        <dependency><groupId>top.infra.maven</groupId><artifactId>topinfra-filesafe</artifactId></dependency>
+
         <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-core</artifactId><scope>provided</scope></dependency>
         <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-shared</artifactId></dependency>
 

@@ -3,7 +3,6 @@ package top.infra.maven.extension.infra;
 import static top.infra.maven.extension.infra.InfraOption.CACHE_SETTINGS_PATH;
 import static top.infra.maven.extension.infra.InfraOption.GIT_AUTH_TOKEN;
 import static top.infra.maven.shared.extension.Constants.SRC_CI_OPTS_PROPERTIES;
-import static top.infra.maven.shared.extension.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 import static top.infra.maven.shared.utils.PropertiesUtils.logProperties;
 import static top.infra.util.StringUtils.isEmpty;
 
@@ -18,6 +17,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.maven.cli.CliRequest;
+import org.jetbrains.annotations.Nullable;
 
 import top.infra.exception.RuntimeIOException;
 import top.infra.logging.Logger;
@@ -34,12 +34,15 @@ import top.infra.maven.shared.utils.PropertiesUtils;
 public class CiOptionConfigLoader implements MavenEventAware {
 
     private final Logger logger;
+    private final GitRepositoryFactory gitRepositoryFactory;
 
     @Inject
     public CiOptionConfigLoader(
-        final org.codehaus.plexus.logging.Logger logger
+        final org.codehaus.plexus.logging.Logger logger,
+        final GitRepositoryFactory gitRepositoryFactory
     ) {
         this.logger = new LoggerPlexusImpl(logger);
+        this.gitRepositoryFactory = gitRepositoryFactory;
     }
 
     @Override
@@ -68,10 +71,10 @@ public class CiOptionConfigLoader implements MavenEventAware {
         checkGitAuthToken(logger, ciOptionContext);
 
         // ci options from file
-        final boolean offline = MavenUtils.cmdArgOffline(cliRequest);
-        final boolean update = MavenUtils.cmdArgUpdateSnapshots(cliRequest);
-        final String remoteOriginUrl = GIT_REMOTE_ORIGIN_URL.findInProperties(ciOptionContext).orElse(null);
-        final Optional<Properties> loadedProperties = ciOptContextFromFile(ciOptionContext, logger, remoteOriginUrl, offline, update);
+        final GitRepository gitRepository = this.gitRepositoryFactory.getObject().orElse(null);
+        final boolean offline = MavenUtils.cmdArgOffline(cliRequest.getCommandLine());
+        final boolean update = MavenUtils.cmdArgUpdateSnapshots(cliRequest.getCommandLine());
+        final Optional<Properties> loadedProperties = ciOptContextFromFile(gitRepository, ciOptionContext, offline, update);
 
         loadedProperties.ifPresent(props -> logProperties(logger, "    ci_opts.properties", props, null));
 
@@ -89,9 +92,8 @@ public class CiOptionConfigLoader implements MavenEventAware {
     }
 
     static Optional<Properties> ciOptContextFromFile(
+        @Nullable final GitRepository gitRepository,
         final CiOptionContext ciOptContext,
-        final Logger logger,
-        final String remoteOriginUrl,
         final boolean offline,
         final boolean update
     ) {
@@ -100,7 +102,7 @@ public class CiOptionConfigLoader implements MavenEventAware {
 
             CACHE_SETTINGS_PATH.getValue(ciOptContext).ifPresent(FileUtils::createDirectories);
 
-            GitRepository.newGitRepository(ciOptContext, logger, remoteOriginUrl).ifPresent(repo -> {
+            Optional.ofNullable(gitRepository).ifPresent(repo -> {
                 repo.download(SRC_CI_OPTS_PROPERTIES, Paths.get(optsFile), true, offline, update);
 
                 try {

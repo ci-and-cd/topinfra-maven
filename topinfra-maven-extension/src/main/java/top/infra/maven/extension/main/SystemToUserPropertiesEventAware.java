@@ -70,7 +70,7 @@ public class SystemToUserPropertiesEventAware implements MavenEventAware {
             userProperties,
             MavenUtils.PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY,
             () -> {
-                final String defaultValue = MavenUtils.executionRootPath(cliRequest, ciOptContext).toString();
+                final String defaultValue = MavenUtils.executionRootPath(cliRequest).toString();
                 logger.warn(String.format(
                     "    Value of system property [%s] not found, use defaultValue [%s] instead.",
                     MavenUtils.PROP_MAVEN_MULTIMODULEPROJECTDIRECTORY, defaultValue

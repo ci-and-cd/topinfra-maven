@@ -45,7 +45,7 @@ public final class Constants {
         PHASE_INSTALL
     ));
 
-    public static final String SRC_CI_OPTS_PROPERTIES = "src/main/ci-script/ci_opts.properties"; // TODO rename
+    public static final String SRC_CI_OPTS_PROPERTIES = "ci_opts.properties";
     public static final String SETTINGS_SECURITY_XML = "settings-security.xml";
 
     public static final String PROP_SETTINGS = "settings";

@@ -1,8 +1,10 @@
 package top.infra.maven.extension.infra;
 
-import static top.infra.maven.extension.infra.SettingFiles.SRC_MAIN_MAVEN;
+import static top.infra.maven.extension.infra.MavenSettingsSecurityXmlEventAware.SRC_MAIN_MAVEN;
+import static top.infra.maven.extension.infra.MavenSettingsSecurityXmlEventAware.userHomeDotM2;
 import static top.infra.maven.shared.utils.SystemUtils.os;
 
+import java.io.File;
 import java.nio.file.Path;
 
 import javax.inject.Inject;
@@ -29,18 +31,19 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
     private static final String TOOLCHAINS_XML = toolchainsXml();
 
     private final Logger logger;
+    private final CacheSettingsResourcesFactory resourcesFactory;
 
-    private SettingFiles settingFiles;
     private Path settingsXml;
     private Path toolchainsXml;
 
     @Inject
     public MavenSettingsFilesEventAware(
-        final org.codehaus.plexus.logging.Logger logger
+        final org.codehaus.plexus.logging.Logger logger,
+        final CacheSettingsResourcesFactory resourcesFactory
     ) {
         this.logger = new LoggerPlexusImpl(logger);
+        this.resourcesFactory = resourcesFactory;
 
-        this.settingFiles = null;
         this.settingsXml = null;
         this.toolchainsXml = null;
     }
@@ -61,15 +64,15 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         final SettingsBuildingRequest request,
         final CiOptionContext ciOptContext
     ) {
-        this.settingFiles = new SettingFiles(logger, ciOptContext);
-
-        this.settingsXml = this.settingFiles.findOrDownload(
-            cliRequest,
-            ciOptContext,
+        final Resources resources = this.resourcesFactory.getObject();
+        this.settingsXml = resources.findOrDownload(
+            cliRequest.getCommandLine(),
+            false,
             Constants.PROP_SETTINGS,
             SRC_MAIN_MAVEN + "/" + SETTINGS_XML,
             SETTINGS_XML,
-            false
+            userHomeDotM2(SETTINGS_XML),
+            SRC_MAIN_MAVEN.replace("/", File.separator) + File.separator + SETTINGS_XML
         ).orElse(null);
         if (this.settingsXml != null) {
             if (logger.isInfoEnabled()) {
@@ -91,13 +94,15 @@ public class MavenSettingsFilesEventAware implements MavenEventAware {
         final ToolchainsBuildingRequest request,
         final CiOptionContext ciOptContext
     ) {
-        this.toolchainsXml = this.settingFiles.findOrDownload(
-            cliRequest,
-            ciOptContext,
+        final Resources resources = this.resourcesFactory.getObject();
+        this.toolchainsXml = resources.findOrDownload(
+            cliRequest.getCommandLine(),
+            false,
             Constants.PROP_TOOLCHAINS,
             SRC_MAIN_MAVEN + "/" + TOOLCHAINS_XML,
             TOOLCHAINS_XML,
-            false
+            userHomeDotM2(TOOLCHAINS_XML),
+            SRC_MAIN_MAVEN.replace("/", File.separator) + File.separator + TOOLCHAINS_XML
         ).orElse(null);
 
         if (this.toolchainsXml != null) {

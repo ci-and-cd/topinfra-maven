@@ -1,10 +1,10 @@
 package top.infra.maven.extension.infra;
 
 import static java.lang.Boolean.FALSE;
-import static top.infra.maven.extension.infra.InfraOption.CACHE_SETTINGS_PATH;
 import static top.infra.maven.shared.extension.CiOptions.systemPropertyName;
 import static top.infra.maven.shared.utils.SupportFunction.logEnd;
 import static top.infra.maven.shared.utils.SupportFunction.logStart;
+import static top.infra.util.StringUtils.isEmpty;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,97 +15,125 @@ import java.util.stream.Stream;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.maven.cli.CLIManager;
-import org.apache.maven.cli.CliRequest;
+import org.jetbrains.annotations.Nullable;
 
 import top.infra.logging.Logger;
-import top.infra.maven.CiOptionContext;
 import top.infra.maven.shared.utils.FileUtils;
 import top.infra.maven.shared.utils.MavenUtils;
 
-public class SettingFiles {
-
-    static final String SRC_MAIN_MAVEN = "src/main/maven";
+public class Resources {
 
     private final Logger logger;
+    private final Path executionRootPath;
+    private final String cacheDir;
     private final GitRepository gitRepository;
+    private final Properties systemProperties;
+    private final Properties userProperties;
 
-    public SettingFiles(
+    public Resources(
         final Logger logger,
-        final CiOptionContext ciOptContext
+        final Path executionRootPath,
+        @Nullable final String cacheDir,
+        @Nullable final GitRepository gitRepository,
+        final Properties systemProperties,
+        final Properties userProperties
     ) {
         this.logger = logger;
-        this.gitRepository = GitRepository.newGitRepository(ciOptContext, logger).orElse(null);
+        this.executionRootPath = executionRootPath;
+        this.cacheDir = cacheDir;
+        this.gitRepository = gitRepository;
+        this.systemProperties = systemProperties;
+        this.userProperties = userProperties;
     }
 
     public Optional<Path> findOrDownload(
-        final CliRequest cliRequest,
-        final CiOptionContext ciOptContext,
+        final CommandLine commandLine,
+        final boolean optional,
+        final String propertyName,
+        final String sourceFile,
+        final String filename
+    ) {
+        return this.findOrDownload(commandLine, optional, propertyName, sourceFile, filename, null, null);
+    }
+
+    public Optional<Path> findOrDownload(
+        final CommandLine commandLine,
+        final boolean optional,
         final String propertyName,
         final String sourceFile,
         final String filename,
-        final boolean optional
+        @Nullable final String defaultFilePath,
+        @Nullable final String alternativeFilePath
     ) {
         logger.info(logStart(this, "findOrDownload", filename));
 
-        final Optional<String> cacheDir = CACHE_SETTINGS_PATH.getValue(ciOptContext);
+        final boolean offline = MavenUtils.cmdArgOffline(commandLine);
+        final boolean update = MavenUtils.cmdArgUpdateSnapshots(commandLine);
 
-        final boolean offline = MavenUtils.cmdArgOffline(cliRequest);
-        final boolean update = MavenUtils.cmdArgUpdateSnapshots(cliRequest);
-
+        final Optional<Path> foundAtLocal = findFile(
+            this.executionRootPath,
+            commandLine,
+            this.systemProperties,
+            this.userProperties,
+            propertyName,
+            filename,
+            alternativeFilePath
+        );
+        final Optional<Path> defaultValue = isEmpty(defaultFilePath) ? Optional.empty() : Optional.of(Paths.get(defaultFilePath));
         final Optional<Path> result;
-        final Optional<Path> inM2 = userHomeDotM2(filename);
-        final Optional<Path> foundAtLocal = findFile(cliRequest, ciOptContext, filename, propertyName);
-        if (cacheDir.isPresent()) {
-            final Path targetFile = Paths.get(cacheDir.get(), filename);
+        final Optional<String> cacheDirOptional = Optional.ofNullable(this.cacheDir);
+        if (cacheDirOptional.isPresent()) {
+            final Path targetFile = Paths.get(cacheDirOptional.get(), filename);
             if (foundAtLocal.map(value -> !FileUtils.isSameFile(value, targetFile)).orElse(FALSE)) {
                 result = foundAtLocal;
             } else if (this.gitRepository != null) {
-                FileUtils.createDirectories(cacheDir.get());
+                FileUtils.createDirectories(cacheDirOptional.get());
                 this.gitRepository.download(sourceFile, targetFile, !optional, offline, update);
                 if (targetFile.toFile().exists()) {
                     result = Optional.of(targetFile);
                 } else {
-                    result = inM2;
+                    result = defaultValue;
                 }
             } else {
-                result = inM2;
+                result = defaultValue;
             }
         } else {
             if (foundAtLocal.isPresent()) {
                 result = foundAtLocal;
             } else {
-                result = inM2;
+                result = defaultValue;
             }
         }
 
         if (result.isPresent()) {
-            logger.info(String.format("    Setting file [%s], using [%s].", filename, result.get()));
-            ciOptContext.getSystemProperties().setProperty(propertyName, result.get().toString());
-            ciOptContext.getUserProperties().setProperty(propertyName, result.get().toString());
+            logger.info(String.format("    Resource file [%s], result [%s].", filename, result.get()));
+            this.systemProperties.setProperty(propertyName, result.get().toString());
+            this.userProperties.setProperty(propertyName, result.get().toString());
         } else {
-            logger.info(String.format("    Setting file [%s], not found.", filename));
+            logger.info(String.format("    Resource file [%s], not found.", filename));
         }
 
         logger.info(logEnd(this, "findOrDownload", result.orElse(null), filename));
         return result;
     }
 
-    private static Optional<Path> userHomeDotM2(final String filename) {
-        final Path path = MavenUtils.userHomeDotM2().resolve(filename);
-        return path.toFile().exists() ? Optional.of(path) : Optional.empty();
-    }
-
     public static Optional<Path> findFile(
-        final CliRequest cliRequest,
-        final CiOptionContext ciOptContext,
+        final Path executionRootPath,
+        final CommandLine commandLine,
+        final Properties systemProperties,
+        final Properties userProperties,
+        final String propertyName,
         final String filename,
-        final String propertyName
+        final String alternativeFilePath
     ) {
         return Stream.of(
-            SettingFiles.FindFiles.findInUserProperties(ciOptContext.getUserProperties(), propertyName),
-            SettingFiles.FindFiles.findInSystemProperties(ciOptContext.getSystemProperties(), propertyName),
-            SettingFiles.FindFiles.findInWorkingDir(MavenUtils.executionRootPath(cliRequest, ciOptContext), filename),
-            SettingFiles.FindFiles.findInCustomSettingsDir(cliRequest, filename)
+            FindFiles.findInUserProperties(userProperties, propertyName),
+            FindFiles.findInSystemProperties(systemProperties, propertyName),
+            FindFiles.findInWorkingDir(executionRootPath, filename),
+            isEmpty(alternativeFilePath)
+                ? Optional.<Path>empty()
+                : FindFiles.findInWorkingDir(executionRootPath, alternativeFilePath),
+            FindFiles.findInCustomSettingsDir(commandLine, filename)
         )
             .filter(Optional::isPresent)
             .map(Optional::get)
@@ -141,19 +169,14 @@ public class SettingFiles {
             final Path workingDirectory,
             final String filename
         ) {
-            return Stream.of(
-                workingDirectory.resolve(filename),
-                workingDirectory.resolve(SRC_MAIN_MAVEN + "/" + filename)
-            )
-                .filter(path -> path.toFile().exists())
-                .findFirst();
+            return Optional.of(workingDirectory.resolve(filename))
+                .filter(path -> path.toFile().exists());
         }
 
         private static Optional<Path> findInCustomSettingsDir(
-            final CliRequest cliRequest,
+            final CommandLine commandLine,
             final String filename
         ) {
-            final CommandLine commandLine = cliRequest.getCommandLine();
             final Optional<Path> result;
             if (commandLine.hasOption(CLIManager.ALTERNATE_USER_SETTINGS)) {
                 final Path settingsDir = Paths.get(commandLine.getOptionValue(CLIManager.ALTERNATE_USER_SETTINGS)).getParent();

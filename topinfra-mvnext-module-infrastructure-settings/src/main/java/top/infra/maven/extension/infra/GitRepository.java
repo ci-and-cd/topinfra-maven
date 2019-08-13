@@ -5,11 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.SYNC;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static top.infra.maven.extension.infra.InfraOption.GIT_AUTH_TOKEN;
-import static top.infra.maven.extension.infra.InfraOption.MAVEN_BUILD_OPTS_REPO;
-import static top.infra.maven.extension.infra.InfraOption.MAVEN_BUILD_OPTS_REPO_REF;
 import static top.infra.maven.shared.extension.Constants.GIT_REF_NAME_MASTER;
-import static top.infra.maven.shared.extension.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 import static top.infra.maven.shared.utils.FileUtils.readFile;
 import static top.infra.maven.shared.utils.FileUtils.writeFile;
 import static top.infra.maven.shared.utils.SupportFunction.newTuple;
@@ -17,19 +13,19 @@ import static top.infra.maven.shared.utils.SupportFunction.newTupleOptional;
 import static top.infra.util.StringUtils.isEmpty;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 import top.infra.logging.Logger;
-import top.infra.maven.CiOptionContext;
-import top.infra.maven.shared.extension.GlobalOption;
 import top.infra.maven.shared.utils.DownloadUtils;
 import top.infra.maven.shared.utils.DownloadUtils.DownloadException;
 import top.infra.maven.shared.utils.Optionals;
@@ -59,12 +55,13 @@ public class GitRepository {
     }
 
     private static Optional<String> gitRepo(
-        final CiOptionContext ciOptContext,
+        final Properties systemProperties,
+        @Nullable final String infrastructure,
         @Nullable final String remoteOriginUrl
     ) {
         // TODO urls like 'gitProperties git.remote.origin.url='https://gitlab-ci-token:token@gitlab.com/gitlab-cloud-ready/cloud-ready-parent.git''
         final Optional<String> gitPrefix;
-        final Optional<String> ciProjectUrl = Optional.ofNullable(ciOptContext.getSystemProperties().getProperty("env.CI_PROJECT_URL"));
+        final Optional<String> ciProjectUrl = Optional.ofNullable(systemProperties.getProperty("env.CI_PROJECT_URL"));
         if (ciProjectUrl.isPresent()) {
             gitPrefix = ciProjectUrl.map(url -> UrlUtils.urlWithoutPath(url).orElse(null));
         } else {
@@ -74,37 +71,32 @@ public class GitRepository {
                     : UrlUtils.domainOrHostFromUrl(url).map(value -> "http://" + value).orElse(null));
         }
 
-        return GlobalOption.INFRASTRUCTURE.getValue(ciOptContext)
-            .map(infra -> {
-                final String repoOwner = "ci-and-cd";
-                final String repoName = String.format("maven-build-opts-%s", infra);
-                return gitPrefix.map(prefix -> String.format("%s/%s/%s", prefix, repoOwner, repoName)).orElse(null);
-            });
+        return Optional.ofNullable(infrastructure).map(infra -> {
+            final String repoOwner = "ci-and-cd";
+            final String repoName = String.format("maven-build-opts-%s", infra);
+            return gitPrefix.map(prefix -> String.format("%s/%s/%s", prefix, repoOwner, repoName)).orElse(null);
+        });
     }
 
     public static Optional<GitRepository> newGitRepository(
-        final CiOptionContext ciOptContext,
-        final Logger logger
-    ) {
-        final String remoteOriginUrl = GIT_REMOTE_ORIGIN_URL.getValue(ciOptContext).orElse(null);
-        return GitRepository.newGitRepository(ciOptContext, logger, remoteOriginUrl);
-    }
-
-    public static Optional<GitRepository> newGitRepository(
-        final CiOptionContext ciOptContext,
         final Logger logger,
-        @Nullable final String remoteOriginUrl
+        final Properties systemProperties,
+        @Nullable final String infrastructure,
+        @Nullable final String repo,
+        @Nullable final String repoRef,
+        @Nullable final String remoteOriginUrl,
+        @Nullable final String token
     ) {
         // prefix of git service url (infrastructure specific), i.e. https://github.com
-        return Optionals.or(
-            () -> MAVEN_BUILD_OPTS_REPO.getValue(ciOptContext),
-            () -> gitRepo(ciOptContext, remoteOriginUrl)
-        )
-            .map(repo -> new GitRepository(
+        return Optionals.or(Arrays.asList(
+            Optional.ofNullable(repo),
+            gitRepo(systemProperties, infrastructure, remoteOriginUrl)
+        ))
+            .map(value -> new GitRepository(
                 logger,
-                repo,
-                MAVEN_BUILD_OPTS_REPO_REF.getValue(ciOptContext).orElse(null),
-                GIT_AUTH_TOKEN.getValue(ciOptContext).orElse(null)
+                value,
+                repoRef,
+                token
             ));
     }
 
@@ -177,7 +169,7 @@ public class GitRepository {
             final String errorMsg;
             final RuntimeException ex;
             if (is404Status) {
-                errorMsg = String.format("    Resource [%s] not found.", result.getKey().orElse(null));
+                errorMsg = String.format("    Resources [%s] not found.", result.getKey().orElse(null));
                 ex = new DownloadException(errorMsg);
             } else {
                 errorMsg = String.format(
@@ -278,7 +270,7 @@ public class GitRepository {
                     if (logger.isWarnEnabled()) {
                         logger.warn(String.format("    Can not download %s.", targetFile));
                         logger.warn(String.format(
-                            "    Please make sure: 1. Resource exists 2. You have permission to access resources and %s is set.",
+                            "    Please make sure: 1. Resources exists 2. You have permission to access resources and %s is set.",
                             InfraOption.GIT_AUTH_TOKEN.getEnvVariableName())
                         );
                     }

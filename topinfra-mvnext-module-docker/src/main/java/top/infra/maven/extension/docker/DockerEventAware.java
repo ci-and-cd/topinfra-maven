@@ -83,7 +83,7 @@ public class DockerEventAware implements MavenEventAware {
 
             docker.initConfigFile();
 
-            final boolean offline = cmdArgOffline(cliRequest);
+            final boolean offline = cmdArgOffline(cliRequest.getCommandLine());
             final boolean useMavenSettingsForAuth = DOCKERFILE_USEMAVENSETTINGSFORAUTH.getValue(ciOptContext)
                 .map(Boolean::parseBoolean).orElse(FALSE);
             if (!useMavenSettingsForAuth && !offline) {
@@ -96,7 +96,7 @@ public class DockerEventAware implements MavenEventAware {
             }
 
             if (!fast && !offline) {
-                final boolean update = cmdArgUpdateSnapshots(cliRequest);
+                final boolean update = cmdArgUpdateSnapshots(cliRequest.getCommandLine());
                 this.pullBaseImages(docker, update);
             }
         }

@@ -76,7 +76,7 @@ public class GitPropertiesEventAware implements MavenEventAware {
         final CliRequest cliRequest,
         final CiOptionContext ciOptContext
     ) {
-        final Path executionRootPath = MavenUtils.executionRootPath(cliRequest, ciOptContext);
+        final Path executionRootPath = MavenUtils.executionRootPath(cliRequest);
         final Path dotGit = executionRootPath.resolve(".git");
         if (dotGit.toFile().exists()) {
             final Optional<Properties> gitProperties = newJgitProperties(this.logger);

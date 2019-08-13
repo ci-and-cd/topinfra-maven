@@ -6,7 +6,6 @@ import static top.infra.maven.extension.infra.InfraOption.SONAR_HOST_URL;
 import static top.infra.maven.extension.infra.InfraOption.SONAR_ORGANIZATION;
 import static top.infra.maven.shared.extension.Constants.BOOL_STRING_TRUE;
 import static top.infra.maven.shared.extension.MavenOption.GENERATEREPORTS;
-import static top.infra.maven.shared.extension.VcsProperties.GIT_REMOTE_ORIGIN_URL;
 
 import java.util.Properties;
 
@@ -41,8 +40,8 @@ public class CiOptionTests {
         slf4jLogger.info("generateReports {}", GENERATEREPORTS.getValue(ciOptContext).orElse(null));
         assertEquals(TRUE.toString(), GENERATEREPORTS.getValue(ciOptContext).orElse(null));
 
-        final String remoteOriginUrl = GIT_REMOTE_ORIGIN_URL.getValue(ciOptContext).orElse(null);
-        CiOptionConfigLoader.ciOptContextFromFile(ciOptContext, logger(), remoteOriginUrl, false, true)
+        final GitRepository gitRepository = GitRepositoryFactory.newGitRepository(ciOptContext, logger()).orElse(null);
+        CiOptionConfigLoader.ciOptContextFromFile(gitRepository, ciOptContext, false, true)
             .ifPresent(loadedProperties ->
                 PropertiesUtils.setSystemPropertiesIfAbsent(ciOptContext.getSystemProperties(), loadedProperties));
 
