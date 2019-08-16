@@ -2,16 +2,23 @@ package top.infra.maven.extension.infra;
 
 import static top.infra.maven.shared.extension.Constants.PROP_SETTINGS_SECURITY;
 import static top.infra.maven.shared.extension.Constants.SETTINGS_SECURITY_XML;
+import static top.infra.maven.shared.extension.GlobalOption.MASTER_PASSWORD;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.cli.CommandLine;
 import org.apache.maven.cli.CliRequest;
 
+import top.infra.exception.RuntimeIOException;
 import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
@@ -44,9 +51,8 @@ public class MavenSettingsSecurityXmlEventAware implements MavenEventAware {
 
     @Override
     public int getOrder() {
-        return Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_FILES;
+        return Orders.EVENT_AWARE_ORDER_MAVEN_SETTINGS_SECURITY_XML;
     }
-
 
     @Override
     public boolean afterInit() {
@@ -58,16 +64,27 @@ public class MavenSettingsSecurityXmlEventAware implements MavenEventAware {
         final CliRequest cliRequest,
         final CiOptionContext ciOptContext
     ) {
-        final Resources resources = this.resourcesFactory.getObject();
-        this.settingsSecurityXml = resources.findOrDownload(
-            cliRequest.getCommandLine(),
-            true,
-            Constants.PROP_SETTINGS_SECURITY,
-            SRC_MAIN_MAVEN + "/" + SETTINGS_SECURITY_XML,
-            SETTINGS_SECURITY_XML,
-            userHomeDotM2(SETTINGS_SECURITY_XML),
-            SRC_MAIN_MAVEN.replace("/", File.separator) + File.separator + SETTINGS_SECURITY_XML
-        ).orElse(null);
+        final Optional<String> masterPassword = MASTER_PASSWORD.getValue(ciOptContext);
+        if (masterPassword.isPresent()) {
+            try {
+                final Path tmpFile = Files.createTempFile("settings-security", ".xml");
+                try (PrintWriter writer = new PrintWriter(tmpFile.toFile())) {
+                    writer.println("<settingsSecurity>");
+                    writer.println(String.format("  <master>%s</master>",
+                        masterPassword.map(text ->
+                            text.startsWith("{") && text.endsWith("}")
+                                ? text
+                                : "{" + text.replace("{", "\\{").replace("}", "\\}") + "}")));
+                    writer.println("</settingsSecurity>");
+                }
+                this.settingsSecurityXml = tmpFile;
+            } catch (final IOException ex) {
+                throw new RuntimeIOException(ex);
+            }
+        } else {
+            this.findOrDownload(cliRequest.getCommandLine());
+        }
+
         if (this.settingsSecurityXml != null) {
             if (logger.isInfoEnabled()) {
                 logger.info(String.format(
@@ -81,6 +98,19 @@ public class MavenSettingsSecurityXmlEventAware implements MavenEventAware {
             ciOptContext.getSystemProperties()
                 .setProperty(PROP_SETTINGS_SECURITY, this.settingsSecurityXml.toAbsolutePath().toString());
         }
+    }
+
+    private void findOrDownload(final CommandLine commandLine) {
+        final Resources resources = this.resourcesFactory.getObject();
+        this.settingsSecurityXml = resources.findOrDownload(
+            commandLine,
+            true,
+            Constants.PROP_SETTINGS_SECURITY,
+            SRC_MAIN_MAVEN + "/" + SETTINGS_SECURITY_XML,
+            SETTINGS_SECURITY_XML,
+            userHomeDotM2(SETTINGS_SECURITY_XML),
+            SRC_MAIN_MAVEN.replace("/", File.separator) + File.separator + SETTINGS_SECURITY_XML
+        ).orElse(null);
     }
 
     static String userHomeDotM2(final String filename) {

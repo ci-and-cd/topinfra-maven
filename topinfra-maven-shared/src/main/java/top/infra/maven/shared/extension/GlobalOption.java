@@ -7,6 +7,10 @@ import java.util.function.BiFunction;
 import top.infra.maven.CiOption;
 import top.infra.maven.CiOptionContext;
 
+/**
+ * Global options can be provided by command args only.
+ * Global options are handled before options properties files so putting global options in properties files will not work.
+ */
 public enum GlobalOption implements CiOption {
 
     FAST("fast"),
