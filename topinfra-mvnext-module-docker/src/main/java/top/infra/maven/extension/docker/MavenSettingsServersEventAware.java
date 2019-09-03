@@ -1,8 +1,10 @@
 package top.infra.maven.extension.docker;
 
+import static top.infra.maven.shared.extension.GlobalOption.MASTER_PASSWORD;
 import static top.infra.util.StringUtils.isEmpty;
 
 import cn.home1.tools.maven.MavenSettingsSecurity;
+import cn.home1.tools.maven.MavenSettingsSecurityFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -167,10 +169,21 @@ public class MavenSettingsServersEventAware extends AbstractMavenLifecyclePartic
         final MavenExecutionRequest request,
         final CiOptionContext ciOptContext
     ) {
-        final Optional<String> settingsSecurityXml = MavenUtils.findInProperties(Constants.PROP_SETTINGS_SECURITY, ciOptContext);
-        final Optional<MavenSettingsSecurity> settingsSecurity = settingsSecurityXml
-            .map(xml -> new MavenSettingsSecurity(xml, false));
-        this.encryptedBlankString = settingsSecurity.map(ss -> ss.encodeText(" ")).orElse(null);
+        this.encryptedBlankString = MASTER_PASSWORD
+            .findInProperties(MASTER_PASSWORD.getPropertyName(), ciOptContext)
+            .map(MavenSettingsSecurity::surroundByBrackets)
+            .map(encodedMasterPassword -> new MavenSettingsSecurity(false, encodedMasterPassword))
+            .map(ss -> {
+                logger.info("    Master password found, encode blank string.");
+                return ss.encodeText(" ");
+            })
+            .orElseGet(() -> {
+                final Optional<String> settingsSecurityXml = MavenUtils.findInProperties(Constants.PROP_SETTINGS_SECURITY, ciOptContext);
+                return settingsSecurityXml
+                    .map(xml -> MavenSettingsSecurityFactory.newMavenSettingsSecurity(xml, false))
+                    .map(ss -> ss.encodeText(" "))
+                    .orElse(null);
+            });
         this.checkServers(request.getServers(), ciOptContext.getSystemProperties());
     }
 

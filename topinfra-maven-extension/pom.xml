@@ -75,6 +75,9 @@
                                 <include>maven-settings-auth</include>
                                 <include>test-topinfra-maven-extension</include>
                             </pomIncludes>
+                            <properties>
+                                <master.password>d9B+VbRQ4kYH4T7bCu/fUxXmfNx0NwBbZAxqWZnEAg8=</master.password>
+                            </properties>
                             <settingsFile>src/it/settings.xml</settingsFile>
                         </configuration>
                     </plugin>

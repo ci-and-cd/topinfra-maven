@@ -4,6 +4,8 @@ import static top.infra.maven.shared.extension.Constants.PROP_SETTINGS_SECURITY;
 import static top.infra.maven.shared.extension.Constants.SETTINGS_SECURITY_XML;
 import static top.infra.maven.shared.extension.GlobalOption.MASTER_PASSWORD;
 
+import cn.home1.tools.maven.MavenSettingsSecurity;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -64,17 +66,16 @@ public class MavenSettingsSecurityXmlEventAware implements MavenEventAware {
         final CliRequest cliRequest,
         final CiOptionContext ciOptContext
     ) {
-        final Optional<String> masterPassword = MASTER_PASSWORD.getValue(ciOptContext);
+        final Optional<String> masterPassword = MASTER_PASSWORD
+            .findInProperties(MASTER_PASSWORD.getPropertyName(), ciOptContext)
+            .map(MavenSettingsSecurity::surroundByBrackets);
         if (masterPassword.isPresent()) {
             try {
                 final Path tmpFile = Files.createTempFile("settings-security", ".xml");
+                logger.info(String.format("    Master password found, generate temp settings-security.xml [%s]", tmpFile));
                 try (PrintWriter writer = new PrintWriter(tmpFile.toFile())) {
                     writer.println("<settingsSecurity>");
-                    writer.println(String.format("  <master>%s</master>",
-                        masterPassword.map(text ->
-                            text.startsWith("{") && text.endsWith("}")
-                                ? text
-                                : "{" + text.replace("{", "\\{").replace("}", "\\}") + "}")));
+                    writer.println(String.format("  <master>%s</master>", masterPassword.get()));
                     writer.println("</settingsSecurity>");
                 }
                 this.settingsSecurityXml = tmpFile;

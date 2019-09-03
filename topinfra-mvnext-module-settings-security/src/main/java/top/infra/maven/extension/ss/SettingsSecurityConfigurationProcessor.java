@@ -1,12 +1,15 @@
 package top.infra.maven.extension.ss;
 
 import static top.infra.maven.shared.extension.Constants.SETTINGS_SECURITY_XML;
+import static top.infra.maven.shared.extension.GlobalOption.MASTER_PASSWORD;
 
 import cn.home1.tools.maven.MavenSettingsSecurity;
+import cn.home1.tools.maven.MavenSettingsSecurityFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.Properties;
 
 import javax.inject.Inject;
 
@@ -44,7 +47,6 @@ public class SettingsSecurityConfigurationProcessor implements OrderedConfigurat
         final org.codehaus.plexus.logging.Logger logger
     ) {
         this.logger = new LoggerPlexusImpl(logger);
-        // this.secDispatcher = secDispatcher;
     }
 
     @Override
@@ -68,24 +70,47 @@ public class SettingsSecurityConfigurationProcessor implements OrderedConfigurat
         settingsSecurityXml.ifPresent(ss -> {
             final DefaultSecDispatcher defaultSecDispatcher = (DefaultSecDispatcher) this.secDispatcher;
             defaultSecDispatcher.setConfigurationFile(ss.toString());
-
-            testSecDispatcher(this.secDispatcher, ss.toString());
         });
+
+        testSecDispatcher(
+            logger,
+            cliRequest.getSystemProperties(),
+            cliRequest.getUserProperties(),
+            this.secDispatcher,
+            settingsSecurityXml.map(Path::toString).orElse(null)
+        );
     }
 
-    public static void testSecDispatcher(final SecDispatcher secDispatcher, final String settingsSecurityXml) {
-        final MavenSettingsSecurity settingsSecurity = new MavenSettingsSecurity(settingsSecurityXml, false);
-        final String plainText = " ";
-        final String encrypted = settingsSecurity.encodeText(plainText);
-        try {
-            final String decrypted = secDispatcher.decrypt(encrypted);
-            if (!plainText.equals(decrypted)) {
-                throw new IllegalStateException(
-                    String.format("    Failed on testing SecDispatcher, expected [%s], got [%s].", plainText, decrypted)
-                );
+    public static void testSecDispatcher(
+        final Logger logger,
+        final Properties systemProperties,
+        final Properties userProperties,
+        final SecDispatcher secDispatcher,
+        final String settingsSecurityXml
+    ) {
+        final MavenSettingsSecurity settingsSecurity = MASTER_PASSWORD
+            .findInProperties(MASTER_PASSWORD.getPropertyName(), systemProperties, userProperties)
+            .map(MavenSettingsSecurity::surroundByBrackets)
+            .map(encodedMasterPassword -> new MavenSettingsSecurity(false, encodedMasterPassword))
+            .orElseGet(() -> {
+                return Optional.ofNullable(settingsSecurityXml)
+                    .map(xml -> MavenSettingsSecurityFactory.newMavenSettingsSecurity(xml, false))
+                    .orElse(null);
+            });
+        if (settingsSecurity != null) {
+            logger.info("    Master password found, encode blank string.");
+            final String plainText = " ";
+            final String encrypted = settingsSecurity.encodeText(" ");
+            try {
+                final String decrypted = secDispatcher.decrypt(encrypted);
+                if (!plainText.equals(decrypted)) {
+                    throw new IllegalStateException(
+                        String.format("    Failed on testing SecDispatcher, expected [%s], got [%s].", plainText, decrypted)
+                    );
+                }
+            } catch (final SecDispatcherException ex) {
+                throw new IllegalStateException("    Error on testing SecDispatcher.", ex);
             }
-        } catch (final SecDispatcherException ex) {
-            throw new IllegalStateException("    Error on testing SecDispatcher.", ex);
         }
     }
 }

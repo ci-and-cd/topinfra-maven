@@ -18,6 +18,8 @@
 
     <!-- @formatter:off -->
     <dependencies>
+        <dependency><groupId>cn.home1.tools</groupId><artifactId>maven-settings-decoder-cipher</artifactId></dependency>
+
         <dependency><groupId>top.infra.maven</groupId><artifactId>topinfra-utils</artifactId></dependency>
         <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-core</artifactId><scope>provided</scope></dependency>
     </dependencies>

@@ -1,13 +1,19 @@
 package top.infra.maven.shared.utils;
 
+import cn.home1.tools.maven.MavenSettingsSecurity;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.maven.cli.CLIManager;
@@ -35,6 +41,21 @@ public abstract class MavenUtils {
 
     public static Boolean cmdArgUpdateSnapshots(final CommandLine commandLine) {
         return commandLine.hasOption(CLIManager.UPDATE_SNAPSHOTS);
+    }
+
+    public static Collection<Map.Entry<String, String>> decryptProperties(
+        final Properties properties,
+        final MavenSettingsSecurity settingsSecurity
+    ) {
+        final Collection<Map.Entry<String, String>> encrypted = properties.stringPropertyNames().stream()
+            .map(name -> new AbstractMap.SimpleImmutableEntry<>(name, properties.getProperty(name)))
+            .filter(entry -> entry.getValue() != null)
+            .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue().trim()))
+            .filter(entry -> entry.getValue().startsWith("{") && entry.getValue().endsWith("}"))
+            .collect(Collectors.toList());
+        return encrypted.stream()
+            .<Map.Entry<String, String>>map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), settingsSecurity.decodeText(entry.getValue())))
+            .collect(Collectors.toList());
     }
 
     public static Optional<String> findInProperties(

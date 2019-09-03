@@ -30,6 +30,7 @@
 
     <!-- @formatter:off -->
     <dependencies>
+        <!--<dependency><groupId>cn.home1.tools</groupId><artifactId>maven-settings-decoder-cipher</artifactId></dependency>-->
         <dependency><groupId>cn.home1.tools</groupId><artifactId>maven-settings-decoder-core</artifactId></dependency>
 
         <dependency><groupId>${project.groupId}</groupId><artifactId>topinfra-maven-core</artifactId><scope>provided</scope></dependency>

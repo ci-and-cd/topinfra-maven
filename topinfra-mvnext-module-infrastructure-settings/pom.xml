@@ -30,6 +30,9 @@
 
     <!-- @formatter:off -->
     <dependencies>
+        <!--<dependency><groupId>cn.home1.tools</groupId><artifactId>maven-settings-decoder-cipher</artifactId></dependency>-->
+        <dependency><groupId>cn.home1.tools</groupId><artifactId>maven-settings-decoder-core</artifactId></dependency>
+
         <dependency><groupId>org.codehaus.plexus</groupId><artifactId>plexus-utils</artifactId><optional>true</optional></dependency>
         <dependency><groupId>org.json</groupId><artifactId>json</artifactId></dependency>
         <dependency><groupId>top.infra.maven</groupId><artifactId>topinfra-filesafe</artifactId></dependency>

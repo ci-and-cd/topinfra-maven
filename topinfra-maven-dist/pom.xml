@@ -39,6 +39,10 @@
                         <minimizeJar>false</minimizeJar>
                         <relocations>
                             <relocation>
+                                <pattern>cn.home1.tools.maven</pattern>
+                                <shadedPattern>shaded.cn.home1.tools.maven</shadedPattern>
+                            </relocation>
+                            <relocation>
                                 <pattern>org.eclipse.jgit</pattern>
                                 <shadedPattern>shaded.org.eclipse.jgit</shadedPattern>
                                 <!--<excludes><exclude></exclude></excludes>-->
@@ -60,6 +64,8 @@
 
     <!-- @formatter:off -->
     <dependencies>
+        <dependency><groupId>cn.home1.tools</groupId><artifactId>maven-settings-decoder-cipher</artifactId></dependency>
+
         <dependency><groupId>org.apache.maven</groupId><artifactId>maven-embedder</artifactId><scope>provided</scope></dependency>
         <dependency><groupId>org.apache.maven</groupId><artifactId>maven-model</artifactId><scope>provided</scope></dependency>
 

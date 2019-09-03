@@ -1,24 +1,8 @@
 package top.infra.maven.extension.infra;
 
-import static top.infra.maven.extension.infra.InfraOption.CACHE_SETTINGS_PATH;
-import static top.infra.maven.extension.infra.InfraOption.GIT_AUTH_TOKEN;
-import static top.infra.maven.shared.extension.Constants.SRC_CI_OPTS_PROPERTIES;
-import static top.infra.maven.shared.utils.PropertiesUtils.logProperties;
-import static top.infra.util.StringUtils.isEmpty;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-
+import cn.home1.tools.maven.MavenSettingsSecurity;
 import org.apache.maven.cli.CliRequest;
 import org.jetbrains.annotations.Nullable;
-
 import top.infra.exception.RuntimeIOException;
 import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
@@ -28,6 +12,22 @@ import top.infra.maven.shared.logging.LoggerPlexusImpl;
 import top.infra.maven.shared.utils.FileUtils;
 import top.infra.maven.shared.utils.MavenUtils;
 import top.infra.maven.shared.utils.PropertiesUtils;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.Properties;
+
+import static top.infra.maven.extension.infra.InfraOption.CACHE_SETTINGS_PATH;
+import static top.infra.maven.extension.infra.InfraOption.GIT_AUTH_TOKEN;
+import static top.infra.maven.shared.extension.Constants.SRC_CI_OPTS_PROPERTIES;
+import static top.infra.maven.shared.extension.GlobalOption.MASTER_PASSWORD;
+import static top.infra.maven.shared.utils.PropertiesUtils.logProperties;
+import static top.infra.util.StringUtils.isEmpty;
 
 @Named
 @Singleton
@@ -76,7 +76,22 @@ public class CiOptionConfigLoader implements MavenEventAware {
         final boolean update = MavenUtils.cmdArgUpdateSnapshots(cliRequest.getCommandLine());
         final Optional<Properties> loadedProperties = ciOptContextFromFile(gitRepository, ciOptionContext, offline, update);
 
-        loadedProperties.ifPresent(props -> logProperties(logger, "    ci_opts.properties", props, null));
+        loadedProperties.ifPresent(props -> {
+            logProperties(logger, "    ci_opts.properties", props, null);
+
+            MASTER_PASSWORD
+                .findInProperties(MASTER_PASSWORD.getPropertyName(), ciOptionContext)
+                .map(MavenSettingsSecurity::surroundByBrackets)
+                .map(password -> new MavenSettingsSecurity(false, password))
+                .ifPresent(settingsSecurity -> {
+                    logger.info("    Master password found, decrypt loadedProperties.");
+                    MavenUtils.decryptProperties(props, settingsSecurity)
+                        .forEach(entry -> {
+                            logger.info(String.format("    Decrypted loadedProperty [%s].", entry.getKey()));
+                            props.put(entry.getKey(), entry.getValue());
+                        });
+                });
+        });
 
         PropertiesUtils.setSystemPropertiesIfAbsent(ciOptionContext.getSystemProperties(), loadedProperties.orElse(null));
         PropertiesUtils.setSystemPropertiesIfAbsent(System.getProperties(), loadedProperties.orElse(null));
