@@ -136,6 +136,6 @@ public interface CiOption {
     }
 
     default String systemPropertyName(final String propertyName) {
-        return String.format("env.%s", envVariableName(propertyName));
+        return String.format("env.%s", this.envVariableName(propertyName));
     }
 }

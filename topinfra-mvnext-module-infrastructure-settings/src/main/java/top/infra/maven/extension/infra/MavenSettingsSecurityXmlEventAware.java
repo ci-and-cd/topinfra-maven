@@ -25,6 +25,7 @@ import top.infra.logging.Logger;
 import top.infra.maven.CiOptionContext;
 import top.infra.maven.extension.MavenEventAware;
 import top.infra.maven.shared.extension.Constants;
+import top.infra.maven.shared.extension.GlobalOption;
 import top.infra.maven.shared.extension.Orders;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 import top.infra.maven.shared.utils.MavenUtils;
@@ -94,10 +95,14 @@ public class MavenSettingsSecurityXmlEventAware implements MavenEventAware {
                     this.settingsSecurityXml,
                     cliRequest.getSystemProperties().getProperty(PROP_SETTINGS_SECURITY)));
             }
-            cliRequest.getSystemProperties()
-                .setProperty(PROP_SETTINGS_SECURITY, this.settingsSecurityXml.toAbsolutePath().toString());
-            ciOptContext.getSystemProperties()
-                .setProperty(PROP_SETTINGS_SECURITY, this.settingsSecurityXml.toAbsolutePath().toString());
+
+            final String xmlPath = this.settingsSecurityXml.toAbsolutePath().toString();
+            cliRequest.getSystemProperties().setProperty(PROP_SETTINGS_SECURITY, xmlPath);
+            ciOptContext.getSystemProperties().setProperty(PROP_SETTINGS_SECURITY, xmlPath);
+
+            final String systemPropertyName = GlobalOption.FAST.systemPropertyName(PROP_SETTINGS_SECURITY);
+            cliRequest.getSystemProperties().setProperty(systemPropertyName, xmlPath);
+            ciOptContext.getSystemProperties().setProperty(systemPropertyName, xmlPath);
         }
     }
 

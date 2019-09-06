@@ -56,8 +56,8 @@ public class SettingsSecurityConfigurationProcessor implements OrderedConfigurat
 
     @Override
     public void process(final CliRequest cliRequest) throws Exception {
-        final Optional<Path> settingsSecurityXml = MavenUtils.findInProperties(
-            Constants.PROP_SETTINGS_SECURITY, cliRequest.getSystemProperties(), cliRequest.getUserProperties())
+        final Optional<Path> settingsSecurityXml = MavenUtils
+            .findInProperties(Constants.PROP_SETTINGS_SECURITY, cliRequest.getSystemProperties(), cliRequest.getUserProperties())
             .map(Paths::get)
             .map(Path::toAbsolutePath);
 
