@@ -72,6 +72,9 @@ public class CiOptionConfigLoader implements MavenEventAware {
 
         // ci options from file
         final GitRepository gitRepository = this.gitRepositoryFactory.getObject().orElse(null);
+        if (gitRepository == null) {
+            logger.info("gitRepository not found");
+        }
         final boolean offline = MavenUtils.cmdArgOffline(cliRequest.getCommandLine());
         final boolean update = MavenUtils.cmdArgUpdateSnapshots(cliRequest.getCommandLine());
         final Optional<Properties> loadedProperties = ciOptContextFromFile(gitRepository, ciOptionContext, offline, update);
