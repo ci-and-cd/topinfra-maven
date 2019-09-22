@@ -39,7 +39,8 @@ public class EncryptedFileOpensslNative extends AbstractResource implements Encr
             // openssl aes-256-cbc -A -a -d -k ${CI_OPT_GPG_PASSPHRASE} -md md5 -in codesigning.asc.enc -out codesigning.asc
             final Entry<Integer, Entry<String, String>> result = this.exec(Arrays.asList(
                 "openssl", "aes-256-cbc",
-                "-A", "-a",
+                // "-A", // error reading input file (OpenSSL 1.0.2s  28 May 2019)
+                "-a",
                 "-d", "-k", passphrase,
                 "-md", "md5",
                 "-in", this.getPath().toString(),
