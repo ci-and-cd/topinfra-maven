@@ -24,7 +24,7 @@ before_install:
     printf '%s\n' "use-agent" | tee ~/.gnupg/gpg.conf;
     printf '%s\n' "allow-loopback-pinentry" | tee ~/.gnupg/gpg-agent.conf;
     echo RELOADAGENT | gpg-connect-agent;
-    openssl aes-256-cbc -k ${CI_OPT_GPG_PASSPHRASE} -in codesigning.asc.enc -out codesigning.asc -d -md md5;
+    openssl aes-256-cbc -A -a -d -k ${CI_OPT_GPG_PASSPHRASE} -md md5 -in codesigning.asc.enc -out codesigning.asc;
     ls -ahl;
     if [[ -f codesigning.pub ]]; then
       gpg2 --use-agent --batch=true --yes --import codesigning.pub;

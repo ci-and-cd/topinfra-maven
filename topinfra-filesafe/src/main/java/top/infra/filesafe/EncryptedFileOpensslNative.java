@@ -36,7 +36,7 @@ public class EncryptedFileOpensslNative extends AbstractResource implements Encr
             // bad decrypt
             // 140611360391616:error:06065064:digital envelope routines:EVP_DecryptFinal_ex:bad decrypt:../crypto/evp/evp_enc.c:536:
             // see: https://stackoverflow.com/questions/34304570/how-to-resolve-the-evp-decryptfinal-ex-bad-decrypt-during-file-decryption
-            // openssl aes-256-cbc -A -a -d -k ${CI_OPT_GPG_PASSPHRASE} -md md5 -in codesigning.asc.enc -out codesigning.asc -p
+            // openssl aes-256-cbc -A -a -d -k ${CI_OPT_GPG_PASSPHRASE} -md md5 -in codesigning.asc.enc -out codesigning.asc
             final Entry<Integer, Entry<String, String>> result = this.exec(Arrays.asList(
                 "openssl", "aes-256-cbc",
                 "-A", "-a",

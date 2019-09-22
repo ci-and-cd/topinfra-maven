@@ -25,13 +25,13 @@ see [homebrew-topinfra](https://github.com/ci-and-cd/homebrew-topinfra).
             xsi:schemaLocation="http://maven.apache.org/EXTENSIONS/1.0.0 http://maven.apache.org/xsd/core-extensions-1.0.0.xsd">
 
     <!-- @formatter:off -->
-    <extension><artifactId>topinfra-maven-extension</artifactId><groupId>top.infra.maven</groupId><version>1.3.0</version></extension>
-    <extension><artifactId>topinfra-mvnext-module-docker</artifactId><groupId>top.infra.maven</groupId><version>1.3.0</version></extension>
-    <extension><artifactId>topinfra-mvnext-module-gitflow-semver</artifactId><groupId>top.infra.maven</groupId><version>1.3.0</version></extension>
-    <extension><artifactId>topinfra-mvnext-module-gpg-key</artifactId><groupId>top.infra.maven</groupId><version>1.3.0</version></extension>
-    <extension><artifactId>topinfra-mvnext-module-infrastructure-settings</artifactId><groupId>top.infra.maven</groupId><version>1.3.0</version></extension>
-    <extension><artifactId>topinfra-mvnext-module-maven-build-pom</artifactId><groupId>top.infra.maven</groupId><version>1.3.0</version></extension>
-    <extension><artifactId>topinfra-mvnext-module-settings-security</artifactId><groupId>top.infra.maven</groupId><version>1.3.0</version></extension>
+    <extension><artifactId>topinfra-maven-extension</artifactId><groupId>top.infra.maven</groupId><version>1.4.0-SNAPSHOT</version></extension>
+    <extension><artifactId>topinfra-mvnext-module-docker</artifactId><groupId>top.infra.maven</groupId><version>1.4.0-SNAPSHOT</version></extension>
+    <extension><artifactId>topinfra-mvnext-module-gitflow-semver</artifactId><groupId>top.infra.maven</groupId><version>1.4.0-SNAPSHOT</version></extension>
+    <extension><artifactId>topinfra-mvnext-module-gpg-key</artifactId><groupId>top.infra.maven</groupId><version>1.4.0-SNAPSHOT</version></extension>
+    <extension><artifactId>topinfra-mvnext-module-infrastructure-settings</artifactId><groupId>top.infra.maven</groupId><version>1.4.0-SNAPSHOT</version></extension>
+    <extension><artifactId>topinfra-mvnext-module-maven-build-pom</artifactId><groupId>top.infra.maven</groupId><version>1.4.0-SNAPSHOT</version></extension>
+    <extension><artifactId>topinfra-mvnext-module-settings-security</artifactId><groupId>top.infra.maven</groupId><version>1.4.0-SNAPSHOT</version></extension>
     <!-- @formatter:on -->
 </extensions>
 ```

@@ -22,100 +22,71 @@ public class OpensslTest {
 
     private Logger logger;
 
-    private final Path decryptedFilePath = Paths.get("src/test/resources/testfile.txt.out");
-    private final Path clearFilePath = Paths.get("src/test/resources/testfile.txt");
+    //private final Path decryptedFilePath = Paths.get("src/test/resources/testfile.txt.out");
+    //private final Path clearFilePath = Paths.get("src/test/resources/testfile.txt");
 
     @Before
     public void setUp() throws IOException {
         this.logger = new LoggerSlf4jImpl(LoggerFactory.getLogger(OpensslTest.class));
-
-        Files.deleteIfExists(this.decryptedFilePath);
     }
 
     @Test
     public void testNative() throws IOException {
         assertEquals("openssl should present", Integer.valueOf(0), CliUtils.exec("which openssl").getKey());
 
-        final Path encryptedFilePath = Paths.get("src/test/resources/testfile.txt.enc");
+        final String clearFilePath = "src/test/resources/testfile.txt";
+        final Path encryptedFilePath = Paths.get(clearFilePath + ".enc");
         final EncryptedFile encryptedFile = FileSafe.decryptByNativeOpenssl(this.logger, encryptedFilePath);
-        Files.deleteIfExists(encryptedFile.getPath());
-
-        assertFalse(String.format("encryptedFile [%s] should not exists.", encryptedFile.getPath()),
-            encryptedFile.getPath().toFile().exists());
-        assertFalse(String.format("decryptedFile [%s] should not exists.", this.decryptedFilePath),
-            this.decryptedFilePath.toFile().exists());
-
-        final String passphrase = "openssl_passphrase";
-
-        final ClearFile clearFile = FileSafe.encryptByNativeOpenssl(this.logger, this.clearFilePath);
-        clearFile.encrypt(passphrase, encryptedFile.getPath());
-        assertTrue(String.format("encryptedFile [%s] should exists.", encryptedFile.getPath()),
-            encryptedFile.getPath().toFile().exists());
-        assertFalse(String.format("decryptedFile [%s] should not exists.", this.decryptedFilePath),
-            this.decryptedFilePath.toFile().exists());
-
-        encryptedFile.decrypt(passphrase, this.decryptedFilePath);
-        assertTrue(String.format("decryptedFile [%s] should exists.", this.decryptedFilePath),
-            this.decryptedFilePath.toFile().exists());
-
-        assertThat(this.decryptedFilePath).hasSameContentAs(clearFile.getPath());
+        this.testEncryptAndDecrypt(clearFilePath, encryptedFile);
     }
 
     @Test
     public void testNativeEncryptJavaDecrypt() throws IOException {
         assertEquals("openssl should present", Integer.valueOf(0), CliUtils.exec("which openssl").getKey());
 
-        final Path encryptedFilePath = Paths.get("src/test/resources/testfile.txt.enc");
-        final EncryptedFile encryptedFile = FileSafe.decryptByJavaOpenssl(this.logger, encryptedFilePath);
-        Files.deleteIfExists(encryptedFile.getPath());
+        final String testfileTxt = "src/test/resources/testfile.txt";
+        this.testEncryptAndDecrypt(testfileTxt, FileSafe.decryptByJavaOpenssl(this.logger, Paths.get(testfileTxt + ".enc")));
 
-        assertFalse(String.format("encryptedFile [%s] should not exists.", encryptedFile.getPath()),
-            encryptedFile.getPath().toFile().exists());
-        assertFalse(String.format("decryptedFile [%s] should not exists.", this.decryptedFilePath),
-            this.decryptedFilePath.toFile().exists());
-
-        final String passphrase = "openssl_passphrase";
-
-        final ClearFile clearFile = FileSafe.encryptByNativeOpenssl(this.logger, this.clearFilePath);
-        clearFile.encrypt(passphrase, encryptedFile.getPath());
-        assertTrue(String.format("encryptedFile [%s] should exists.", encryptedFile.getPath()),
-            encryptedFile.getPath().toFile().exists());
-        assertFalse(String.format("decryptedFile [%s] should not exists.", this.decryptedFilePath),
-            this.decryptedFilePath.toFile().exists());
-
-        encryptedFile.decrypt(passphrase, this.decryptedFilePath);
-        assertTrue(String.format("decryptedFile [%s] should exists.", this.decryptedFilePath),
-            this.decryptedFilePath.toFile().exists());
-
-        assertThat(this.decryptedFilePath).hasSameContentAs(clearFile.getPath());
+        final String codesigningAsc = "../codesigning.asc";
+        if (Paths.get(codesigningAsc).toFile().exists()) {
+            final Path codesigningAscEnc = Files.createTempFile("tmp", "codesigning.asc");
+            this.testEncryptAndDecrypt(codesigningAsc, FileSafe.decryptByJavaOpenssl(this.logger, codesigningAscEnc));
+        }
     }
 
     @Test
     public void testJavaEncryptNativeDecrypt() throws IOException {
         assertEquals("openssl should present", Integer.valueOf(0), CliUtils.exec("which openssl").getKey());
 
-        final Path encryptedFilePath = Paths.get("src/test/resources/testfile.txt.enc");
+        final String clearFilePath = "src/test/resources/testfile.txt";
+        final Path encryptedFilePath = Paths.get(clearFilePath + ".enc");
         final EncryptedFile encryptedFile = FileSafe.decryptByNativeOpenssl(this.logger, encryptedFilePath);
+        this.testEncryptAndDecrypt(clearFilePath, encryptedFile);
+    }
+
+    private void testEncryptAndDecrypt(final String clearFilePath, final EncryptedFile encryptedFile) throws IOException {
+        final Path decryptedFilePath = Paths.get(clearFilePath + ".out");
+        Files.deleteIfExists(decryptedFilePath);
         Files.deleteIfExists(encryptedFile.getPath());
 
         assertFalse(String.format("encryptedFile [%s] should not exists.", encryptedFile.getPath()),
             encryptedFile.getPath().toFile().exists());
-        assertFalse(String.format("decryptedFile [%s] should not exists.", this.decryptedFilePath),
-            this.decryptedFilePath.toFile().exists());
+        assertFalse(String.format("decryptedFile [%s] should not exists.", decryptedFilePath),
+            decryptedFilePath.toFile().exists());
 
         final String passphrase = "openssl_passphrase";
 
-        final ClearFile clearFile = FileSafe.encryptByJavaOpenssl(this.logger, this.clearFilePath);
+        final ClearFile clearFile = FileSafe.encryptByNativeOpenssl(this.logger, Paths.get(clearFilePath));
         clearFile.encrypt(passphrase, encryptedFile.getPath());
         assertTrue(String.format("encryptedFile [%s] should exists.", encryptedFile.getPath()),
             encryptedFile.getPath().toFile().exists());
-        assertFalse(String.format("decryptedFile [%s] should not exists.", this.decryptedFilePath),
-            this.decryptedFilePath.toFile().exists());
+        assertFalse(String.format("decryptedFile [%s] should not exists.", decryptedFilePath),
+            decryptedFilePath.toFile().exists());
 
-        encryptedFile.decrypt(passphrase, this.decryptedFilePath);
-        assertTrue(String.format("decryptedFile [%s] should exists.", this.decryptedFilePath),
-            this.decryptedFilePath.toFile().exists());
+        encryptedFile.decrypt(passphrase, decryptedFilePath);
+        assertTrue(String.format("decryptedFile [%s] should exists.", decryptedFilePath),
+            decryptedFilePath.toFile().exists());
 
-        assertThat(this.decryptedFilePath).hasSameContentAs(clearFile.getPath());
+        assertThat(decryptedFilePath).hasSameContentAs(clearFile.getPath());
     }
 }

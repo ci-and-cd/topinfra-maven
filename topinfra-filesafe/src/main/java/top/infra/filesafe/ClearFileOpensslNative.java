@@ -28,7 +28,7 @@ public class ClearFileOpensslNative extends AbstractResource implements ClearFil
             logger.info(String.format("code [%s], [%s][%s]",
                 opensslVersion.getKey(), opensslVersion.getValue().getKey(), opensslVersion.getValue().getValue()));
 
-            // openssl aes-256-cbc -a -k ${CI_OPT_GPG_PASSPHRASE} -md md5 -salt -in codesigning.asc.enc -out codesigning.asc -p
+            // openssl aes-256-cbc -a -k ${CI_OPT_GPG_PASSPHRASE} -md md5 -salt -in codesigning.asc -out codesigning.asc.enc
             final Entry<Integer, Entry<String, String>> result = this.exec(Arrays.asList(
                 "openssl", "aes-256-cbc",
                 "-a", "-k", passphrase,

@@ -30,6 +30,7 @@ buildNumber.properties
 .DS_Store
 
 *.asc
+*.asc.out
 git.properties
 
 /test-repo/
