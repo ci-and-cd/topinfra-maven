@@ -103,6 +103,8 @@ public class MavenSettingsSecurityXmlEventAware implements MavenEventAware {
             final String systemPropertyName = GlobalOption.FAST.systemPropertyName(PROP_SETTINGS_SECURITY);
             cliRequest.getSystemProperties().setProperty(systemPropertyName, xmlPath);
             ciOptContext.getSystemProperties().setProperty(systemPropertyName, xmlPath);
+
+            System.getProperties().setProperty(PROP_SETTINGS_SECURITY, xmlPath);
         }
     }
 

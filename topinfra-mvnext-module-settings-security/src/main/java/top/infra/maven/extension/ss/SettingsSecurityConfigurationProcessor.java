@@ -40,6 +40,7 @@ public class SettingsSecurityConfigurationProcessor implements OrderedConfigurat
     private Logger logger;
 
     @Requirement(hint = "maven")
+    //@Requirement(hint = "mng-4384")
     private SecDispatcher secDispatcher;
 
     @Inject
