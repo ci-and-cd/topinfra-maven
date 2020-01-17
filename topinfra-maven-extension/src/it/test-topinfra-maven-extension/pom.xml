@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -314,7 +314,7 @@
         <checkstyle.config.location>https://raw.githubusercontent.com/ci-and-cd/maven-build/master/src/main/checkstyle/google_checks_8.10.xml</checkstyle.config.location>
         <!-- https://npm.taobao.org/mirrors/node/ -->
         <frontend.nodeDownloadRoot>https://nodejs.org/dist/</frontend.nodeDownloadRoot>
-        <!-- http://registry.npm.taobao.org/npm/-/ -->
+        <!-- https://registry.npm.taobao.org/npm/-/ -->
         <frontend.npmDownloadRoot>https://registry.npmjs.org/npm/-/</frontend.npmDownloadRoot>
         <git.commit.id.skip>true</git.commit.id.skip>
         <github.global.oauth2Token></github.global.oauth2Token>

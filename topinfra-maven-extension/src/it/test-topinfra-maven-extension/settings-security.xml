@@ -1,4 +1,4 @@
-<!-- see: http://maven.apache.org/guides/mini/guide-encryption.html -->
+<!-- see: https://maven.apache.org/guides/mini/guide-encryption.html -->
 <!-- mvn &#x002d;&#x002d;encrypt-master-password ${master_password} -->
 <!-- save result in settings-security.xml settingsSecurity master -->
 <!-- then mvn &#x002d;&#x002d;encrypt-password ${password} -->
