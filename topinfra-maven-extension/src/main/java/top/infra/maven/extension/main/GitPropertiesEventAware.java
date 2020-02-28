@@ -1,5 +1,17 @@
 package top.infra.maven.extension.main;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Stream;
+
 import org.apache.maven.cli.CliRequest;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -14,18 +26,6 @@ import top.infra.maven.shared.extension.VcsProperties;
 import top.infra.maven.shared.logging.LoggerPlexusImpl;
 import top.infra.maven.shared.utils.MavenUtils;
 import top.infra.maven.shared.utils.PropertiesUtils;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.stream.Stream;
 
 import static top.infra.maven.shared.extension.VcsProperties.*;
 import static top.infra.maven.shared.utils.PropertiesUtils.logProperties;
@@ -89,7 +89,7 @@ public class GitPropertiesEventAware implements MavenEventAware {
         return Orders.ORDER_GIT_PROPERTIES;
     }
 
-    public static Optional<Properties> newJgitProperties(final Logger logger) {
+    private static Optional<Properties> newJgitProperties(final Logger logger) {
         Optional<Properties> result;
         try {
             final Repository repository = new RepositoryBuilder()
