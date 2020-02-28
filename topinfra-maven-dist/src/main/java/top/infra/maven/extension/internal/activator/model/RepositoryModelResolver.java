@@ -41,7 +41,7 @@ import top.infra.maven.shared.utils.DownloadUtils.DownloadException;
 public class RepositoryModelResolver implements ModelResolver {
 
     private static final String MAVEN_CENTRAL_URL = "https://repo1.maven.org/maven2";
-    private static final String MAVEN_CENTRAL_URL_MIRROR_1 = "http://repo.maven.apache.org/maven2";
+    private static final String MAVEN_CENTRAL_URL_MIRROR_1 = "https://repo.maven.apache.org/maven2";
 
     private final Logger logger;
 
